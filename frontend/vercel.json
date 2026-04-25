@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/underdevelopment/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/underdevelopment/:path*", "destination": "/index.html" },
+    { "source": "/underdevelopment", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
