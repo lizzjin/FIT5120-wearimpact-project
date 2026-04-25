@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/underdevelopment", "destination": "https://fit5120-wearimpact-dev.vercel.app/underdevelopment" },
+    { "source": "/underdevelopment/:path*", "destination": "https://fit5120-wearimpact-dev.vercel.app/underdevelopment/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
