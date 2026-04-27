@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 380" fill="none">
+  <!-- L1 §7 — Mini quiz card auto-answering.
+       Question fades in, options stagger up, correct option highlights to lime,
+       edge-flash, "fact unlocked" appears. Full cycle ~6s, resets. -->
+
+  <!-- Dark card body (matches Knowledge Hub aesthetic) -->
+  <rect x="40" y="30" width="400" height="320" rx="30" fill="#0e0f0c" stroke="#9fe870" stroke-width="1.6" stroke-opacity="0.4" />
+
+  <!-- Edge-flash glow border that pulses on correct answer -->
+  <rect class="quiz-edge-flash" x="40" y="30" width="400" height="320" rx="30" fill="none" stroke="#9fe870" stroke-width="3" />
+
+  <!-- Quiz progress dots -->
+  <g class="quiz-dots">
+    <circle cx="80" cy="68" r="3.5" fill="#9fe870" />
+    <circle cx="96" cy="68" r="3.5" fill="#9fe870" />
+    <circle cx="112" cy="68" r="3.5" fill="#cdffad" opacity="0.45" />
+    <circle cx="128" cy="68" r="3.5" fill="#cdffad" opacity="0.45" />
+  </g>
+
+  <!-- Question text, fades in -->
+  <g class="quiz-question">
+    <text x="80" y="116" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#ffffff">How many litres of water</text>
+    <text x="80" y="140" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#ffffff">to make one t-shirt?</text>
+  </g>
+
+  <!-- Option pills with stagger-in entrance + correct highlight -->
+  <g class="quiz-option quiz-option-1">
+    <rect x="80" y="170" width="320" height="34" rx="17" fill="rgba(159, 232, 112, 0.08)" stroke="rgba(226, 246, 213, 0.2)" stroke-width="1" />
+    <text x="100" y="192" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="rgba(246, 240, 230, 0.9)">A. About 200 L</text>
+  </g>
+  <g class="quiz-option quiz-option-2 quiz-option--correct">
+    <rect class="quiz-option-bg" x="80" y="212" width="320" height="34" rx="17" fill="rgba(159, 232, 112, 0.08)" stroke="rgba(226, 246, 213, 0.2)" stroke-width="1" />
+    <text x="100" y="234" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="rgba(246, 240, 230, 0.9)">B. About 2,700 L</text>
+  </g>
+  <g class="quiz-option quiz-option-3">
+    <rect x="80" y="254" width="320" height="34" rx="17" fill="rgba(159, 232, 112, 0.08)" stroke="rgba(226, 246, 213, 0.2)" stroke-width="1" />
+    <text x="100" y="276" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="rgba(246, 240, 230, 0.9)">C. About 800 L</text>
+  </g>
+  <g class="quiz-option quiz-option-4">
+    <rect x="80" y="296" width="320" height="34" rx="17" fill="rgba(159, 232, 112, 0.08)" stroke="rgba(226, 246, 213, 0.2)" stroke-width="1" />
+    <text x="100" y="318" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="rgba(246, 240, 230, 0.9)">D. About 5,400 L</text>
+  </g>
+</svg>

@@ -41,26 +41,27 @@ const iconComponent = computed(() => ICON_MAP[props.icon] ?? Star)
 .icon-box {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
-  background: #f0fdf4;
-  color: #16a34a;
+  border-radius: var(--radius-card-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--color-border);
 }
 
 .stats-text h3 {
   font-size: 17px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
   margin-bottom: 6px;
 }
 
 .stats-text p {
   font-size: 14px;
-  color: #64748b;
+  font-weight: 500;
+  color: var(--color-text-subtle);
   line-height: 1.5;
 }
 </style>

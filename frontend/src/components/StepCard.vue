@@ -17,25 +17,25 @@ defineProps({
 <style scoped>
 .step-card {
   background: white;
-  border-radius: 22px;
+  border-radius: var(--radius-card);
   padding: 32px 24px;
   text-align: center;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
   transition: box-shadow 200ms ease, transform 200ms ease;
 }
 
 .step-card:hover {
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+  transform: scale(1.03);
 }
 
 .step-circle {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #16a34a;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,12 +48,13 @@ defineProps({
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 10px;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .step-card p {
   font-size: 14px;
-  color: #475569;
-  line-height: 1.65;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  line-height: 1.5;
 }
 </style>

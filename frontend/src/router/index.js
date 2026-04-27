@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import EcoShopView from '../views/EcoShopView.vue'
-import AboutView from '../views/AboutView.vue'
 import KnowledgeView from '../views/KnowledgeView.vue'
 import BrandSearchView from '../views/BrandSearchView.vue'
+
 const routes = [
   {
     path: '/',
@@ -14,11 +14,6 @@ const routes = [
     path: '/eco-shop',
     name: 'ecoShop',
     component: EcoShopView
-  },
-  {
-    path: '/about',
-    name: 'about',
-    component: AboutView
   },
   {
     path: '/knowledge',

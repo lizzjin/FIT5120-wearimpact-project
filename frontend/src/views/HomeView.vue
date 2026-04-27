@@ -1,224 +1,330 @@
 <template>
-  <div class="home-page" ref="pageRef">
+  <div class="home" ref="pageRef">
     <Navbar />
 
-    <!-- §1 Hero — split: warm cream left / editorial image right -->
-    <section class="snap-section s-hero">
-      <div class="s-hero-left section-animate">
-        <p class="eyebrow">FOR SUSTAINABLE FASHION IN AUSTRALIA</p>
-        <h1
-          v-motion
-          :initial="{ opacity: 0, y: 40 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 700, delay: 100 } }"
-        >
-          Look good.<br />Feel good.<br />Choose better.
-        </h1>
-        <p
-          class="hero-sub"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 600, delay: 300 } }"
-        >
-          Fast fashion gives instant joy.<br />
-          But its impact lasts far longer than trends.
-        </p>
-        <p
-          class="hero-stat"
-          v-motion
-          :initial="{ opacity: 0, x: -20 }"
-          :visible-once="{ opacity: 1, x: 0, transition: { duration: 600, delay: 500 } }"
-        >
-          Every year, Australians throw away <strong>220,000 tonnes</strong> of clothing.
-          Most of it was bought with good intentions.
-        </p>
-        <span
-          class="scroll-hint"
-          v-motion
-          :initial="{ opacity: 0 }"
-          :visible-once="{ opacity: 1, transition: { duration: 500, delay: 800 } }"
-        >
-          Scroll to explore <span class="bounce">&#8595;</span>
-        </span>
-      </div>
-      <div class="s-hero-right">
-        <img
-          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"
-          alt="Minimal fashion store"
-        />
+    <!-- Fixed background canvas — does NOT scroll with content.
+         Unified backdrop across all sections so there are no visible seams.
+         Two soft lime/mint blobs drift, three abstract shapes orbit slowly,
+         and a faint mint grid anchors the depth. Each element has its own
+         period so they never pulse together. -->
+    <div class="home-canvas" aria-hidden="true">
+      <span class="canvas-blob canvas-blob--tr" />
+      <span class="canvas-blob canvas-blob--bl" />
+      <span class="canvas-blob canvas-blob--mid" />
+      <svg class="canvas-shape canvas-shape--ring" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#163300" stroke-width="1" stroke-dasharray="3 6" />
+      </svg>
+      <svg class="canvas-shape canvas-shape--leaf" viewBox="0 0 80 80">
+        <path d="M40 8 C 60 20 60 60 40 72 C 20 60 20 20 40 8 Z" fill="none" stroke="#9fe870" stroke-width="2" />
+        <line x1="40" y1="8" x2="40" y2="72" stroke="#9fe870" stroke-width="1.4" />
+      </svg>
+      <svg class="canvas-shape canvas-shape--squiggle" viewBox="0 0 200 40">
+        <path d="M4 20 Q 25 4, 50 20 T 100 20 T 150 20 T 196 20" fill="none" stroke="#163300" stroke-width="1.4" stroke-linecap="round" />
+      </svg>
+      <span class="canvas-grid" />
+    </div>
+
+    <!-- §1 Hero — Storyset wardrobe character, headline reveals on scroll-progress. -->
+    <section class="story story--hero" data-section="hero">
+      <span class="section-index" aria-hidden="true">01</span>
+      <span class="section-label" aria-hidden="true">SECTION 01 — THE PROMISE</span>
+      <span class="sprinkle sprinkle--tag-1" aria-hidden="true"><Tag :size="18" :stroke-width="1.6" /></span>
+      <span class="sprinkle sprinkle--leaf-1" aria-hidden="true"><Leaf :size="20" :stroke-width="1.6" /></span>
+      <span class="sprinkle sprinkle--sparkle-1" aria-hidden="true"><Sparkles :size="16" :stroke-width="1.6" /></span>
+      <div class="story-grid">
+        <div class="story-text" data-reveal>
+          <p class="eyebrow" data-line>FOR SUSTAINABLE FASHION IN AUSTRALIA</p>
+          <h1 class="hero-headline">
+            <span class="hero-line" data-line>Look good.</span>
+            <span class="hero-line" data-line>Feel good.</span>
+            <span class="hero-line" data-line>Choose better.</span>
+          </h1>
+          <p class="hero-sub" data-line>
+            Fast fashion gives instant joy.<br />
+            But its impact lasts far longer than trends.
+          </p>
+          <p class="hero-stat" data-line>
+            <span class="big-quote big-quote--open" aria-hidden="true">&ldquo;</span>
+            Every year, Australians throw away <strong>220,000 tonnes</strong> of clothing.
+            Most of it was bought with good intentions.
+          </p>
+          <span class="scroll-hint" data-line>
+            Still curious?
+            <span class="scroll-hint__arrow" aria-hidden="true">↓</span>
+          </span>
+        </div>
+        <div class="story-art story-art--hero" data-art v-html="artHero" aria-hidden="true" />
       </div>
     </section>
 
-    <!-- §2 Sound Familiar? — full-bleed dark overlay -->
-    <section class="snap-section s-familiar">
-      <img
-        class="bg-img"
-        src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80"
-        alt=""
-      />
-      <div class="bg-overlay"></div>
-      <div class="s-familiar-content section-animate">
-        <h2>Sound familiar?</h2>
-        <div class="questions">
-          <p
-            v-for="(q, i) in familiarQuestions"
-            :key="i"
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 200 + i * 180 } }"
-          >
-            {{ q }}
+    <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
+
+    <!-- §2 Sound Familiar? — animated wardrobe + question stagger -->
+    <section class="story story--familiar" data-section="familiar">
+      <span class="section-index section-index--right" aria-hidden="true">02</span>
+      <span class="section-label section-label--right" aria-hidden="true">SECTION 02 — THE MIRROR</span>
+      <span class="sprinkle sprinkle--shirt-1" aria-hidden="true"><Shirt :size="22" :stroke-width="1.6" /></span>
+      <span class="sprinkle sprinkle--tag-2" aria-hidden="true"><Tag :size="16" :stroke-width="1.6" /></span>
+      <span class="sprinkle sprinkle--check-1" aria-hidden="true"><CircleX :size="18" :stroke-width="1.6" /></span>
+      <div class="story-grid story-grid--reverse">
+        <div class="story-art story-art--wardrobe" data-art v-html="artWardrobe" aria-hidden="true" />
+        <div class="story-text" data-reveal>
+          <h2 data-line>Sound familiar?</h2>
+          <div class="questions">
+            <span class="big-quote big-quote--questions" aria-hidden="true">&ldquo;</span>
+            <p
+              v-for="(q, i) in familiarQuestions"
+              :key="i"
+              :class="`question question--${i + 1}`"
+              data-line
+            >
+              {{ q }}
+            </p>
+          </div>
+          <p class="familiar-stat" data-line>
+            You're not alone&nbsp;—
+            <strong><OdometerNumber :value="84" :duration="1200" />% of Australians</strong>
+            own clothes they haven't worn in over a year.
           </p>
         </div>
-        <p
-          class="familiar-stat"
-          v-motion
-          :initial="{ opacity: 0, y: 16 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 600, delay: 800 } }"
-        >
-          You're not alone &mdash;
-          <strong>84% of Australians</strong> own clothes they haven't worn in over a year.
-        </p>
       </div>
     </section>
 
-    <!-- §3 Hidden Cost — impact data on dark environmental image -->
-    <section class="snap-section s-cost">
-      <img
-        class="bg-img"
-        src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1600&q=80"
-        alt=""
-      />
-      <div class="bg-overlay dark"></div>
-      <div class="s-cost-content section-animate">
-        <p class="eyebrow light">THE HIDDEN COST OF EVERY TREND</p>
+    <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
+
+    <!-- §3 Hidden Cost — three motif columns on cream (no dark canvas). -->
+    <section class="story story--cost" data-section="cost">
+      <span class="section-index" aria-hidden="true">03</span>
+      <span class="section-label" aria-hidden="true">SECTION 03 — THE COST</span>
+      <span class="sprinkle sprinkle--leaf-2" aria-hidden="true"><Leaf :size="18" :stroke-width="1.6" /></span>
+      <span class="sprinkle sprinkle--droplet-1" aria-hidden="true"><Droplet :size="16" :stroke-width="1.6" /></span>
+      <div class="cost-content" data-reveal>
+        <p class="eyebrow" data-line>THE HIDDEN COST OF EVERY TREND</p>
         <div class="stat-row">
           <div
-            v-for="(stat, i) in impactStats"
-            :key="stat.number"
-            class="stat-card"
-            v-motion
-            :initial="{ opacity: 0, y: 30, scale: 0.95 }"
-            :visible-once="{ opacity: 1, y: 0, scale: 1, transition: { duration: 500, delay: 150 + i * 180 } }"
+            v-for="(stat, idx) in impactStats"
+            :key="stat.key"
+            class="stat-col"
+            :class="`stat-col--${stat.key}`"
+            data-line
           >
-            <p class="stat-num">{{ stat.number }}</p>
+            <span class="stat-corner stat-corner--tl" aria-hidden="true" />
+            <span class="stat-corner stat-corner--tr" aria-hidden="true" />
+            <span class="stat-corner stat-corner--bl" aria-hidden="true" />
+            <span class="stat-corner stat-corner--br" aria-hidden="true" />
+            <span class="stat-index" aria-hidden="true">0{{ idx + 1 }}</span>
+            <span class="stat-motif" aria-hidden="true" v-html="stat.motif" />
+            <p class="stat-num">
+              <OdometerNumber :value="stat.value" :duration="1200" :decimals="stat.decimals" />
+              <span class="stat-suffix">{{ stat.suffix }}</span>
+            </p>
             <p class="stat-lbl">{{ stat.label }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- §4 Bridge — transition from problem to solution -->
-    <section class="snap-section s-bridge">
-      <div class="s-bridge-left section-animate">
-        <h2
-          v-motion
-          :initial="{ opacity: 0, y: 30 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 600, delay: 100 } }"
-        >
-          Sustainable choices<br />shouldn't feel hard.
-        </h2>
-        <p
-          class="bridge-sub"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 300 } }"
-        >
-          You don't need to stop loving fashion.
-        </p>
-        <p
-          class="bridge-em"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 450 } }"
-        >
-          You just need better information.
-        </p>
-        <p
-          class="bridge-hint"
-          v-motion
-          :initial="{ opacity: 0 }"
-          :visible-once="{ opacity: 1, transition: { duration: 500, delay: 650 } }"
-        >
-          Here's how WearImpact helps &#8595;
-        </p>
+    <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
+
+    <!-- §4 Bridge — Storyset "examining" character + tethered copy. -->
+    <section class="story story--bridge" data-section="bridge">
+      <span class="section-index" aria-hidden="true">04</span>
+      <span class="section-label" aria-hidden="true">SECTION 04 — THE BRIDGE</span>
+      <span class="sprinkle sprinkle--check-2" aria-hidden="true"><Check :size="20" :stroke-width="1.6" /></span>
+      <span class="sprinkle sprinkle--leaf-3" aria-hidden="true"><Leaf :size="18" :stroke-width="1.6" /></span>
+      <span class="sprinkle sprinkle--sparkle-2" aria-hidden="true"><Sparkles :size="16" :stroke-width="1.6" /></span>
+      <div class="story-grid">
+        <div class="story-text story-text--bridge" data-reveal>
+          <h2 data-line>Sustainable choices<br />shouldn't feel hard.</h2>
+          <p class="bridge-sub" data-line>You don't need to stop loving fashion.</p>
+          <p class="bridge-em" data-line>
+            <span class="bridge-em-text">You just need better information.</span>
+            <span class="bridge-em-underline" aria-hidden="true" />
+          </p>
+          <p class="bridge-hint" data-line>Here's how WearImpact helps&nbsp;↓</p>
+        </div>
+        <div class="story-art story-art--bridge" data-art v-html="artBridge" aria-hidden="true" />
       </div>
-      <div class="s-bridge-right">
+    </section>
+
+    <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
+
+    <!-- §5–7 Solutions — each pairs copy with a sourced Storyset scene. -->
+    <template v-for="(sol, i) in solutions" :key="sol.id">
+      <section class="story story--solution" :data-section="`sol-${sol.id}`">
+        <span class="section-index" :class="{ 'section-index--right': i % 2 === 1 }" aria-hidden="true">0{{ sol.id }}</span>
+        <span class="section-label" :class="{ 'section-label--right': i % 2 === 1 }" aria-hidden="true">SECTION 0{{ sol.id }} — {{ sol.labelTag }}</span>
+        <span class="sprinkle sprinkle--sol-1" aria-hidden="true"><component :is="sol.sprinkleA" :size="18" :stroke-width="1.6" /></span>
+        <span class="sprinkle sprinkle--sol-2" aria-hidden="true"><component :is="sol.sprinkleB" :size="16" :stroke-width="1.6" /></span>
+        <div class="story-grid" :class="{ 'story-grid--reverse': i % 2 === 1 }">
+          <div class="story-text" data-reveal>
+            <p class="sol-problem" data-line>{{ sol.problem }}</p>
+            <h2 data-line>{{ sol.title }}</h2>
+            <p class="sol-desc" data-line>{{ sol.description }}</p>
+            <router-link :to="sol.link" class="sol-cta" data-line>
+              {{ sol.cta }}
+              <ArrowRight :size="17" :stroke-width="2.5" class="cta-arrow" />
+            </router-link>
+          </div>
+          <div class="story-art story-art--solution" data-art v-html="sol.art" aria-hidden="true" />
+        </div>
+      </section>
+      <div v-if="i < solutions.length - 1" class="story-divider" aria-hidden="true"><span /><span /><span /></div>
+    </template>
+
+    <!-- Global floor rail — fixed at viewport bottom. Single shared set of
+         SVG icons flowing left → right continuously, identical across all
+         sections. Footer fade hides the whole rail when reaching footer. -->
+    <div class="floor-rail" aria-hidden="true">
+      <!-- Wavy lime ground line — shared baseline. -->
+      <svg class="floor-rail__wave" viewBox="0 0 1440 24" preserveAspectRatio="none">
+        <path
+          d="M 0 12 Q 60 2 120 12 T 240 12 T 360 12 T 480 12 T 600 12 T 720 12 T 840 12 T 960 12 T 1080 12 T 1200 12 T 1320 12 T 1440 12"
+          stroke="#9fe870"
+          stroke-width="2"
+          fill="none"
+          stroke-linecap="round"
+          opacity="0.7"
+        />
+      </svg>
+      <div class="floor-flow">
         <img
-          src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1200&q=80"
-          alt="Sustainable fashion choices"
+          v-for="(src, i) in floorIcons"
+          :key="i"
+          :src="src"
+          class="floor-item"
+          :style="{ '--i': i }"
+          alt=""
+          aria-hidden="true"
         />
       </div>
-    </section>
-
-    <!-- §5–7 Solution sections -->
-    <section
-      v-for="(sol, i) in solutions"
-      :key="sol.id"
-      class="snap-section s-solution"
-      :class="{ reverse: i % 2 === 1 }"
-    >
-      <div class="sol-text section-animate">
-        <p
-          class="sol-problem"
-          v-motion
-          :initial="{ opacity: 0, y: 16 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 100 } }"
-        >
-          {{ sol.problem }}
-        </p>
-        <h2
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 600, delay: 250 } }"
-        >
-          {{ sol.title }}
-        </h2>
-        <p
-          class="sol-desc"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 400 } }"
-        >
-          {{ sol.description }}
-        </p>
-        <router-link
-          :to="sol.link"
-          class="sol-cta"
-          v-motion
-          :initial="{ opacity: 0, y: 12 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 550 } }"
-        >
-          {{ sol.cta }}
-          <ArrowRight :size="17" :stroke-width="2.5" class="cta-arrow" />
-        </router-link>
-      </div>
-      <div class="sol-image">
-        <img :src="sol.image" :alt="sol.title" />
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <div class="footer-snap">
-      <FooterSection />
+      <span class="floor-rail__caption">{{ activeSectionLabel }}</span>
     </div>
+
+    <!-- Side progress rail — fixed right, vertical 7-dot indicator that
+         tracks the current section in view. Click a dot to jump. -->
+    <aside class="progress-rail" aria-label="Page progress">
+      <button
+        v-for="(s, i) in railSections"
+        :key="s.key"
+        type="button"
+        class="rail-dot"
+        :class="{ 'rail-dot--active': activeSectionKey === s.key }"
+        @click="jumpToSection(s.key)"
+      >
+        <span class="rail-dot__num" aria-hidden="true">0{{ i + 1 }}</span>
+        <span class="rail-dot__core" aria-hidden="true" />
+        <span class="rail-dot__label">{{ s.label }}</span>
+      </button>
+    </aside>
+
+    <FooterSection />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '../components/Navbar.vue'
 import FooterSection from '../components/FooterSection.vue'
-import { ArrowRight } from 'lucide-vue-next'
+import OdometerNumber from '../components/OdometerNumber.vue'
+import {
+  ArrowRight,
+  Tag,
+  Leaf,
+  Sparkles,
+  Shirt,
+  Check,
+  CircleX,
+  Droplet,
+  MapPin,
+  Search,
+  BookOpen,
+  Compass,
+  ShieldCheck,
+  Lightbulb,
+  Sprout,
+  ShoppingBag,
+  Sun,
+  HelpCircle,
+  RefreshCw,
+  Globe,
+  Cloud,
+  TreePine,
+  Recycle,
+  Droplets,
+  NotebookPen,
+  Pencil,
+  CircleCheck,
+  Coffee,
+  Store,
+  Key,
+  Smartphone,
+  Star,
+  PenTool,
+  GraduationCap,
+  StickyNote,
+} from 'lucide-vue-next'
+
+// Storyset animated SVGs — entrance choreography embedded; we toggle the
+// `.animated` class on each SVG root via ScrollTrigger so the entrance
+// re-plays every time the section enters the viewport.
+import artHero from '../assets/illustrations/choosing-clothes-animate.svg?raw'
+import artWardrobe from '../assets/illustrations/home-scene-wardrobe.svg?raw'
+import artBridge from '../assets/illustrations/choosing-clothes-animate2.svg?raw'
+import motifFiberSvg from '../assets/illustrations/home-motif-fiber.svg?raw'
+import motifCo2Svg from '../assets/illustrations/home-motif-co2.svg?raw'
+import motifWaterSvg from '../assets/illustrations/home-motif-water.svg?raw'
+import artThrift from '../assets/illustrations/thrift-shopping-animate.svg?raw'
+import artWindowShop from '../assets/illustrations/find-ecoshop-animate.svg?raw'
+import artKnowledge from '../assets/illustrations/learn-knowledge-animate.svg?raw'
+
+// Shared floor icons — one fixed set used across all sections.
+import floorClothing from '../assets/illustrations/floor-clothing.svg'
+import floorHandbag from '../assets/illustrations/floor-handbag.svg'
+import floorLeaf from '../assets/illustrations/floor-leaf.svg'
+import floorLightBulb from '../assets/illustrations/floor-light-bulb.svg'
+import floorRecycle from '../assets/illustrations/floor-recycle.svg'
+import floorShoes from '../assets/illustrations/floor-shoes.svg'
+import floorTag from '../assets/illustrations/floor-tag.svg'
+
+// Order chosen so adjacent items have visual variety (silhouette, color).
+const floorIcons = [
+  floorClothing,
+  floorTag,
+  floorLeaf,
+  floorHandbag,
+  floorRecycle,
+  floorShoes,
+  floorLightBulb,
+]
+
+gsap.registerPlugin(ScrollTrigger)
 
 const pageRef = ref(null)
-let currentIndex = 0
-let isAnimating = false
-let rafId = null
-let scrollLocked = false
-let accumulatedDelta = 0
-const LOCK_DURATION = 700
-const DELTA_THRESHOLD = 30
-let observer = null
+const triggers = []
+
+// Side progress rail — one entry per scroll-section.
+const railSections = [
+  { key: 'hero',     label: '01 — The Promise' },
+  { key: 'familiar', label: '02 — The Mirror' },
+  { key: 'cost',     label: '03 — The Cost' },
+  { key: 'bridge',   label: '04 — The Bridge' },
+  { key: 'sol-5',    label: '05 — The Map' },
+  { key: 'sol-6',    label: '06 — The Lens' },
+  { key: 'sol-7',    label: '07 — The Guide' },
+]
+
+const activeSectionKey = ref('hero')
+const activeSectionLabel = computed(
+  () => railSections.find((s) => s.key === activeSectionKey.value)?.label || '',
+)
+
+function jumpToSection(key) {
+  const target = document.querySelector(`[data-section="${key}"]`)
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 const familiarQuestions = [
   '"Bought something because it was on sale?"',
@@ -228,17 +334,29 @@ const familiarQuestions = [
 
 const impactStats = [
   {
-    number: '220,000 t',
-    label: 'of clothing sent to landfill every year in Australia'
+    key: 'fiber',
+    value: 220,
+    suffix: 'k t',
+    decimals: 0,
+    label: 'of clothing sent to landfill every year in Australia',
+    motif: motifFiberSvg,
   },
   {
-    number: '14.5M t',
-    label: 'of CO\u2082 from fashion-related carbon emissions'
+    key: 'co2',
+    value: 14.5,
+    suffix: 'M t',
+    decimals: 1,
+    label: 'of CO₂ from fashion-related carbon emissions',
+    motif: motifCo2Svg,
   },
   {
-    number: '1.8B t',
-    label: 'of water used by the global fashion industry annually'
-  }
+    key: 'water',
+    value: 1.8,
+    suffix: 'B t',
+    decimals: 1,
+    label: 'of water used by the global fashion industry annually',
+    motif: motifWaterSvg,
+  },
 ]
 
 const solutions = [
@@ -247,202 +365,504 @@ const solutions = [
     problem: "You want to shop sustainably — but you don't know where to start.",
     title: 'Find second-hand stores near you.',
     description:
-      'WearImpact maps every op-shop, donation point and textile recycling centre within your chosen radius\u00A0— with directions and opening hours.',
+      'WearImpact maps every op-shop, donation point and textile recycling centre within your chosen radius — with directions and opening hours.',
     cta: 'Find Eco-Shops Near Me',
     link: '/eco-shop',
-    image:
-      'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&w=1200&q=80'
+    art: artThrift,
+    labelTag: 'THE MAP',
+    sprinkleA: MapPin,
+    sprinkleB: Compass,
   },
   {
     id: 6,
     problem: 'A brand says "sustainable." But is it really?',
     title: 'See how transparent your brands are.',
     description:
-      'Search any clothing brand and see its real score\u00A0—\u00A0across policy, environment, and supply chain\u00A0—\u00A0based on the Fashion Transparency Index.',
+      'Search any clothing brand and see its real score — across policy, environment, and supply chain — based on the Fashion Transparency Index.',
     cta: 'Search a Brand',
     link: '/brand-search',
-    image:
-      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80'
+    art: artWindowShop,
+    labelTag: 'THE LENS',
+    sprinkleA: Search,
+    sprinkleB: ShieldCheck,
   },
   {
     id: 7,
     problem: "It's hard to choose better when you don't know what to look for.",
     title: 'Learn what actually matters.',
     description:
-      'WearImpact breaks down the real issues\u00A0—\u00A0materials, supply chains, waste\u00A0—\u00A0in plain language so you can make more informed choices.',
+      'WearImpact breaks down the real issues — materials, supply chains, waste — in plain language so you can make more informed choices.',
     cta: 'Start Learning',
     link: '/knowledge',
-    image:
-      'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1200&q=80'
-  }
+    art: artKnowledge,
+    labelTag: 'THE GUIDE',
+    sprinkleA: BookOpen,
+    sprinkleB: Lightbulb,
+  },
 ]
 
-function getSections() {
-  const page = pageRef.value
-  if (!page) return []
-  return [...page.querySelectorAll('.snap-section, .footer-snap')]
-}
-
-function easeInOutCubic(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-}
-
-function scrollToSection(index) {
-  const page = pageRef.value
-  const sections = getSections()
-  if (index < 0 || index >= sections.length || !page) return
-
-  if (rafId) {
-    cancelAnimationFrame(rafId)
-    rafId = null
-  }
-
-  currentIndex = index
-  isAnimating = true
-
-  const startTop = page.scrollTop
-  const targetTop = sections[index].offsetTop
-  const distance = targetTop - startTop
-  const duration = 600
-  const startTime = performance.now()
-
-  function step(now) {
-    const elapsed = now - startTime
-    const t = Math.min(elapsed / duration, 1)
-    page.scrollTop = startTop + distance * easeInOutCubic(t)
-
-    if (t < 1) {
-      rafId = requestAnimationFrame(step)
-    } else {
-      page.scrollTop = targetTop
-      rafId = null
-      isAnimating = false
-    }
-  }
-
-  rafId = requestAnimationFrame(step)
-}
-
-function onWheel(e) {
-  e.preventDefault()
-  if (scrollLocked) return
-
-  accumulatedDelta += e.deltaY
-  if (Math.abs(accumulatedDelta) < DELTA_THRESHOLD) return
-
-  const direction = accumulatedDelta > 0 ? 1 : -1
-  accumulatedDelta = 0
-  scrollLocked = true
-
-  scrollToSection(currentIndex + direction)
-
-  setTimeout(() => {
-    accumulatedDelta = 0
-    scrollLocked = false
-  }, LOCK_DURATION)
-}
-
-function onKeyDown(e) {
-  if (isAnimating) return
-  if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-    e.preventDefault()
-    scrollToSection(currentIndex + 1)
-  } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-    e.preventDefault()
-    scrollToSection(currentIndex - 1)
-  }
-}
-
-onMounted(() => {
+// Scroll-progress reveal: every section's lines + art rise from below as the
+// section enters. `scrub` ties the animation to scroll position so reverse
+// scroll un-reveals — the page feels like it tracks the wheel exactly.
+function buildScrollChoreography() {
   const page = pageRef.value
   if (!page) return
 
-  document.documentElement.style.overflow = 'hidden'
-  document.body.style.overflow = 'hidden'
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  page.addEventListener('wheel', onWheel, { passive: false })
-  window.addEventListener('keydown', onKeyDown)
+  page.querySelectorAll('.story').forEach((section) => {
+    const lines = section.querySelectorAll('[data-line]')
+    const art = section.querySelector('[data-art]')
 
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const el = entry.target.querySelector('.section-animate')
-          if (el) el.classList.add('animate-in')
-        }
+    // Track active section for the side progress rail + global floor swap
+    const sectionKey = section.dataset.section
+    if (sectionKey) {
+      const railTrig = ScrollTrigger.create({
+        trigger: section,
+        start: 'top 50%',
+        end: 'bottom 50%',
+        onEnter:     () => (activeSectionKey.value = sectionKey),
+        onEnterBack: () => (activeSectionKey.value = sectionKey),
       })
-    },
-    { threshold: 0.05, root: page }
-  )
+      triggers.push(railTrig)
+    }
 
-  page.querySelectorAll('.snap-section').forEach((el) => observer.observe(el))
+    if (prefersReduced) {
+      gsap.set([...lines, art].filter(Boolean), { opacity: 1, y: 0 })
+      return
+    }
+
+    if (lines.length) {
+      gsap.set(lines, { opacity: 0, y: 36 })
+      const linesTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 78%',
+          end: 'top 30%',
+          scrub: 0.6,
+        },
+      })
+      linesTl.to(lines, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        stagger: 0.15,
+        ease: 'power2.out',
+      })
+      triggers.push(linesTl.scrollTrigger)
+    }
+
+    if (art) {
+      gsap.set(art, { opacity: 0, y: 80, scale: 0.94 })
+      const artTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 82%',
+          end: 'top 20%',
+          scrub: 0.8,
+        },
+      })
+      artTl.to(art, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 1,
+        ease: 'power3.out',
+      })
+      triggers.push(artTl.scrollTrigger)
+
+      // Storyset SVGs ship with their entrance gated by `.animated` on the
+      // svg root. We strip that class at build time (sed) and re-apply it
+      // here so the entrance plays every time the section enters viewport
+      // (and reverses out on leave-back, ready to replay on re-enter).
+      const innerSvg = art.querySelector('svg[id^="freepik_stories"]')
+      if (innerSvg) {
+        const replayTrig = ScrollTrigger.create({
+          trigger: section,
+          start: 'top 70%',
+          end: 'bottom 30%',
+          onEnter: () => innerSvg.classList.add('animated'),
+          onEnterBack: () => innerSvg.classList.add('animated'),
+          onLeave: () => innerSvg.classList.remove('animated'),
+          onLeaveBack: () => innerSvg.classList.remove('animated'),
+        })
+        triggers.push(replayTrig)
+      }
+    }
+  })
+
+  // Floor rail — only footer fade is dynamic now.
+  // The rail content (single shared SVG flow) loops continuously via CSS;
+  // we just need to push the rail out of view when the footer arrives.
+  const railEl = page.querySelector('.floor-rail')
+  const footerEl = document.querySelector('footer')
+
+  if (footerEl && railEl && !prefersReduced) {
+    const updateRail = () => {
+      const vh = window.innerHeight
+      const footerTop = footerEl.getBoundingClientRect().top
+      const fadeStart = vh * 0.95
+      const fadeEnd   = vh * 0.7
+      let railOpacity
+      if (footerTop >= fadeStart)      railOpacity = 1
+      else if (footerTop <= fadeEnd)   railOpacity = 0
+      else                             railOpacity = (footerTop - fadeEnd) / (fadeStart - fadeEnd)
+      gsap.set(railEl, { opacity: railOpacity, y: 150 * (1 - railOpacity) })
+    }
+
+    const railTrig = ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      onUpdate: updateRail,
+      onRefresh: updateRail,
+    })
+    triggers.push(railTrig)
+    updateRail()
+  }
+
+  // Wardrobe glow choreography — pulse one item per question revealed.
+  const familiar = page.querySelector('[data-section="familiar"]')
+  if (familiar && !prefersReduced) {
+    const fireGlow = (cls) => familiar.classList.add(cls)
+    const glowTrig = ScrollTrigger.create({
+      trigger: familiar,
+      start: 'top 60%',
+      once: true,
+      onEnter: () => {
+        setTimeout(() => fireGlow('q1-active'), 320)
+        setTimeout(() => fireGlow('q2-active'), 620)
+        setTimeout(() => fireGlow('q3-active'), 920)
+        setTimeout(() => fireGlow('stat-active'), 1280)
+      },
+    })
+    triggers.push(glowTrig)
+  }
+}
+
+onMounted(async () => {
+  await nextTick()
+  buildScrollChoreography()
+  // Refresh once after fonts/images settle so trigger positions are accurate.
+  window.addEventListener('load', () => ScrollTrigger.refresh())
 })
 
-onUnmounted(() => {
-  const page = pageRef.value
-  page?.removeEventListener('wheel', onWheel)
-  window.removeEventListener('keydown', onKeyDown)
-  if (rafId) cancelAnimationFrame(rafId)
-  observer?.disconnect()
-  document.documentElement.style.overflow = ''
-  document.body.style.overflow = ''
+onBeforeUnmount(() => {
+  triggers.forEach((t) => t?.kill?.())
+  triggers.length = 0
 })
 </script>
 
 <style scoped>
-/* ── Scroll container ── */
-.home-page {
-  height: 100vh;
-  overflow-y: scroll;
-  scroll-behavior: auto;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
+/* ──────────────────────────────────────────────────────────────────
+   Page shell + fixed background canvas
+─────────────────────────────────────────────────────────────────── */
+.home {
+  width: 100%;
+  position: relative;
+  background: var(--color-warm-cream);
 }
 
-.home-page :deep(.navbar) {
+.home :deep(.navbar) {
+  position: relative;
+  z-index: 10;
   margin-bottom: 0;
 }
 
-/* ── Shared section base ── */
-.snap-section {
-  height: 100vh;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-}
-
-.bg-img {
-  position: absolute;
+/* Fixed canvas: stays put while content scrolls past. Soft decorative blobs
+   + faint mint grid give every section the same backdrop, so there are
+   no visible seams between sections. */
+.home-canvas {
+  position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  pointer-events: none;
   z-index: 0;
+  overflow: hidden;
 }
 
-.bg-overlay {
+.canvas-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.55;
+}
+
+.canvas-blob--tr {
+  top: -120px;
+  right: -160px;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+  animation: canvas-blob-drift 22s ease-in-out infinite;
+}
+
+.canvas-blob--bl {
+  bottom: -180px;
+  left: -200px;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, var(--color-mint) 0%, transparent 70%);
+  animation: canvas-blob-drift 28s ease-in-out infinite reverse;
+}
+
+.canvas-blob--mid {
+  top: 38%;
+  left: 42%;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, var(--color-pastel-green) 0%, transparent 70%);
+  opacity: 0.28;
+  animation: canvas-blob-drift 36s ease-in-out infinite;
+  animation-delay: -12s;
+}
+
+/* Decorative drifting shapes — each has its own slow rotate / drift loop */
+.canvas-shape {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+.canvas-shape--ring {
+  top: 12%;
+  left: 8%;
+  width: 140px;
+  height: 140px;
+  animation: canvas-rotate 60s linear infinite;
+}
+
+.canvas-shape--leaf {
+  bottom: 18%;
+  right: 12%;
+  width: 90px;
+  height: 90px;
+  opacity: 0.22;
+  animation: canvas-drift-up 24s ease-in-out infinite;
+}
+
+.canvas-shape--squiggle {
+  top: 62%;
+  left: 6%;
+  width: 220px;
+  opacity: 0.16;
+  animation: canvas-squiggle 14s ease-in-out infinite;
+}
+
+@keyframes canvas-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes canvas-drift-up {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-24px) rotate(8deg); }
+}
+
+@keyframes canvas-squiggle {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(30px); }
+}
+
+/* Hero Patterns "Topography" — full-page seamless contour texture.
+   The SVG file has fill #163300 (dark-green); layer opacity controls
+   intensity. Tiles 600×600 across the entire fixed canvas, giving every
+   section a unified backdrop with no visible seams. */
+.canvas-grid {
   position: absolute;
   inset: 0;
-  background: rgba(10, 18, 32, 0.55);
+  background-image: url('../assets/illustrations/bg-topography.svg');
+  background-repeat: repeat;
+  background-size: 600px 600px;
+  opacity: 0.06;
+}
+
+@keyframes canvas-blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(40px, -30px) scale(1.06); }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Story sections — shared layout
+─────────────────────────────────────────────────────────────────── */
+.story {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 60px 48px 160px;       /* extra bottom for global floor rail (130px + breathing room) */
+  overflow: hidden;
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 64px;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Section index — giant background number anchoring each section ── */
+.section-index {
+  position: absolute;
+  top: 28px;
+  left: 36px;
+  font-size: 240px;
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--color-primary);
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 1;
+  user-select: none;
+}
+
+.section-index--right {
+  left: auto;
+  right: 36px;
+}
+
+/* ── Section label — vertical typographic marker ── */
+.section-label {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: left center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--color-primary-text);
+  opacity: 0.35;
+  white-space: nowrap;
+  pointer-events: none;
   z-index: 1;
 }
 
-.bg-overlay.dark {
-  background: rgba(5, 10, 20, 0.75);
+.section-label--right {
+  left: auto;
+  right: 16px;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: right center;
 }
 
-/* ── Section enter animation ── */
-.section-animate {
-  opacity: 0;
-  transform: translateY(32px);
-  transition:
-    opacity 750ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 750ms cubic-bezier(0.22, 1, 0.36, 1);
+/* ── Sprinkles — small lucide icons sprinkled in the negative space ── */
+.sprinkle {
+  position: absolute;
+  color: var(--color-primary-text);
+  opacity: 0.28;
+  pointer-events: none;
+  z-index: 1;
+  display: inline-flex;
 }
 
-.section-animate.animate-in {
-  opacity: 1;
-  transform: translateY(0);
+.sprinkle--tag-1     { top: 18%; right: 8%; transform: rotate(-12deg); animation: sprinkle-bob 6s var(--motion-entrance) infinite; }
+.sprinkle--leaf-1    { bottom: 22%; left: 4%; transform: rotate(8deg); animation: sprinkle-bob 7.5s var(--motion-entrance) infinite; animation-delay: -2s; }
+.sprinkle--sparkle-1 { top: 64%; right: 14%; animation: sprinkle-twinkle 4s var(--motion-entrance) infinite; }
+
+.sprinkle--shirt-1   { top: 14%; left: 6%; transform: rotate(-6deg); animation: sprinkle-bob 8s var(--motion-entrance) infinite; }
+.sprinkle--tag-2     { bottom: 18%; right: 6%; transform: rotate(14deg); animation: sprinkle-bob 6.5s var(--motion-entrance) infinite; animation-delay: -1.4s; }
+.sprinkle--check-1   { top: 70%; left: 7%; animation: sprinkle-twinkle 5s var(--motion-entrance) infinite; animation-delay: -2.5s; }
+
+.sprinkle--leaf-2    { top: 20%; left: 10%; transform: rotate(-10deg); animation: sprinkle-bob 7s var(--motion-entrance) infinite; }
+.sprinkle--droplet-1 { bottom: 22%; right: 11%; animation: sprinkle-bob 5.5s var(--motion-entrance) infinite; animation-delay: -1.8s; }
+
+.sprinkle--check-2   { top: 22%; right: 9%; animation: sprinkle-twinkle 4.5s var(--motion-entrance) infinite; }
+.sprinkle--leaf-3    { bottom: 26%; left: 6%; transform: rotate(12deg); animation: sprinkle-bob 7s var(--motion-entrance) infinite; animation-delay: -2.2s; }
+.sprinkle--sparkle-2 { top: 60%; right: 16%; animation: sprinkle-twinkle 5s var(--motion-entrance) infinite; animation-delay: -1.5s; }
+
+.sprinkle--sol-1     { top: 18%; left: 8%; transform: rotate(-8deg); animation: sprinkle-bob 7s var(--motion-entrance) infinite; }
+.sprinkle--sol-2     { bottom: 22%; right: 9%; transform: rotate(10deg); animation: sprinkle-bob 6s var(--motion-entrance) infinite; animation-delay: -2s; }
+
+@keyframes sprinkle-bob {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50%      { transform: translateY(-8px) rotate(var(--r, 0deg)); }
+}
+
+@keyframes sprinkle-twinkle {
+  0%, 100% { opacity: 0.18; transform: scale(0.9); }
+  50%      { opacity: 0.4;  transform: scale(1.1); }
+}
+
+/* ── Big quote marks — typographic punctuation as decoration ── */
+.big-quote {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--color-primary);
+  opacity: 0.3;
+  font-size: 120px;
+  line-height: 1;
+  font-weight: 900;
+  pointer-events: none;
+  user-select: none;
+}
+
+.big-quote--open {
+  position: absolute;
+  left: -28px;
+  top: -32px;
+  z-index: 0;
+}
+
+.big-quote--questions {
+  position: absolute;
+  left: -32px;
+  top: -48px;
+  z-index: 0;
+  font-size: 140px;
+}
+
+/* ── Story divider — thin lime-dotted seam between sections ── */
+.story-divider {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 0;
+}
+
+.story-divider span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.5;
+}
+
+.story-divider span:nth-child(2) {
+  width: 80px;
+  height: 1px;
+  border-radius: 0;
+  background: linear-gradient(to right, transparent, var(--color-primary-text) 50%, transparent);
+  opacity: 0.4;
+}
+
+.story-grid--reverse {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+.story-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.story-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-art :deep(svg) {
+  width: 100%;
+  height: auto;
+  max-width: 580px;
+  display: block;
 }
 
 /* ── Shared eyebrow ── */
@@ -451,56 +871,47 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-primary);
-  margin-bottom: 20px;
-}
-
-.eyebrow.light {
-  color: rgba(255, 255, 255, 0.45);
-  margin-bottom: 48px;
-}
-
-/* ─────────────────────────────────────────
-   §1  Hero
-───────────────────────────────────────── */
-.s-hero {
-  background: var(--color-warm-cream);
-  flex-direction: row;
-}
-
-.s-hero-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 80px 64px;
-  position: relative;
-  z-index: 1;
-}
-
-.s-hero-left h1 {
-  font-size: 62px;
-  font-weight: 800;
-  line-height: 1.02;
-  color: var(--color-text);
+  color: var(--color-primary-text);
   margin-bottom: 24px;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   §1 Hero
+─────────────────────────────────────────────────────────────────── */
+.story--hero {
+  padding-top: 40px;
+}
+
+.hero-headline {
+  font-size: 96px;
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin-bottom: 32px;
+}
+
+.hero-line {
+  display: block;
 }
 
 .hero-sub {
   font-size: 18px;
+  font-weight: 600;
   color: var(--color-text-muted);
-  line-height: 1.7;
-  margin-bottom: 20px;
+  line-height: 1.44;
+  margin-bottom: 22px;
 }
 
 .hero-stat {
+  position: relative;
   font-size: 14px;
   color: var(--color-text-subtle);
   line-height: 1.65;
   border-left: 3px solid var(--color-primary);
   padding-left: 16px;
   margin-bottom: 36px;
-  max-width: 420px;
+  max-width: 440px;
 }
 
 .hero-stat strong {
@@ -510,254 +921,379 @@ onUnmounted(() => {
 
 .scroll-hint {
   font-size: 13px;
-  color: var(--color-text-faint);
+  font-weight: 600;
+  color: var(--color-text-subtle);
   letter-spacing: 0.04em;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.bounce {
+.scroll-hint__arrow {
   display: inline-block;
-  animation: bounce 1.5s ease infinite;
+  font-size: 16px;
+  color: var(--color-primary-text);
+  animation: scroll-hint-rock 1.8s var(--motion-entrance) infinite;
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(7px); }
+@keyframes scroll-hint-rock {
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
 }
 
-.s-hero-right {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
+/* Hero illustration — large, no frame. The Storyset SVG already has its
+   own background shapes, so it sits unframed on the cream canvas. */
+.story-art--hero :deep(svg) {
+  max-width: 620px;
+  filter: drop-shadow(0 24px 60px rgba(22, 51, 0, 0.08));
 }
 
-.s-hero-right img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  transition: transform 8s ease;
-}
-
-.s-hero-right:hover img {
-  transform: scale(1.03);
-}
-
-/* ─────────────────────────────────────────
-   §2  Sound Familiar?
-───────────────────────────────────────── */
-.s-familiar {
-  align-items: center;
-  justify-content: center;
-}
-
-.s-familiar-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  max-width: 720px;
-  padding: 0 48px;
-  color: white;
-}
-
-.s-familiar-content h2 {
-  font-size: 58px;
-  font-weight: 800;
-  line-height: 1.05;
-  color: white;
-  margin-bottom: 36px;
+/* ──────────────────────────────────────────────────────────────────
+   §2 Familiar — wardrobe + questions
+─────────────────────────────────────────────────────────────────── */
+.story--familiar h2 {
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  margin-bottom: 32px;
 }
 
 .questions {
-  margin-bottom: 44px;
+  position: relative;
+  margin-bottom: 36px;
 }
 
 .questions p {
-  font-size: 22px;
+  font-size: 20px;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.6;
-  margin-bottom: 10px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
 }
 
 .familiar-stat {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.58);
-  line-height: 1.7;
+  font-weight: 500;
+  color: var(--color-text-subtle);
+  line-height: 1.6;
+  margin-top: 24px;
 }
 
 .familiar-stat strong {
-  color: #86efac;
+  color: var(--color-primary-text);
   font-weight: 700;
 }
 
-/* ─────────────────────────────────────────
-   §3  Hidden Cost
-───────────────────────────────────────── */
-.s-cost {
-  align-items: center;
+/* Wardrobe scene loops + glow choreography */
+.story-art--wardrobe :deep(svg) {
+  max-width: 540px;
+  filter: drop-shadow(0 24px 60px rgba(22, 51, 0, 0.08));
+}
+
+.story-art--wardrobe :deep(.wardrobe-item) {
+  transition: filter 250ms var(--motion-entrance);
+}
+
+.story--familiar.q1-active :deep(.wardrobe-item-1),
+.story--familiar.q2-active :deep(.wardrobe-item-3),
+.story--familiar.q3-active :deep(.wardrobe-item-8) {
+  filter: drop-shadow(0 0 14px rgba(159, 232, 112, 0.85));
+  animation: wardrobe-pulse 1.6s var(--motion-entrance) 1;
+}
+
+.story--familiar.stat-active :deep(.wardrobe-item-1),
+.story--familiar.stat-active :deep(.wardrobe-item-2),
+.story--familiar.stat-active :deep(.wardrobe-item-3),
+.story--familiar.stat-active :deep(.wardrobe-item-5),
+.story--familiar.stat-active :deep(.wardrobe-item-6),
+.story--familiar.stat-active :deep(.wardrobe-item-7),
+.story--familiar.stat-active :deep(.wardrobe-item-8),
+.story--familiar.stat-active :deep(.wardrobe-item-10),
+.story--familiar.stat-active :deep(.wardrobe-item-11),
+.story--familiar.stat-active :deep(.wardrobe-item-13),
+.story--familiar.stat-active :deep(.wardrobe-item-14) {
+  filter: drop-shadow(0 0 8px rgba(159, 232, 112, 0.55));
+}
+
+@keyframes wardrobe-pulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40%      { transform: translateY(-2px) scale(1.04); }
+}
+
+.story-art--wardrobe :deep(.wardrobe-shadow) {
+  animation: wardrobe-shadow-shift 8s var(--motion-entrance) infinite;
+  transform-box: fill-box;
+}
+
+@keyframes wardrobe-shadow-shift {
+  0%, 100% { transform: translateX(0); opacity: 0.18; }
+  50%      { transform: translateX(2px); opacity: 0.26; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   §3 Hidden Cost — three motif columns on cream
+─────────────────────────────────────────────────────────────────── */
+.story--cost {
+  flex-direction: column;
   justify-content: center;
 }
 
-.s-cost-content {
-  position: relative;
-  z-index: 2;
+.cost-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   text-align: center;
-  padding: 0 48px;
+}
+
+.cost-content .eyebrow {
+  margin-bottom: 56px;
 }
 
 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  max-width: 920px;
+  gap: 64px;
 }
 
-.stat-card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-card);
-  padding: 40px 32px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: border-color 300ms ease, background 300ms ease, transform 300ms ease;
+.stat-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+  padding: 32px 24px;
+  border: 1px dashed rgba(22, 51, 0, 0.18);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
 }
 
-.stat-card:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-4px);
+.stat-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--color-primary-text);
+  border-style: solid;
+  border-width: 0;
+}
+.stat-corner--tl { top: -1px; left: -1px;  border-top-width: 2px; border-left-width: 2px; }
+.stat-corner--tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+.stat-corner--bl { bottom: -1px; left: -1px;  border-bottom-width: 2px; border-left-width: 2px; }
+.stat-corner--br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+
+.stat-index {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--color-primary-text);
+  opacity: 0.5;
+}
+
+.stat-motif {
+  width: 200px;
+  height: 200px;
+  display: block;
+}
+
+.stat-motif :deep(svg) {
+  width: 100%;
+  height: 100%;
+}
+
+.stat-motif :deep(.fiber-strand) {
+  animation: fiber-flow 5s linear infinite;
+}
+.stat-motif :deep(.fiber-strand-1) { animation-delay: 0s; }
+.stat-motif :deep(.fiber-strand-2) { animation-delay: -1.6s; }
+.stat-motif :deep(.fiber-strand-3) { animation-delay: -3.2s; }
+.stat-motif :deep(.fiber-cross) {
+  animation: fiber-cross-fade 4s var(--motion-entrance) infinite;
+}
+
+@keyframes fiber-flow {
+  0%   { stroke-dashoffset: 240; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes fiber-cross-fade {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.8; }
+}
+
+.stat-motif :deep(.co2-cloud) {
+  animation: co2-drift 6s var(--motion-entrance) infinite;
+  transform-box: fill-box;
+}
+.stat-motif :deep(.co2-wisp) {
+  animation: co2-wisp-fade 4s var(--motion-entrance) infinite;
+}
+.stat-motif :deep(.co2-wisp-1) { animation-delay: 0s; }
+.stat-motif :deep(.co2-wisp-2) { animation-delay: -1.3s; }
+.stat-motif :deep(.co2-wisp-3) { animation-delay: -2.6s; }
+
+@keyframes co2-drift {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes co2-wisp-fade {
+  0%, 100% { opacity: 0.2; transform: translateY(0); }
+  50%      { opacity: 1;   transform: translateY(-8px); }
+}
+
+.stat-motif :deep(.water-drop) {
+  animation: water-drop-fall 2.5s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.stat-motif :deep(.water-ripple) {
+  animation: water-ripple 2.5s linear infinite;
+  transform-box: fill-box;
+  transform-origin: 120px 200px;
+}
+.stat-motif :deep(.water-ripple-2) {
+  animation-delay: -0.4s;
+}
+
+@keyframes water-drop-fall {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  70%  { transform: translateY(60px) scale(1, 1.1); opacity: 1; }
+  72%  { transform: translateY(72px) scale(1.4, 0.4); opacity: 1; }
+  78%  { opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 0; }
+}
+@keyframes water-ripple {
+  0%, 70% { transform: scale(0.4); opacity: 0; }
+  72%     { transform: scale(0.6); opacity: 1; }
+  100%    { transform: scale(1.8); opacity: 0; }
 }
 
 .stat-num {
-  font-size: 44px;
-  font-weight: 800;
-  color: white;
-  line-height: 1;
-  margin-bottom: 14px;
+  font-size: 64px;
+  font-weight: 900;
+  color: var(--color-text);
+  line-height: 0.85;
   letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0;
+}
+
+.stat-suffix {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary-text);
 }
 
 .stat-lbl {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.55);
-  line-height: 1.6;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  max-width: 240px;
 }
 
-/* ─────────────────────────────────────────
-   §4  Bridge
-───────────────────────────────────────── */
-.s-bridge {
-  background: var(--color-warm-alt);
-  flex-direction: row;
-}
-
-.s-bridge-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 80px 72px;
-}
-
-.s-bridge-left h2 {
-  font-size: 52px;
-  font-weight: 800;
-  line-height: 1.08;
+/* ──────────────────────────────────────────────────────────────────
+   §4 Bridge — examining character + emphasised promise
+─────────────────────────────────────────────────────────────────── */
+.story--bridge h2 {
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.01em;
   color: var(--color-text);
   margin-bottom: 28px;
 }
 
 .bridge-sub {
-  font-size: 19px;
+  font-size: 22px;
+  font-weight: 500;
   color: var(--color-text-muted);
-  line-height: 1.65;
-  margin-bottom: 6px;
+  line-height: 1.4;
+  margin-bottom: 32px;
 }
 
 .bridge-em {
-  font-size: 19px;
-  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  font-size: 28px;
+  font-weight: 800;
   color: var(--color-text);
-  line-height: 1.65;
-  margin-bottom: 36px;
+  line-height: 1.3;
+  margin-bottom: 28px;
+}
+
+.bridge-em-text {
+  position: relative;
+  z-index: 1;
+}
+
+.bridge-em-underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 12px;
+  background: var(--color-primary);
+  z-index: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 700ms var(--motion-stroke-draw) 200ms;
+}
+
+.story--bridge [data-reveal].is-revealed .bridge-em-underline,
+.bridge-em.is-on .bridge-em-underline {
+  transform: scaleX(1);
+}
+
+/* When [data-line] reaches full opacity (handled by GSAP), trigger underline. */
+.bridge-em[style*="opacity: 1"] .bridge-em-underline {
+  transform: scaleX(1);
 }
 
 .bridge-hint {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-primary);
-  letter-spacing: 0.01em;
+  font-size: 14px;
+  color: var(--color-text-subtle);
 }
 
-.s-bridge-right {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
+.story-art--bridge :deep(svg) {
+  max-width: 600px;
+  filter: drop-shadow(0 24px 60px rgba(22, 51, 0, 0.08));
 }
 
-.s-bridge-right img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 20%;
-  transition: transform 8s ease;
-}
-
-.s-bridge-right:hover img {
-  transform: scale(1.03);
-}
-
-/* ─────────────────────────────────────────
-   §5–7  Solution sections
-───────────────────────────────────────── */
-.s-solution {
-  flex-direction: row;
-  background: white;
-}
-
-.s-solution.reverse {
-  flex-direction: row-reverse;
-  background: var(--color-primary-lighter);
-}
-
-.sol-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 80px 72px;
+/* ──────────────────────────────────────────────────────────────────
+   §5–7 Solutions
+─────────────────────────────────────────────────────────────────── */
+.story--solution h2 {
+  font-size: 56px;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  margin-bottom: 24px;
 }
 
 .sol-problem {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-text-faint);
-  margin-bottom: 16px;
-}
-
-.sol-text h2 {
-  font-size: 46px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--color-text);
-  margin-bottom: 20px;
+  color: var(--color-primary-text);
+  margin-bottom: 18px;
 }
 
 .sol-desc {
   font-size: 17px;
   color: var(--color-text-muted);
-  line-height: 1.75;
-  margin-bottom: 36px;
-  max-width: 460px;
+  line-height: 1.55;
+  margin-bottom: 32px;
+  max-width: 480px;
 }
 
 .sol-cta {
@@ -765,125 +1301,321 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 14px 28px;
-  border-radius: var(--radius-btn);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-primary-text);
   font-weight: 700;
   font-size: 15px;
+  border-radius: var(--radius-pill);
   text-decoration: none;
+  transition: transform 280ms var(--motion-entrance), box-shadow 280ms var(--motion-entrance);
   align-self: flex-start;
-  transition:
-    background var(--transition-base),
-    transform var(--transition-base),
-    box-shadow var(--transition-base);
+  box-shadow: 0 0 0 0 rgba(22, 51, 0, 0);
 }
 
 .sol-cta:hover {
-  background: var(--color-primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3);
+  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.18);
 }
 
-.cta-arrow {
-  transition: transform 200ms ease;
+.sol-cta .cta-arrow {
+  transition: transform 280ms var(--motion-entrance);
 }
 
 .sol-cta:hover .cta-arrow {
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
-.sol-image {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
+.story-art--solution :deep(svg) {
+  max-width: 560px;
+  filter: drop-shadow(0 24px 60px rgba(22, 51, 0, 0.08));
 }
 
-.sol-image img {
+/* ──────────────────────────────────────────────────────────────────
+   Global floor rail — fixed at viewport bottom, swaps with active section.
+   Stays present at all times; on section change items animate out then in.
+─────────────────────────────────────────────────────────────────── */
+.floor-rail {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 130px;
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Cream gradient veil so items pop above page content */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(246, 240, 230, 0.35) 30%,
+    rgba(246, 240, 230, 0.85) 70%,
+    rgba(246, 240, 230, 0.95) 100%
+  );
+}
+
+/* Wavy lime ground — shared baseline across all sections */
+.floor-rail__wave {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 38px;
   width: 100%;
+  height: 24px;
+  pointer-events: none;
+}
+
+/* Single flow container — items inside travel left → right via CSS. */
+.floor-flow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 100%;
-  object-fit: cover;
-  transition: transform 6s ease;
+  pointer-events: none;
 }
 
-.s-solution:hover .sol-image img {
-  transform: scale(1.04);
+/* Caption below shows which section the floor belongs to */
+.floor-rail__caption {
+  position: absolute;
+  bottom: 10px;
+  right: 28px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-primary-text);
+  opacity: 0.4;
+  transition: opacity 240ms var(--motion-entrance);
 }
 
-/* ─────────────────────────────────────────
+/* SVG icons travel left → right.
+   Each img is absolutely positioned; left:0 + animation translates
+   X from -10vw to 110vw. Negative animation-delay scatters items along
+   the path so the rail is always populated. */
+.floor-item {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  pointer-events: none;
+  animation: floor-travel 36s linear infinite;
+  animation-delay: calc(var(--i, 0) * -5.2s);
+  will-change: transform, opacity;
+}
+
+/* Mild duration + height variety so items don't all march in sync */
+.floor-item:nth-child(2) { animation-duration: 40s; bottom: 26px; width: 52px; height: 52px; }
+.floor-item:nth-child(3) { animation-duration: 32s; }
+.floor-item:nth-child(4) { animation-duration: 38s; bottom: 22px; width: 60px; height: 60px; }
+.floor-item:nth-child(5) { animation-duration: 42s; bottom: 30px; }
+.floor-item:nth-child(6) { animation-duration: 35s; bottom: 24px; width: 50px; height: 50px; }
+.floor-item:nth-child(7) { animation-duration: 39s; bottom: 28px; }
+
+@keyframes floor-travel {
+  0%   { transform: translateX(-10vw) scale(0.7) rotate(-4deg); opacity: 0; }
+  8%   { opacity: 0.85; }
+  50%  { transform: translateX(50vw) scale(1) rotate(0deg);     opacity: 0.9; }
+  92%  { opacity: 0.85; }
+  100% { transform: translateX(110vw) scale(0.7) rotate(4deg);  opacity: 0; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Side progress rail — fixed right, tracks current section
+─────────────────────────────────────────────────────────────────── */
+.progress-rail {
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 50;
+  padding: 12px 8px;
+  background: rgba(246, 240, 230, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(22, 51, 0, 0.08);
+}
+
+.rail-dot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 8px 12px 8px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--color-text-subtle);
+  transition: color 240ms var(--motion-entrance);
+}
+
+.rail-dot:hover {
+  color: var(--color-primary-text);
+}
+
+.rail-dot__num {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  width: 18px;
+  text-align: right;
+  opacity: 0.6;
+  transition: opacity 240ms var(--motion-entrance);
+}
+
+.rail-dot__core {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(22, 51, 0, 0.25);
+  transition: all 280ms var(--motion-entrance);
+}
+
+.rail-dot__label {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+  white-space: nowrap;
+  background: var(--color-text);
+  color: var(--color-warm-cream);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 240ms var(--motion-entrance),
+    transform 240ms var(--motion-entrance);
+}
+
+.rail-dot:hover .rail-dot__label,
+.rail-dot--active .rail-dot__label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.rail-dot--active .rail-dot__core {
+  background: var(--color-primary);
+  width: 14px;
+  height: 14px;
+  box-shadow: 0 0 0 4px rgba(159, 232, 112, 0.25);
+}
+
+.rail-dot--active .rail-dot__num {
+  opacity: 1;
+  color: var(--color-primary-text);
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Reduced motion
+─────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .canvas-blob--tr,
+  .canvas-blob--bl,
+  .canvas-blob--mid,
+  .canvas-shape--ring,
+  .canvas-shape--leaf,
+  .canvas-shape--squiggle,
+  .sprinkle,
+  .floor-item {
+    animation: none;
+  }
+  /* Distribute items evenly along path when reduced-motion is on */
+  .floor-item {
+    transform: translateX(calc(8vw + var(--i, 0) * 16vw)) scale(1);
+    opacity: 0.85;
+  }
+  .scroll-hint__arrow {
+    animation: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
    Responsive
-───────────────────────────────────────── */
-@media (max-width: 900px) {
-  .s-hero,
-  .s-bridge,
-  .s-solution,
-  .s-solution.reverse {
-    flex-direction: column;
-  }
+─────────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hero-headline { font-size: 72px; }
+  .story--familiar h2,
+  .story--bridge h2 { font-size: 48px; }
+  .story--solution h2 { font-size: 42px; }
+  .stat-num { font-size: 52px; }
+  .story-grid { gap: 56px; }
+}
 
-  .s-hero-left {
-    flex: none;
-    width: 100%;
-    padding: 80px 28px 32px;
+@media (max-width: 1024px) {
+  .progress-rail {
+    display: none;
   }
+}
 
-  .s-hero-left h1 {
-    font-size: 42px;
+@media (max-width: 768px) {
+  .story {
+    padding: 56px 20px 110px;
+    min-height: auto;
   }
-
-  .s-hero-right {
-    flex: 1;
-    min-height: 260px;
+  .floor-rail {
+    height: 90px;
   }
-
-  .s-familiar-content h2 {
-    font-size: 38px;
+  .floor-rail__items {
+    padding: 0 16px 12px;
+    gap: 6px;
   }
-
-  .questions p {
-    font-size: 17px;
+  .floor-item {
+    width: 44px;
+    height: 44px;
   }
-
+  .floor-item :deep(svg) { width: 22px; height: 22px; }
+  .floor-rail__caption { display: none; }
+  .story-grid,
+  .story-grid--reverse {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  /* Hide heavy decorations on small screens to keep content focus */
+  .section-index,
+  .section-label,
+  .sprinkle,
+  .big-quote--questions {
+    display: none;
+  }
+  .big-quote--open {
+    font-size: 80px;
+    top: -20px;
+    left: -16px;
+  }
+  .stat-col {
+    padding: 24px 18px;
+  }
+  /* Art always renders below text on mobile */
+  .story-art {
+    order: 2;
+  }
+  .story-text {
+    order: 1;
+  }
+  .hero-headline { font-size: 56px; }
+  .story--familiar h2,
+  .story--bridge h2 { font-size: 40px; }
+  .story--solution h2 { font-size: 34px; }
   .stat-row {
     grid-template-columns: 1fr;
-    gap: 16px;
-    max-width: 380px;
-    margin: 0 auto;
+    gap: 48px;
   }
-
-  .stat-num {
-    font-size: 36px;
-  }
-
-  .s-bridge-left {
-    flex: none;
-    width: 100%;
-    padding: 80px 28px 32px;
-  }
-
-  .s-bridge-left h2 {
-    font-size: 36px;
-  }
-
-  .s-bridge-right {
-    flex: 1;
-    min-height: 260px;
-  }
-
-  .sol-text {
-    flex: none;
-    width: 100%;
-    padding: 80px 28px 32px;
-  }
-
-  .sol-text h2 {
-    font-size: 32px;
-  }
-
-  .sol-image {
-    flex: 1;
-    min-height: 260px;
+  .canvas-blob {
+    filter: blur(50px);
+    opacity: 0.4;
   }
 }
 </style>

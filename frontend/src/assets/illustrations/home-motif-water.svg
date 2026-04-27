@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- L1 §3 motif — water drop + ground ripple.
+       Drop falls 0 → 100, then ripple scales 0 → 1.5 + opacity 1 → 0. 2.5s loop. -->
+
+  <!-- Faucet (static reference) -->
+  <line x1="120" y1="20" x2="120" y2="60" stroke="#163300" stroke-width="6" stroke-linecap="round" />
+  <rect x="100" y="14" width="40" height="10" rx="2" fill="#163300" />
+
+  <!-- Falling drop -->
+  <g class="water-drop">
+    <path
+      d="M120 60 C 120 60 108 80 108 95 C 108 105 113 110 120 110 C 127 110 132 105 132 95 C 132 80 120 60 120 60 Z"
+      fill="#9fe870"
+      stroke="#163300"
+      stroke-width="2"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <!-- Ripple — fires when the drop reaches the ground -->
+  <g class="water-ripple">
+    <ellipse
+      cx="120"
+      cy="200"
+      rx="20"
+      ry="6"
+      fill="none"
+      stroke="#9fe870"
+      stroke-width="2"
+    />
+  </g>
+  <g class="water-ripple water-ripple-2">
+    <ellipse
+      cx="120"
+      cy="200"
+      rx="14"
+      ry="4"
+      fill="none"
+      stroke="#cdffad"
+      stroke-width="1.5"
+    />
+  </g>
+
+  <!-- Ground line -->
+  <line x1="40" y1="200" x2="200" y2="200" stroke="#163300" stroke-width="2" stroke-linecap="round" />
+  <!-- Floor texture dots -->
+  <g fill="#163300" opacity="0.4">
+    <circle cx="50" cy="208" r="1.2" />
+    <circle cx="80" cy="212" r="1.2" />
+    <circle cx="160" cy="210" r="1.2" />
+    <circle cx="190" cy="206" r="1.2" />
+  </g>
+</svg>

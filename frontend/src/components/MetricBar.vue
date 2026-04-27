@@ -57,8 +57,8 @@ const fillColor = computed(() => {
 }
 
 .metric-labels { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-.metric-label { font-size: 14px; font-weight: 600; color: #1e293b; }
-.metric-sublabel { font-size: 12px; color: var(--color-text-subtle); line-height: 1.4; }
+.metric-label { font-size: 14px; font-weight: 700; color: var(--color-text); }
+.metric-sublabel { font-size: 12px; font-weight: 500; color: var(--color-text-subtle); line-height: 1.4; }
 
 .metric-pct {
   font-size: 15px;
@@ -78,7 +78,7 @@ const fillColor = computed(() => {
 .track {
   width: 100%;
   height: 8px;
-  background: var(--color-primary-light);
+  background: var(--color-surface-alt);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }

@@ -388,32 +388,32 @@ import { fetchAllCompanies, fetchCompanyDetail, searchBrands } from '../services
 
 // ── PolicyRow inline component ────────────────────────────────────────────────
 const POLICY_CONFIG = {
-  Yes:     { icon: CheckCircle2, color: '#16a34a' },
-  No:      { icon: XCircle,      color: '#be123c' },
-  Partial: { icon: MinusCircle,  color: '#92400e' },
+  Yes:     { icon: CheckCircle2, color: '#054d28' },
+  No:      { icon: XCircle,      color: '#d03238' },
+  Partial: { icon: MinusCircle,  color: '#b45309' },
 }
 
 const PolicyRow = defineComponent({
   props: { label: String, sublabel: String, value: String },
   setup(props) {
     return () => {
-      const cfg = POLICY_CONFIG[props.value] ?? { icon: MinusCircle, color: '#94a3b8' }
+      const cfg = POLICY_CONFIG[props.value] ?? { icon: MinusCircle, color: '#868685' }
       return h('div', {
         style: {
           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-          gap: '12px', padding: '12px 0', borderBottom: '1px solid #e5e7eb',
+          gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(14,15,12,0.08)',
         },
       }, [
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', flex: '1' } }, [
-          h('span', { style: { fontSize: '14px', color: '#1e293b', fontWeight: '600' } }, props.label),
+          h('span', { style: { fontSize: '14px', color: '#0e0f0c', fontWeight: '600' } }, props.label),
           props.sublabel
-            ? h('span', { style: { fontSize: '13px', color: '#64748b', lineHeight: '1.4' } }, props.sublabel)
+            ? h('span', { style: { fontSize: '13px', color: '#868685', lineHeight: '1.4', fontWeight: '500' } }, props.sublabel)
             : null,
         ]),
         h('span', {
           style: {
             display: 'inline-flex', alignItems: 'center', gap: '5px',
-            fontSize: '13px', fontWeight: '600', flexShrink: '0', color: cfg.color,
+            fontSize: '13px', fontWeight: '700', flexShrink: '0', color: cfg.color,
           },
         }, [
           h(cfg.icon, { size: 16, strokeWidth: 2.5 }),
@@ -427,14 +427,14 @@ const PolicyRow = defineComponent({
 
 // ── Label color / bg maps ─────────────────────────────────────────────────────
 const LABEL_COLORS = {
-  'Great':         '#16a34a',
-  'Good':          '#65a30d',
+  'Great':         '#054d28',
+  'Good':          '#16a34a',
   "It's a Start":  '#ca8a04',
   'Below Average': '#ea580c',
-  'Avoid':         '#dc2626',
+  'Avoid':         '#d03238',
 }
 const LABEL_BG = {
-  'Great':         '#dcfce7',
+  'Great':         '#e2f6d5',
   'Good':          '#ecfccb',
   "It's a Start":  '#fef9c3',
   'Below Average': '#ffedd5',
@@ -448,18 +448,18 @@ const LABEL_DESCRIPTIONS = {
   'Avoid':         'Very little evidence of sustainable or ethical practices.',
 }
 
-function getLabelColor(label) { return LABEL_COLORS[label] || '#64748b' }
-function getLabelBg(label)    { return LABEL_BG[label]    || '#f1f5f9' }
+function getLabelColor(label) { return LABEL_COLORS[label] || '#868685' }
+function getLabelBg(label)    { return LABEL_BG[label]    || '#e8ebe6' }
 
 // ── Mini-bar color (traffic-light by percentage) ──────────────────────────────
 function miniBarColor(pct) {
-  if (pct >= 60) return '#16a34a'
-  if (pct >= 35) return '#d97706'
-  return '#dc2626'
+  if (pct >= 60) return '#054d28'
+  if (pct >= 35) return '#b45309'
+  return '#d03238'
 }
 
 // ── Avatar / logo helpers ─────────────────────────────────────────────────────
-const AVATAR_PALETTE = ['#dbeafe', '#dcfce7', '#fef9c3', '#fce7f3', '#ede9fe', '#ffedd5']
+const AVATAR_PALETTE = ['#dbeafe', '#e2f6d5', '#fef9c3', '#fce7f3', '#ede9fe', '#ffedd5']
 function getAvatarBg(name) {
   return AVATAR_PALETTE[name.charCodeAt(0) % AVATAR_PALETTE.length]
 }
@@ -727,18 +727,20 @@ async function handleSearch(query) {
 }
 
 .brand-page-header h1 {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 56px;
+  font-weight: 900;
+  line-height: 0.85;
   color: var(--color-text);
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
 }
 
 .brand-page-header p {
-  font-size: 15px;
-  color: var(--color-text-subtle);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-muted);
   max-width: 600px;
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -758,21 +760,23 @@ async function handleSearch(query) {
   gap: 8px;
   padding: 14px 28px;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-primary-text);
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-pill);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  transition: transform var(--transition-base);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .search-btn:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+  transform: scale(1.05);
+}
+
+.search-btn:active {
+  transform: scale(0.95);
 }
 
 /* ── Section label row ───────────────────────────────────────────────────────── */
@@ -816,16 +820,16 @@ async function handleSearch(query) {
 /* ── Brand card ──────────────────────────────────────────────────────────────── */
 .brand-card {
   background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
-  padding: 22px;
+  box-shadow: var(--shadow-card);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   cursor: pointer;
   text-align: left;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -840,13 +844,12 @@ async function handleSearch(query) {
   background: var(--color-primary);
   opacity: 0;
   transition: opacity 0.2s ease;
-  border-radius: 20px 0 0 20px;
+  border-radius: 30px 0 0 30px;
 }
 
 .brand-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-3px);
-  border-color: #d1fae5;
+  border-color: var(--color-primary);
+  transform: scale(1.02);
 }
 
 .brand-card:hover::before,
@@ -855,8 +858,8 @@ async function handleSearch(query) {
 }
 
 .brand-card--active {
-  border-color: #86efac;
-  background: var(--color-primary-lighter);
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 /* Card identity row */
@@ -869,13 +872,13 @@ async function handleSearch(query) {
 .card-avatar {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: var(--radius-card-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 18px;
-  color: #334155;
+  color: var(--color-text);
   flex-shrink: 0;
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -894,11 +897,12 @@ async function handleSearch(query) {
 .card-name-block { min-width: 0; }
 
 .card-brand-name {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--color-text);
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.23;
+  letter-spacing: -0.108px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -926,9 +930,10 @@ async function handleSearch(query) {
 }
 
 .card-score-num {
-  font-size: 40px;
-  font-weight: 800;
-  line-height: 1;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
 }
 
 .card-score-denom {
@@ -1072,20 +1077,20 @@ async function handleSearch(query) {
   align-items: center;
   gap: 6px;
   padding: 9px 18px;
-  border: 1.5px solid var(--color-border);
-  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: background 0.15s, transform var(--transition-base);
 }
 
 .page-nav-btn:hover:not(:disabled) {
-  background: var(--color-primary-lighter);
-  border-color: #86efac;
-  color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
+  transform: scale(1.05);
 }
 
 .page-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -1095,28 +1100,29 @@ async function handleSearch(query) {
 .page-number {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
-  border: 1.5px solid var(--color-border);
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: background 0.15s, transform var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .page-number:hover:not(.page-number--active) {
-  background: var(--color-bg);
-  border-color: #d1d5db;
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
+  transform: scale(1.05);
 }
 
 .page-number--active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-primary-text);
 }
 
 .page-ellipsis {
@@ -1134,7 +1140,7 @@ async function handleSearch(query) {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 18, 32, 0.5);
+  background: rgba(14, 15, 12, 0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 200;
@@ -1150,7 +1156,7 @@ async function handleSearch(query) {
   max-width: 640px;
   max-height: 88vh;
   background: var(--color-bg);
-  border-radius: 24px;
+  border-radius: var(--radius-card-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1175,8 +1181,8 @@ async function handleSearch(query) {
   right: 16px;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: 1.5px solid var(--color-border);
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
   background: var(--color-surface);
   cursor: pointer;
   display: flex;
@@ -1185,13 +1191,13 @@ async function handleSearch(query) {
   color: var(--color-text-subtle);
   z-index: 1;
   flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, transform var(--transition-base);
 }
 
 .modal-close:hover {
-  background: var(--color-surface-alt);
-  border-color: #d1d5db;
-  color: var(--color-text);
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
+  transform: scale(1.05);
 }
 
 .modal-scroll {
@@ -1206,17 +1212,19 @@ async function handleSearch(query) {
 /* ── Detail cards (inside modal) ─────────────────────────────────────────────── */
 .detail-card {
   background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-  padding: 22px;
+  box-shadow: var(--shadow-card);
+  padding: 24px;
 }
 
 .detail-card h3 {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 700;
+  letter-spacing: -0.396px;
+  line-height: 1.25;
   color: var(--color-text);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .brand-summary-header {
@@ -1229,13 +1237,13 @@ async function handleSearch(query) {
 .brand-avatar-large {
   width: 54px;
   height: 54px;
-  border-radius: 14px;
+  border-radius: var(--radius-card-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 22px;
-  color: #334155;
+  color: var(--color-text);
   flex-shrink: 0;
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -1250,8 +1258,10 @@ async function handleSearch(query) {
 }
 
 .brand-summary-header h2 {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.39px;
+  line-height: 1.23;
   color: var(--color-text);
   margin-bottom: 6px;
 }
@@ -1278,8 +1288,8 @@ async function handleSearch(query) {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 12px 22px;
-  border-radius: 14px;
+  padding: 14px 24px;
+  border-radius: var(--radius-card-sm);
   border: 2px solid transparent;
 }
 
@@ -1289,10 +1299,10 @@ async function handleSearch(query) {
   gap: 3px;
 }
 
-.score-number     { font-size: 36px; font-weight: 800; line-height: 1; }
+.score-number     { font-size: 44px; font-weight: 900; line-height: 0.85; letter-spacing: -0.02em; }
 .score-max        { font-size: 15px; font-weight: 500; opacity: 0.65; }
 .score-label-text { font-size: 14px; font-weight: 700; }
-.score-desc       { font-size: 14px; color: var(--color-text-muted); line-height: 1.6; margin: 0; }
+.score-desc       { font-size: 14px; font-weight: 500; color: var(--color-text-muted); line-height: 1.5; margin: 0; }
 
 .scores-desc {
   font-size: 13px;
@@ -1311,38 +1321,39 @@ async function handleSearch(query) {
   border-top: 1px solid var(--color-border-light);
 }
 
-.fibre-label { font-size: 14px; color: #334155; }
+.fibre-label { font-size: 14px; color: var(--color-text-muted); }
 .fibre-value { font-size: 14px; font-weight: 700; color: var(--color-text); }
 
 .brands-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .brand-chip {
-  background: var(--color-surface-alt);
-  color: #334155;
-  padding: 5px 14px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.data-source-box { background: #f0f9ff; border-color: #bae6fd; }
-.data-source-box p { color: #334155; line-height: 1.7; font-size: 14px; margin: 0 0 14px; }
+.data-source-box { background: var(--color-info); border-color: rgba(56, 200, 255, 0.3); }
+.data-source-box p { color: var(--color-text-muted); line-height: 1.5; font-size: 14px; margin: 0 0 14px; }
 
 .source-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 18px;
-  background: #0369a1;
-  color: white;
-  border-radius: 10px;
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  border-radius: var(--radius-pill);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
-  transition: background 0.2s;
+  transition: transform var(--transition-base);
 }
 
-.source-link:hover { background: #075985; }
+.source-link:hover { transform: scale(1.05); }
+.source-link:active { transform: scale(0.95); }
 .source-link .cta-arrow { transition: transform 0.15s ease; }
 .source-link:hover .cta-arrow { transform: translateX(3px); }
 
@@ -1353,11 +1364,11 @@ async function handleSearch(query) {
 
 @media (max-width: 768px) {
   .page-container { padding: 24px 16px 56px; }
-  .brand-page-header h1 { font-size: 26px; }
+  .brand-page-header h1 { font-size: 38px; line-height: 0.85; }
   .brand-search-wrap { flex-direction: column; }
   .search-btn { width: 100%; justify-content: center; }
   .brand-card-grid { grid-template-columns: 1fr; gap: 14px; }
-  .modal-panel { max-height: 94vh; border-radius: 20px; }
+  .modal-panel { max-height: 94vh; border-radius: var(--radius-card); }
   .pagination { flex-wrap: wrap; }
 }
 </style>

@@ -46,32 +46,31 @@ const typeLabel = computed(() => TYPE_LABELS[props.place.type] || props.place.ty
 <style scoped>
 .location-card {
   background: var(--color-surface);
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   padding: 22px 24px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--shadow-card);
   cursor: pointer;
   transition:
     border-color 200ms ease,
     box-shadow 200ms ease,
-    transform 150ms ease,
+    transform 200ms ease,
     background 200ms ease;
 }
 
 .location-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.12);
-  transform: translateY(-2px);
+  transform: scale(1.02);
 }
 
 .location-card.selected {
   border-color: var(--color-primary);
   border-left: 4px solid var(--color-primary);
-  background: var(--color-primary-lighter);
+  background: var(--color-primary-light);
 }
 
 .location-card:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-primary-text);
   outline-offset: 2px;
 }
 
@@ -99,9 +98,9 @@ const typeLabel = computed(() => TYPE_LABELS[props.place.type] || props.place.ty
   white-space: nowrap;
 }
 
-.type-badge.second_hand_shop { background: #dcfce7; color: #166534; }
+.type-badge.second_hand_shop { background: var(--color-primary-light); color: var(--color-positive); }
 .type-badge.donation_point   { background: #dbeafe; color: #1e40af; }
-.type-badge.recycling         { background: #fef3c7; color: #92400e; }
+.type-badge.recycling         { background: #fef3c7; color: #b45309; }
 
 .distance {
   margin: 0 0 8px;
