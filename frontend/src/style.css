@@ -1,54 +1,121 @@
 @import "tailwindcss";
 
-/* ── Custom theme tokens ─────────────────────────────────────────────────── */
+/* ── Custom theme tokens — Wise-inspired palette ───────────────────────── */
 @theme {
-  /* Brand palette */
-  --color-primary: #16a34a;
-  --color-primary-dark: #15803d;
-  --color-primary-light: #dcfce7;
-  --color-primary-lighter: #f0fdf4;
+  /* Brand palette — Wise Lime + Dark Green */
+  --color-primary: #9fe870;            /* Wise Green — accent / CTA bg */
+  --color-primary-dark: #cdffad;       /* Pastel green — hover/contrast */
+  --color-primary-text: #163300;       /* Dark green — text on lime */
+  --color-primary-light: #e2f6d5;      /* Light mint — soft surface */
+  --color-primary-lighter: #f4fbed;    /* Even softer mint surface */
 
-  /* Surfaces */
-  --color-bg: #f8faf8;
+  /* Surfaces — warm off-white canvas */
+  --color-bg: #faf7f2;
   --color-surface: #ffffff;
-  --color-surface-alt: #f1f5f9;
+  --color-surface-alt: #e8ebe6;        /* Wise light surface (green-tinted) */
 
-  /* Text */
-  --color-text: #0f172a;
-  --color-text-muted: #475569;
-  --color-text-faint: #94a3b8;
-  --color-text-subtle: #64748b;
+  /* Text — Wise neutral system */
+  --color-text: #0e0f0c;               /* Near black, warm undertone */
+  --color-text-muted: #454745;         /* Warm dark */
+  --color-text-faint: #aeaeae;
+  --color-text-subtle: #868685;        /* Wise gray */
 
-  /* Borders */
-  --color-border: #e5e7eb;
-  --color-border-light: #f1f5f9;
+  /* Borders — ring style */
+  --color-border: rgba(14, 15, 12, 0.12);
+  --color-border-light: rgba(14, 15, 12, 0.08);
+  --color-border-strong: rgba(14, 15, 12, 0.2);
 
   /* Design tokens */
-  --radius-card: 20px;
-  --radius-pill: 999px;
-  --radius-btn: 12px;
+  --radius-card-sm: 16px;
+  --radius-card: 30px;                 /* Medium feature card */
+  --radius-card-lg: 40px;              /* Large card / table */
+  --radius-pill: 9999px;
+  --radius-btn: 9999px;                /* Wise pill buttons */
+  --radius-input: 10px;
 
-  --shadow-card: 0 4px 16px rgba(15, 23, 42, 0.07);
-  --shadow-card-hover: 0 8px 28px rgba(15, 23, 42, 0.1);
-  --shadow-modal: 0 24px 64px rgba(15, 23, 42, 0.22), 0 4px 16px rgba(15, 23, 42, 0.08);
+  /* Wise minimal ring shadows */
+  --shadow-card: rgba(14, 15, 12, 0.12) 0 0 0 1px;
+  --shadow-card-hover: rgba(14, 15, 12, 0.2) 0 0 0 1px;
+  --shadow-modal: 0 24px 64px rgba(14, 15, 12, 0.22), 0 4px 16px rgba(14, 15, 12, 0.08);
 
   /* Transition */
   --transition-base: 150ms ease;
   --transition-smooth: 300ms cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* ── Motion vocabulary (sourced from motion-vocabulary spec) ───────────────
+     Use these named tokens everywhere. `ease-in-out` and `linear` are banned
+     for interaction transitions — only the curves below are sanctioned. */
+
+  /* Curves */
+  --motion-entrance: cubic-bezier(0.22, 1, 0.36, 1);     /* fade-up / reveal */
+  --motion-spring: cubic-bezier(0.34, 1.56, 0.64, 1);    /* button press / pop */
+  --motion-stroke-draw: cubic-bezier(0.65, 0, 0.35, 1);  /* SVG stroke-dasharray draw-on */
+
+  /* Durations */
+  --motion-dur-hover: 150ms;       /* hover scale */
+  --motion-dur-press: 200ms;       /* button :active spring */
+  --motion-dur-entrance: 600ms;    /* min entrance length */
+  --motion-dur-entrance-lg: 800ms; /* hero entrance */
+  --motion-dur-odometer: 1200ms;   /* number rolls (1.0–1.4s window) */
+  --motion-dur-stroke: 850ms;      /* illustration stroke draw-on */
+
+  /* Stagger */
+  --motion-stagger-list: 60ms;     /* list-item stagger */
+  --motion-stagger-char: 30ms;     /* hero title character stagger */
+
   /* Editorial palette (Hero sections) */
   --color-warm-cream: #f6f0e6;
   --color-warm-alt: #faf7f2;
 
-  /* Score / label colours */
-  --color-score-great: #16a34a;
-  --color-score-good: #65a30d;
+  /* Score / label colours — semantic, Wise-aligned */
+  --color-score-great: #054d28;        /* Wise positive primary */
+  --color-score-good: #16a34a;
   --color-score-start: #ca8a04;
   --color-score-below: #ea580c;
-  --color-score-avoid: #dc2626;
+  --color-score-avoid: #d03238;        /* Wise danger */
+
+  /* Wise semantic */
+  --color-positive: #054d28;
+  --color-danger: #d03238;
+  --color-warning: #ffd11a;
+  --color-info: rgba(56, 200, 255, 0.10);
+  --color-orange: #ffc091;
 
   /* Dark overlay */
-  --color-dark-bg: #07152d;
+  --color-dark-bg: #0e0f0c;
+
+  /* Knowledge Hub now lives on the same unified cream canvas as the rest
+     of the site (no longer a dark glass stage). Tokens flipped to
+     dark-on-cream variants but legacy names preserved so existing kh
+     components continue to resolve. */
+  --color-kh-bg: var(--color-warm-cream);
+  --color-kh-glass: rgba(255, 255, 255, 0.55);
+  --color-kh-glass-strong: rgba(255, 255, 255, 0.75);
+  --color-kh-glass-border: rgba(22, 51, 0, 0.12);
+  --color-kh-text: var(--color-text);
+  --color-kh-text-muted: var(--color-text-muted);
+  --color-kh-text-faint: var(--color-text-subtle);
+  --color-kh-accent: #9fe870;          /* Wise lime */
+  --color-kh-accent-strong: #163300;   /* Dark green emphasis on cream */
+  --color-kh-correct: #cdffad;
+  --color-kh-wrong: #ffc091;
+  --color-kh-glow-blue: rgba(159, 232, 112, 0.45);
+  --color-kh-glow-purple: rgba(255, 192, 145, 0.45);
+  --color-kh-orb-blue: #9fe870;
+  --color-kh-orb-purple: #ffc091;
+
+  /* Pulse colors used by KnowledgeThread + reveal-burst overlays. */
+  --color-kh-pulse-correct: #9fe870;
+  --color-kh-pulse-wrong: #ffc091;
+  --color-kh-pulse-neutral: #e2f6d5;
+
+  /* Page-level accent gradients — lime → warm-orange */
+  --gradient-kh-progress: linear-gradient(90deg, #9fe870, #ffc091);
+  --gradient-kh-score: linear-gradient(135deg, #9fe870, #ffc091);
+
+  --shadow-kh-glow: 0 0 60px rgba(159, 232, 112, 0.22), inset 0 0 0 1px rgba(226, 246, 213, 0.08);
+  --shadow-kh-glow-correct: 0 0 32px rgba(205, 255, 173, 0.5);
+  --shadow-kh-glow-wrong: 0 0 32px rgba(255, 192, 145, 0.5);
 }
 
 /* ── Base resets ──────────────────────────────────────────────────────────── */
@@ -56,6 +123,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  /* OpenType contextual alternates — Wise enables this on ALL text */
+  font-feature-settings: "calt" 1;
 }
 
 html,
@@ -70,10 +139,14 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, Arial, sans-serif;
+  font-family: 'Inter', 'Helvetica', Arial, sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
-  line-height: 1.6;
+  /* Wise body default is Inter Semibold (600) — confident, not light */
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.44;
+  letter-spacing: -0.108px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -92,7 +165,7 @@ select {
 
 /* Global focus-visible ring — keyboard nav accessibility */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-primary-text);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -102,11 +175,22 @@ select {
   outline: none;
 }
 
-/* Respect reduced-motion preference for all transitions */
+/* Respect reduced-motion preference for all transitions.
+   Hard-stop continuous loops (Ken-burns, marker pulse, breathing dots) — they would
+   otherwise still spin at near-zero speed and cost battery. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  /* Continuous loops are killed entirely — element should sit at rest pose. */
+  .ken-burns,
+  .eco-user-dot,
+  .eco-map-marker,
+  .bounce {
+    animation: none !important;
   }
 }
 

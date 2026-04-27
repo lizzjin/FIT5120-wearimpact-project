@@ -1,7 +1,7 @@
 <template>
-  <nav class="navbar">
+  <nav class="navbar" :class="{ 'is-dark': isDarkRoute }">
     <router-link to="/" class="logo">
-      <span class="text-primary font-extrabold">Wear</span><span class="text-text font-extrabold">Impact</span>
+      <span class="logo-mark">Wear</span><span class="logo-tail">Impact</span>
     </router-link>
 
     <!-- Desktop nav links -->
@@ -49,11 +49,15 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const mobileOpen = ref(false)
 const route = useRoute()
+
+// Knowledge Hub no longer uses the dark glass theme — it now shares the
+// unified cream canvas with the rest of the site, so the navbar stays light.
+const isDarkRoute = computed(() => false)
 
 // Close mobile menu on route change
 watch(() => route.path, () => { mobileOpen.value = false })
@@ -63,7 +67,6 @@ const navLinks = [
   { to: '/eco-shop', label: 'Eco-Shop' },
   { to: '/brand-search', label: 'Brand Search' },
   { to: '/knowledge', label: 'Knowledge Hub' },
-  { to: '/about', label: 'About' },
 ]
 </script>
 
@@ -77,7 +80,7 @@ const navLinks = [
   justify-content: space-between;
   align-items: center;
   padding: 14px 32px;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(250, 247, 242, 0.88);
   backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
   border-bottom: 1px solid var(--color-border);
@@ -87,50 +90,52 @@ const navLinks = [
 /* ── Logo ──────────────────────────────────────────────────────────────── */
 .logo {
   font-size: 22px;
+  font-weight: 900;
   letter-spacing: -0.3px;
   text-decoration: none;
   transition: opacity var(--transition-base);
+  display: inline-flex;
+  line-height: 1;
 }
-.logo:hover { opacity: 0.8; }
+.logo:hover { opacity: 0.85; }
+
+.logo-mark { color: var(--color-primary-text); }
+.logo-tail { color: var(--color-text); }
 
 /* ── Desktop links ─────────────────────────────────────────────────────── */
 .nav-links {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   align-items: center;
 }
 
 .nav-link {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 15px;
   color: var(--color-text-muted);
   text-decoration: none;
-  padding: 8px 14px;
-  border-radius: 10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
   position: relative;
-  transition: color var(--transition-base), background-color var(--transition-base);
+  transition: color var(--transition-base), background-color var(--transition-base), transform var(--transition-base);
 }
 
+/* Wise green-tinted nav hover — see DESIGN.md §4 Navigation */
 .nav-link:hover {
   color: var(--color-text);
-  background-color: var(--color-surface-alt);
+  background-color: rgba(211, 242, 192, 0.4);
 }
 
-/* Active: green bottom indicator bar */
+/* Active: lime pill */
 .nav-link.router-link-active {
-  color: var(--color-primary);
-  font-weight: 600;
+  color: var(--color-primary-text);
+  font-weight: 700;
+  background-color: var(--color-primary);
 }
 
-.nav-link.router-link-active::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 14px;
-  right: 14px;
-  height: 2.5px;
-  background: var(--color-primary);
-  border-radius: 2px;
+.nav-link.router-link-active:hover {
+  background-color: var(--color-primary);
+  transform: scale(1.05);
 }
 
 /* ── Hamburger (hidden on desktop) ─────────────────────────────────────── */
@@ -198,6 +203,42 @@ const navLinks = [
   to   { opacity: 0; transform: translateY(-12px); }
 }
 
+/* ── Dark variant (active on /knowledge route) ─────────────────────────── */
+.navbar.is-dark {
+  background: rgba(10, 14, 26, 0.6);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar.is-dark .logo .logo-mark {
+  color: var(--color-kh-accent);
+}
+
+.navbar.is-dark .logo .logo-tail {
+  color: var(--color-kh-text);
+}
+
+.navbar.is-dark .nav-link {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.navbar.is-dark .nav-link:hover {
+  color: var(--color-kh-text);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.navbar.is-dark .nav-link.router-link-active {
+  color: var(--color-primary-text);
+  background-color: var(--color-kh-accent);
+}
+
+.navbar.is-dark .hamburger:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar.is-dark .hamburger-line {
+  background: var(--color-kh-text);
+}
+
 /* ── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .navbar {
@@ -221,7 +262,7 @@ const navLinks = [
   .mobile-panel {
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 12px 32px rgba(14, 15, 12, 0.12);
     padding: 8px 16px 16px;
     display: flex;
     flex-direction: column;
@@ -246,9 +287,9 @@ const navLinks = [
   }
 
   .mobile-link.router-link-active {
-    color: var(--color-primary);
-    font-weight: 600;
-    background: var(--color-primary-lighter);
+    color: var(--color-primary-text);
+    font-weight: 700;
+    background: var(--color-primary);
   }
 }
 </style>

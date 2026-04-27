@@ -40,17 +40,17 @@ const props = defineProps({
 })
 
 const LABEL_COLORS = {
-  'Great': '#16a34a',
-  'Good': '#65a30d',
+  'Great': '#054d28',
+  'Good': '#16a34a',
   "It's a Start": '#ca8a04',
   'Below Average': '#ea580c',
-  'Avoid': '#dc2626',
+  'Avoid': '#d03238',
 }
 
-const labelColor = computed(() => LABEL_COLORS[props.brand.score_label] || '#64748b')
+const labelColor = computed(() => LABEL_COLORS[props.brand.score_label] || '#868685')
 
 const avatarBg = computed(() => {
-  const palettes = ['#dbeafe', '#dcfce7', '#fef9c3', '#fce7f3', '#ede9fe', '#ffedd5']
+  const palettes = ['#dbeafe', '#e2f6d5', '#fef9c3', '#fce7f3', '#ede9fe', '#ffedd5']
   return palettes[props.brand.company_name.charCodeAt(0) % palettes.length]
 })
 
@@ -92,31 +92,31 @@ function guessDomain(name) {
   padding: 14px 16px;
   border: none;
   background: white;
-  border-bottom: 1px solid #edf1f5;
+  border-bottom: 1px solid var(--color-border-light);
   text-align: left;
   cursor: pointer;
   transition: background 0.15s;
 }
 
-.brand-item:hover { background: #f8fafb; }
+.brand-item:hover { background: var(--color-surface-alt); }
 .brand-item.active {
-  background: #edf5ef;
-  border-left: 3px solid #16a34a;
+  background: var(--color-primary-light);
+  border-left: 3px solid var(--color-primary);
 }
 
 .brand-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-card-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 18px;
-  color: #334155;
+  color: var(--color-text);
   flex-shrink: 0;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
 }
 
 .logo-img {
@@ -130,25 +130,25 @@ function guessDomain(name) {
 .brand-info h4 {
   margin-bottom: 2px;
   font-size: 15px;
-  color: #0f172a;
-  font-weight: 600;
+  color: var(--color-text);
+  font-weight: 700;
 }
 
 .matched-brand {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-text-faint);
   margin-bottom: 2px;
 }
 
 .score-line {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-text-subtle);
   margin: 0;
 }
 
 .score-label {
   margin-left: 6px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 12px;
 }
 </style>

@@ -67,16 +67,19 @@ function clear() {
 .search-box input {
   width: 100%;
   padding: 16px 44px;
-  border: 1.5px solid #dbe1e7;
-  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
   font-size: 16px;
+  font-weight: 500;
+  background: white;
+  color: var(--color-text);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-box input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+  border-color: var(--color-primary-text);
+  box-shadow: 0 0 0 3px rgba(159, 232, 112, 0.4);
 }
 
 .clear-btn {
@@ -84,21 +87,22 @@ function clear() {
   right: 14px;
   background: var(--color-surface-alt);
   border: none;
-  border-radius: 6px;
+  border-radius: 50%;
   width: 26px;
   height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-faint);
+  color: var(--color-text-subtle);
   cursor: pointer;
   padding: 0;
-  transition: background var(--transition-base), color var(--transition-base);
+  transition: background var(--transition-base), color var(--transition-base), transform var(--transition-base);
 }
 
 .clear-btn:hover {
-  background: #e2e8f0;
-  color: var(--color-text-muted);
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
+  transform: scale(1.05);
 }
 
 /* Clear button fade transition */

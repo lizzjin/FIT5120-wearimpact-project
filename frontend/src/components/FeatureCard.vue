@@ -41,10 +41,10 @@ const iconComponent = computed(() => ICON_MAP[props.icon] ?? Star)
   display: flex;
   flex-direction: column;
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--shadow-card);
   text-align: left;
   text-decoration: none;
   cursor: pointer;
@@ -52,9 +52,9 @@ const iconComponent = computed(() => ICON_MAP[props.icon] ?? Star)
 }
 
 .feature-card:hover {
-  border-color: #16a34a;
-  box-shadow: 0 8px 28px rgba(22, 163, 74, 0.12);
-  transform: translateY(-3px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-card-hover);
+  transform: scale(1.02);
 }
 
 .card-image {
@@ -85,28 +85,30 @@ const iconComponent = computed(() => ICON_MAP[props.icon] ?? Star)
 .icon-box {
   width: 56px;
   height: 56px;
-  border-radius: 14px;
-  background: #f0fdf4;
-  color: #16a34a;
+  border-radius: var(--radius-card-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .feature-card h3 {
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
-  margin-bottom: 8px;
-  color: #0f172a;
-  line-height: 1.3;
+  letter-spacing: -0.396px;
+  margin-bottom: 10px;
+  color: var(--color-text);
+  line-height: 1.25;
 }
 
 .feature-card p {
-  color: #475569;
-  line-height: 1.65;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  line-height: 1.5;
   margin-bottom: 20px;
   flex: 1;
   font-size: 15px;
@@ -116,8 +118,8 @@ const iconComponent = computed(() => ICON_MAP[props.icon] ?? Star)
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #16a34a;
-  font-weight: 600;
+  color: var(--color-primary-text);
+  font-weight: 700;
   font-size: 14px;
   transition: gap 150ms ease;
 }

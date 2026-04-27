@@ -3,7 +3,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <h2>
-          <span class="text-primary">Wear</span><span class="text-white">Impact</span>
+          <span class="logo-mark">Wear</span><span class="logo-tail">Impact</span>
         </h2>
         <p>
           Helping Australians make more informed, sustainable fashion choices — one purchase at a time.
@@ -19,12 +19,6 @@
         </ul>
       </div>
 
-      <div>
-        <h4>About</h4>
-        <ul>
-          <li><router-link to="/about">About WearImpact</router-link></li>
-        </ul>
-      </div>
     </div>
 
     <div class="footer-bottom">
@@ -37,34 +31,39 @@
 .footer {
   background: var(--color-dark-bg);
   color: white;
-  padding: 56px 40px 24px;
-  border-radius: 24px 24px 0 0;
+  padding: 64px 48px 28px;
+  border-radius: 40px 40px 0 0;
   margin-top: 56px;
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 48px;
   margin-bottom: 32px;
 }
 
 .footer h2 {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
   margin-bottom: 16px;
 }
+
+.logo-mark { color: var(--color-primary); }
+.logo-tail { color: white; }
 
 .footer h4 {
   color: white;
   margin-bottom: 16px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .footer-brand p {
-  color: #d7e0ee;
-  line-height: 1.7;
+  color: rgba(246, 240, 230, 0.7);
+  font-weight: 500;
+  line-height: 1.5;
   max-width: 420px;
   font-size: 15px;
 }
@@ -80,25 +79,27 @@
 }
 
 .footer a {
-  color: #d7e0ee;
+  color: rgba(246, 240, 230, 0.7);
   text-decoration: none;
   font-size: 14px;
+  font-weight: 500;
   transition: color var(--transition-base);
 }
 
 .footer a:hover {
-  color: #86efac;
+  color: var(--color-primary);
 }
 
 .footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(246, 240, 230, 0.12);
   padding-top: 20px;
   text-align: center;
 }
 
 .footer-bottom p {
   font-size: 13px;
-  color: var(--color-text-subtle);
+  font-weight: 500;
+  color: rgba(246, 240, 230, 0.55);
   margin: 0;
 }
 
