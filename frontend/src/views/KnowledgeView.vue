@@ -102,7 +102,6 @@ const floorIcons = [
 
 const answers = ref([])
 const triggers = []
-let scrollLockAttached = false
 
 // Page section rail — IntersectionObserver picks the section closest to
 // viewport center as active. Result dot appears once the quiz completes.
@@ -122,36 +121,6 @@ let sectionObserver = null
 function jumpToSection(id) {
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-// Page-level scroll lock — engaged on mount, fully detached on quiz
-// completion. preventDefault on wheel/touch/keys blocks user-initiated
-// scroll while leaving programmatic scrollIntoView free.
-//
-// CRITICAL: we DETACH these listeners on unlock rather than just no-op.
-// A non-passive wheel listener (even one that does nothing) forces the
-// browser to wait for it before processing each scroll tick — that's
-// what was making post-quiz scrolling feel choppy.
-function preventScroll(e) { e.preventDefault() }
-function preventKeyScroll(e) {
-  const blocked = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar']
-  if (blocked.includes(e.key)) e.preventDefault()
-}
-
-function attachScrollLock() {
-  if (scrollLockAttached) return
-  window.addEventListener('wheel', preventScroll, { passive: false })
-  window.addEventListener('touchmove', preventScroll, { passive: false })
-  window.addEventListener('keydown', preventKeyScroll, { passive: false })
-  scrollLockAttached = true
-}
-
-function detachScrollLock() {
-  if (!scrollLockAttached) return
-  window.removeEventListener('wheel', preventScroll)
-  window.removeEventListener('touchmove', preventScroll)
-  window.removeEventListener('keydown', preventKeyScroll)
-  scrollLockAttached = false
 }
 
 const edgeFlashActive = ref(false)
@@ -186,9 +155,8 @@ const unsubscribers = []
 
 function onQuizComplete(finalAnswers) {
   answers.value = finalAnswers
-  // Quiz finished — fully detach the scroll lock listeners so post-quiz
-  // scrolling has no per-tick handler overhead. Auto-scroll to summary.
-  detachScrollLock()
+  // Auto-scroll to the summary as a courtesy hand-off; the user is free
+  // to scroll anywhere at any time — no scroll lock on this page.
   requestAnimationFrame(() => {
     const el = document.getElementById('quiz-summary')
     if (el) {
@@ -201,7 +169,6 @@ function onQuizComplete(finalAnswers) {
 }
 
 onMounted(() => {
-  attachScrollLock()
   // Always start at the hero on /knowledge entry.
   window.scrollTo({ top: 0, behavior: 'instant' })
 
@@ -273,7 +240,6 @@ onBeforeUnmount(() => {
   triggers.length = 0
   sectionObserver?.disconnect()
   sectionObserver = null
-  detachScrollLock()
 })
 </script>
 

@@ -16,7 +16,8 @@
     "mapbox-gl": "^3.21.0",
     "radix-vue": "^1.9.17",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "vue3-lottie": "^3.3.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
