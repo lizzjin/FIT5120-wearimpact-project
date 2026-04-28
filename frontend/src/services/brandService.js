@@ -16,6 +16,28 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
  * @returns {Promise<{results: Array, total: number, page: number, page_size: number}>}
  * @throws {Error} On network failure or non-2xx response
  */
+/**
+ * Fetch the entire company list by paging through the API.
+ *
+ * The public list endpoint caps page_size at 50, so to obtain the full
+ * dataset (~247 companies) we make the first call, read the total, then
+ * fan out the remaining pages in parallel.
+ *
+ * @returns {Promise<Array>} Flat list of all company rows.
+ */
+export async function fetchAllCompaniesAll() {
+  const PAGE_SIZE = 50
+  const first = await fetchAllCompanies(1, PAGE_SIZE)
+  const total = first.total ?? first.results.length
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  if (totalPages <= 1) return first.results
+
+  const rest = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, i) => fetchAllCompanies(i + 2, PAGE_SIZE)),
+  )
+  return [...first.results, ...rest.flatMap((r) => r.results ?? [])]
+}
+
 export async function fetchAllCompanies(page = 1, pageSize = 9) {
   const params = new URLSearchParams({ page, page_size: pageSize })
   const response = await fetch(`${API_BASE}/api/brands?${params}`)

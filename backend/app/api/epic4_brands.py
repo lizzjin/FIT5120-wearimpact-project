@@ -26,7 +26,10 @@ router = APIRouter(prefix="/api/brands", tags=["brands"])
 @router.get("", response_model=CompanyListResponse)
 async def list_companies_endpoint(
     page: int = Query(1, ge=1, description="Page number (1-based)"),
-    page_size: int = Query(9, ge=1, le=50, description="Results per page"),
+    # Cap is 300: comfortably above the current dataset (~247 companies)
+    # so the brand-search frontend can fetch the full leaderboard in one
+    # call without paging, while still rejecting unbounded requests.
+    page_size: int = Query(9, ge=1, le=300, description="Results per page"),
     db: AsyncSession = Depends(get_db),
 ) -> CompanyListResponse:
     """Return a paginated list of all companies ordered by ethical score.

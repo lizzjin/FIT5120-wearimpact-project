@@ -1,1374 +1,186 @@
 <template>
   <div class="brand-page">
+    <!-- Unified Wise canvas — same component used on /knowledge to keep
+         the cream + drifting blobs + topography aesthetic seamless. -->
+    <QuizBackground />
+
     <Navbar />
 
-    <div class="page-container">
-      <!-- Page header -->
-      <div class="brand-page-header">
-        <h1
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
-          Brand Sustainability Scores
-        </h1>
-        <p
-          v-motion
-          :initial="{ opacity: 0, y: 14 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 150 } }"
-        >
-          Search clothing brands to see their supply chain transparency, environmental, and governance scores.
-        </p>
-      </div>
+    <main class="brand-page__main">
+      <Transition name="brand-view" mode="out-in">
+        <BrandIntro
+          v-if="view === 'intro'"
+          key="intro"
+          @start="goSearch"
+        />
+        <BrandSearchHub
+          v-else-if="view === 'search'"
+          key="search"
+          v-model="selected"
+          :companies="ranked"
+          :is-loading="isCompaniesLoading"
+          @compare="onCompare"
+          @back="goIntro"
+        />
+        <BrandResults
+          v-else
+          key="results"
+          :selected="selected"
+          :ranked="ranked"
+          :is-loading="isCompaniesLoading"
+          @back="goSearch"
+          @remove-brand="removeBrand"
+          @open="openDetail"
+        />
+      </Transition>
+    </main>
 
-      <!-- Search bar + button -->
-      <div class="brand-search-wrap" role="search">
-        <BrandSearchBar v-model="searchQuery" @search="handleSearch" />
-        <button class="search-btn" @click="doSearch">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          Search
-        </button>
-      </div>
-
-      <!-- Section label row -->
-      <div class="grid-label-row">
-        <span class="grid-section-label">
-          {{ committedQuery.trim() ? 'Search Results' : 'Featured Brands' }}
-          <span v-if="!isSearching && committedQuery.trim()" class="result-count">
-            {{ searchResults.length }} found
-          </span>
-        </span>
-        <span v-if="!committedQuery.trim() && !isFeaturedLoading" class="grid-sublabel">
-          Click any card to see full sustainability details
-        </span>
-      </div>
-
-      <!-- Card grid -->
-      <div class="brand-card-grid">
-
-        <!-- Skeleton: initial load or searching -->
-        <template v-if="isFeaturedLoading || isSearching">
-          <div v-for="n in PAGE_SIZE" :key="n" class="brand-card brand-card--skeleton">
-            <div class="sk-identity">
-              <div class="sk sk-avatar"></div>
-              <div class="sk-text">
-                <div class="sk sk-line-long"></div>
-                <div class="sk sk-line-short"></div>
-              </div>
-            </div>
-            <div class="sk sk-score-block"></div>
-            <div class="sk-mini-rows">
-              <div v-for="r in 3" :key="r" class="sk-mini-row">
-                <div class="sk sk-mini-label"></div>
-                <div class="sk sk-mini-track"></div>
-              </div>
-            </div>
-            <div class="sk sk-cta-bar"></div>
-          </div>
-        </template>
-
-        <!-- Featured load error -->
-        <div v-else-if="featuredLoadError && !committedQuery.trim()" class="empty-state">
-          <div class="empty-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-            </svg>
-          </div>
-          <p class="empty-title">Could not load brands</p>
-          <p class="empty-sub">Backend unavailable. Please try refreshing the page.</p>
-        </div>
-
-        <!-- Empty state -->
-        <div v-else-if="committedQuery.trim() && displayList.length === 0" class="empty-state">
-          <div class="empty-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-          </div>
-          <p class="empty-title">No brands found</p>
-          <p class="empty-sub">{{ emptyMessage }}</p>
-        </div>
-
-        <!-- Brand cards (paginated) -->
-        <template v-else>
-          <button
-            v-for="(item, idx) in paginatedList"
-            :key="item.company_id"
-            class="brand-card"
-            :class="{ 'brand-card--active': selectedCompany?.company_id === item.company_id }"
-            @click="openModal(item)"
-            v-motion
-            :initial="{ opacity: 0, y: 24 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 60 * idx } }"
-          >
-            <!-- Identity: logo + name -->
-            <div class="card-identity">
-              <div
-                class="card-avatar"
-                :style="logoErrors[item.company_id] ? { background: getAvatarBg(item.company_name) } : {}"
-              >
-                <img
-                  v-if="!logoErrors[item.company_id]"
-                  :src="getLogoSrc(item.company_name)"
-                  :alt="item.company_name"
-                  class="card-logo-img"
-                  @error="onCardLogoError(item.company_id)"
-                />
-                <span v-else class="avatar-letter">{{ item.company_name.charAt(0).toUpperCase() }}</span>
-              </div>
-              <div class="card-name-block">
-                <p class="card-brand-name">{{ item.company_name }}</p>
-                <p v-if="item.matched_brand && item.matched_brand !== item.company_name" class="card-matched">
-                  via {{ item.matched_brand }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Score -->
-            <div class="card-score-area">
-              <div class="card-score-number-wrap">
-                <span class="card-score-num" :style="{ color: getLabelColor(item.score_label) }">
-                  {{ item.overall_score }}
-                </span>
-                <span class="card-score-denom">/100</span>
-              </div>
-              <span
-                class="card-label-pill"
-                :style="{ background: getLabelBg(item.score_label), color: getLabelColor(item.score_label) }"
-              >{{ item.score_label }}</span>
-            </div>
-
-            <!-- Dimension mini-bars -->
-            <div class="card-mini-bars">
-              <template v-if="companyDetails[item.company_id]">
-                <div
-                  v-for="dim in getCardDims(item.company_id)"
-                  :key="dim.label"
-                  class="mini-bar-row"
-                >
-                  <span class="mini-bar-label">{{ dim.label }}</span>
-                  <div class="mini-bar-track">
-                    <div
-                      class="mini-bar-fill"
-                      :style="{ width: dim.pct + '%', background: miniBarColor(dim.pct) }"
-                    ></div>
-                  </div>
-                  <span class="mini-bar-pct">{{ dim.pct }}%</span>
-                </div>
-              </template>
-              <template v-else>
-                <div v-for="r in 3" :key="r" class="sk-mini-row">
-                  <div class="sk sk-mini-label"></div>
-                  <div class="sk sk-mini-track"></div>
-                </div>
-              </template>
-            </div>
-
-            <!-- CTA row -->
-            <div class="card-footer">
-              <span class="card-cta-text">View Full Profile</span>
-              <ArrowRight :size="14" :stroke-width="2.5" class="card-arrow" />
-            </div>
-          </button>
-        </template>
-      </div>
-
-      <!-- Pagination -->
-      <div v-if="!isFeaturedLoading && !isSearching && totalPages > 1" class="pagination">
-        <button
-          class="page-nav-btn"
-          :disabled="currentPage === 1"
-          @click="goToPage(currentPage - 1)"
-          aria-label="Previous page"
-        >
-          <ChevronLeft :size="15" /> Prev
-        </button>
-
-        <div class="page-numbers">
-          <template v-for="p in visiblePages" :key="p">
-            <span v-if="p === '...'" class="page-ellipsis">&hellip;</span>
-            <button
-              v-else
-              class="page-number"
-              :class="{ 'page-number--active': p === currentPage }"
-              @click="goToPage(p)"
-              :aria-label="`Page ${p}`"
-              :aria-current="p === currentPage ? 'page' : undefined"
-            >{{ p }}</button>
-          </template>
-        </div>
-
-        <button
-          class="page-nav-btn"
-          :disabled="currentPage === totalPages"
-          @click="goToPage(currentPage + 1)"
-          aria-label="Next page"
-        >
-          Next <ChevronRight :size="15" />
-        </button>
-      </div>
-    </div>
-
-    <!-- ── Radix Vue Dialog (replaces hand-built modal) ──────────────────── -->
-    <DialogRoot :open="showModal" @update:open="val => { if (!val) closeModal() }">
-      <DialogPortal>
-        <DialogOverlay class="modal-backdrop" />
-        <DialogContent class="modal-panel" aria-describedby="brand-detail-desc">
-          <DialogTitle class="sr-only">Brand sustainability detail</DialogTitle>
-          <DialogDescription id="brand-detail-desc" class="sr-only">
-            Detailed sustainability scores and policies for the selected brand.
-          </DialogDescription>
-
-          <DialogClose class="modal-close" aria-label="Close">
-            <X :size="18" :stroke-width="2" />
-          </DialogClose>
-
-          <div class="modal-scroll">
-            <!-- Loading skeleton -->
-            <div v-if="isLoadingDetail" class="detail-skeleton">
-              <div class="sk sk-detail-header"></div>
-              <div class="sk sk-detail-body"></div>
-              <div class="sk sk-detail-body"></div>
-              <div class="sk sk-detail-body-sm"></div>
-            </div>
-
-            <!-- Detail content -->
-            <template v-else-if="companyDetail">
-              <!-- Brand summary -->
-              <div class="detail-card brand-summary">
-                <div class="brand-summary-header">
-                  <div class="brand-avatar-large" :style="!detailLogoOk ? { background: avatarBg } : {}">
-                    <img
-                      v-if="detailLogoOk"
-                      :src="detailLogoSrc"
-                      :alt="companyDetail.company_name"
-                      class="detail-logo-img"
-                      @error="detailLogoOk = false"
-                    />
-                    <span v-else>{{ companyDetail.company_name.charAt(0).toUpperCase() }}</span>
-                  </div>
-                  <div>
-                    <h2>{{ companyDetail.company_name }}</h2>
-                    <span class="category-tag">
-                      {{ companyDetail.product_category === 'footwear' ? 'Footwear' : 'Apparel' }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="score-row">
-                  <div
-                    class="score-badge"
-                    :style="{ background: scoreBg, color: scoreColor, borderColor: scoreColor + '4d' }"
-                  >
-                    <div class="score-badge-inner">
-                      <span class="score-number">{{ companyDetail.overall_score }}</span>
-                      <span class="score-max">/100</span>
-                    </div>
-                    <span class="score-label-text">{{ companyDetail.score_label }}</span>
-                  </div>
-                </div>
-                <p class="score-desc">{{ scoreDescription }}</p>
-              </div>
-
-              <!-- Dimension scores -->
-              <div class="detail-card">
-                <h3>Sustainability Scores</h3>
-                <p class="scores-desc">
-                  Three independently measured dimensions from the Fashion Transparency Index.
-                  Each bar shows how much of the maximum possible score this company achieved.
-                </p>
-                <MetricBar
-                  label="Governance & Policies"
-                  sublabel="Supplier code of conduct, senior accountability"
-                  :value="Math.round((companyDetail.governance_score / 6) * 100)"
-                  :raw-score="companyDetail.governance_score"
-                  :max-score="6"
-                />
-                <MetricBar
-                  label="Supply Chain Tracing"
-                  sublabel="Visibility across all production stages"
-                  :value="Math.round((companyDetail.tracing_score / 15) * 100)"
-                  :raw-score="companyDetail.tracing_score"
-                  :max-score="15"
-                />
-                <MetricBar
-                  label="Environmental Sustainability"
-                  sublabel="Fibre impact, emissions targets, sustainable materials"
-                  :value="Math.round((companyDetail.env_score / 21) * 100)"
-                  :raw-score="companyDetail.env_score"
-                  :max-score="21"
-                />
-              </div>
-
-              <!-- Supply chain policies -->
-              <div class="detail-card">
-                <h3>Supply Chain Policies</h3>
-                <p class="scores-desc">
-                  Whether this company has publicly committed to key supply chain and environmental standards.
-                </p>
-                <div class="policy-list">
-                  <PolicyRow
-                    label="Supplier Code of Conduct published"
-                    sublabel="The company has a formal, publicly available document setting ethical and labour standards for its suppliers."
-                    :value="companyDetail.has_supplier_code"
-                  />
-                  <PolicyRow
-                    label="Code of Conduct covers raw materials"
-                    sublabel="The Supplier Code of Conduct extends beyond factories to cover raw material sourcing (e.g. cotton farms, textile mills)."
-                    :value="companyDetail.code_covers_raw_materials"
-                  />
-                  <PolicyRow
-                    label="Senior officer accountable for supply chain"
-                    sublabel="A named executive (e.g. CEO or Chief Sustainability Officer) holds formal responsibility for supply chain ethics."
-                    :value="companyDetail.has_senior_accountability"
-                  />
-                  <PolicyRow
-                    label="Assessed fibre environmental impact"
-                    sublabel="The company has formally evaluated the environmental footprint of the fibres used in its products."
-                    :value="companyDetail.assessed_fibre_impact"
-                  />
-                  <PolicyRow
-                    label="Emissions reduction target published"
-                    sublabel="The company has publicly committed to a measurable greenhouse gas emissions reduction goal."
-                    :value="companyDetail.has_emissions_target"
-                  />
-                </div>
-                <div class="fibre-row">
-                  <span class="fibre-label">Sustainable fibres in final product</span>
-                  <span class="fibre-value">{{ companyDetail.sustainable_fibre_pct }}</span>
-                </div>
-              </div>
-
-              <!-- Sub-brands -->
-              <div v-if="companyDetail.brands.length > 1" class="detail-card">
-                <h3>Brands under this Company</h3>
-                <div class="brands-chip-list">
-                  <span v-for="b in companyDetail.brands" :key="b.brand_name" class="brand-chip">
-                    {{ b.brand_name }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Data source -->
-              <div class="detail-card data-source-box">
-                <h3>Data Source</h3>
-                <p>
-                  Scores are derived from the <strong>Fashion Transparency Index</strong> (Australian market).
-                  Data reflects publicly available corporate disclosures on supply chain policies,
-                  environmental commitments, and fibre sourcing.
-                </p>
-                <a
-                  href="https://baptistworldaid.org.au/wp-content/uploads/2024/10/Ethical-Fashion-Report-2024-Appendix-1aec741f0a81f5f9.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="source-link"
-                >
-                  View Full Report
-                  <ArrowRight :size="15" :stroke-width="2.5" class="cta-arrow" />
-                </a>
-              </div>
-            </template>
-          </div>
-        </DialogContent>
-      </DialogPortal>
-    </DialogRoot>
+    <BrandDetailModal
+      :open="modalOpen"
+      :detail="detail"
+      :is-loading="isDetailLoading"
+      @update:open="(v) => { if (!v) closeDetail() }"
+    />
   </div>
 </template>
 
 <script setup>
-import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, MinusCircle, X, XCircle } from 'lucide-vue-next'
-import { computed, defineComponent, h, onMounted, reactive, ref, watch } from 'vue'
-import { DialogClose, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'radix-vue'
-import BrandSearchBar from '../components/BrandSearchBar.vue'
-import MetricBar from '../components/MetricBar.vue'
+import { computed, onMounted, ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
-import { fetchAllCompanies, fetchCompanyDetail, searchBrands } from '../services/brandService'
+import QuizBackground from '../components/knowledge/QuizBackground.vue'
+import BrandIntro from '../components/brand/BrandIntro.vue'
+import BrandSearchHub from '../components/brand/BrandSearchHub.vue'
+import BrandResults from '../components/brand/BrandResults.vue'
+import BrandDetailModal from '../components/brand/BrandDetailModal.vue'
+import { fetchAllCompaniesAll, fetchCompanyDetail } from '../services/brandService'
 
-// ── PolicyRow inline component ────────────────────────────────────────────────
-const POLICY_CONFIG = {
-  Yes:     { icon: CheckCircle2, color: '#054d28' },
-  No:      { icon: XCircle,      color: '#d03238' },
-  Partial: { icon: MinusCircle,  color: '#b45309' },
-}
+// View state machine: intro → search → results.
+// Page entry defaults to 'intro' so users meet the explainer first.
+const view = ref('intro')
 
-const PolicyRow = defineComponent({
-  props: { label: String, sublabel: String, value: String },
-  setup(props) {
-    return () => {
-      const cfg = POLICY_CONFIG[props.value] ?? { icon: MinusCircle, color: '#868685' }
-      return h('div', {
-        style: {
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-          gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(14,15,12,0.08)',
-        },
-      }, [
-        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', flex: '1' } }, [
-          h('span', { style: { fontSize: '14px', color: '#0e0f0c', fontWeight: '600' } }, props.label),
-          props.sublabel
-            ? h('span', { style: { fontSize: '13px', color: '#868685', lineHeight: '1.4', fontWeight: '500' } }, props.sublabel)
-            : null,
-        ]),
-        h('span', {
-          style: {
-            display: 'inline-flex', alignItems: 'center', gap: '5px',
-            fontSize: '13px', fontWeight: '700', flexShrink: '0', color: cfg.color,
-          },
-        }, [
-          h(cfg.icon, { size: 16, strokeWidth: 2.5 }),
-          h('span', {}, props.value),
-        ]),
-      ])
-    }
-  },
-})
-// ─────────────────────────────────────────────────────────────────────────────
+// Brand picks across the search/results flow. Each entry contains
+// company_id, company_name, overall_score, score_label.
+const selected = ref([])
 
-// ── Label color / bg maps ─────────────────────────────────────────────────────
-const LABEL_COLORS = {
-  'Great':         '#054d28',
-  'Good':          '#16a34a',
-  "It's a Start":  '#ca8a04',
-  'Below Average': '#ea580c',
-  'Avoid':         '#d03238',
-}
-const LABEL_BG = {
-  'Great':         '#e2f6d5',
-  'Good':          '#ecfccb',
-  "It's a Start":  '#fef9c3',
-  'Below Average': '#ffedd5',
-  'Avoid':         '#fee2e2',
-}
-const LABEL_DESCRIPTIONS = {
-  'Great':         'This company leads on sustainability and transparency.',
-  'Good':          'Good overall performance with some room to improve.',
-  "It's a Start":  'Some initiatives in place but significant gaps remain.',
-  'Below Average': 'Limited transparency and sustainability efforts.',
-  'Avoid':         'Very little evidence of sustainable or ethical practices.',
-}
+// Full company dataset, fetched once at view mount (paged behind the
+// scenes because the API caps page_size at 50). Shared with both
+// BrandSearchHub (for carousel sampling) and BrandResults (leaderboard).
+const companies = ref([])
+const isCompaniesLoading = ref(false)
 
-function getLabelColor(label) { return LABEL_COLORS[label] || '#868685' }
-function getLabelBg(label)    { return LABEL_BG[label]    || '#e8ebe6' }
-
-// ── Mini-bar color (traffic-light by percentage) ──────────────────────────────
-function miniBarColor(pct) {
-  if (pct >= 60) return '#054d28'
-  if (pct >= 35) return '#b45309'
-  return '#d03238'
-}
-
-// ── Avatar / logo helpers ─────────────────────────────────────────────────────
-const AVATAR_PALETTE = ['#dbeafe', '#e2f6d5', '#fef9c3', '#fce7f3', '#ede9fe', '#ffedd5']
-function getAvatarBg(name) {
-  return AVATAR_PALETTE[name.charCodeAt(0) % AVATAR_PALETTE.length]
-}
-
-function getLogoSrc(name, size = 40) {
-  return `https://img.logo.dev/${guessDomain(name)}?token=pk_LbFI27UJRDWnSoDCC_4GYA&size=${size}`
-}
-
-function guessDomain(name) {
-  const overrides = {
-    'H&M': 'hm.com', 'H&M Group': 'hm.com',
-    'Inditex': 'inditex.com',
-    'Levi Strauss & Co': 'levi.com',
-    'PVH Corp': 'pvh.com',
-    'VF Corporation': 'vfc.com',
-    'Hanesbrands': 'hanes.com',
-    'Fast Retailing': 'fastretailing.com',
-    'Kering': 'kering.com',
-    'LVMH': 'lvmh.com',
-    'Adidas': 'adidas.com',
-    'Nike': 'nike.com',
-    'Puma': 'puma.com',
-    'Patagonia': 'patagonia.com',
-  }
-  if (overrides[name]) return overrides[name]
-  return name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com'
-}
-
-// ── Card logo error tracking ──────────────────────────────────────────────────
-const logoErrors = reactive({})
-function onCardLogoError(companyId) {
-  logoErrors[companyId] = true
-}
-
-// ── Detail cache (prefetched per-company) ─────────────────────────────────────
-const companyDetails = reactive({})
-
-async function prefetchDetails(companies) {
-  await Promise.allSettled(
-    companies.map(async (c) => {
-      if (companyDetails[c.company_id] !== undefined) return
-      try {
-        companyDetails[c.company_id] = await fetchCompanyDetail(c.company_id)
-      } catch {
-        companyDetails[c.company_id] = null
-      }
-    })
-  )
-}
-
-function getCardDims(companyId) {
-  const d = companyDetails[companyId]
-  if (!d) return []
-  return [
-    { label: 'Governance',   pct: Math.round((d.governance_score / 6)  * 100) },
-    { label: 'Tracing',      pct: Math.round((d.tracing_score   / 15) * 100) },
-    { label: 'Environment',  pct: Math.round((d.env_score       / 21) * 100) },
-  ]
-}
-
-// ── Search state ──────────────────────────────────────────────────────────────
-const searchQuery       = ref('')
-const committedQuery    = ref('')
-const searchResults     = ref([])
-const featuredCompanies = ref([])
-const featuredTotal     = ref(0)
-const featuredLoadError = ref(false)
-const isFeaturedLoading = ref(true)
-const isSearching       = ref(false)
-const emptyMessage      = ref('No brands found. Try a different spelling.')
-
-const displayList = computed(() =>
-  committedQuery.value.trim() ? searchResults.value : featuredCompanies.value
-)
-
-// ── Pagination ────────────────────────────────────────────────────────────────
-const PAGE_SIZE   = 9
-const currentPage = ref(1)
-
-const totalPages = computed(() => {
-  if (committedQuery.value.trim()) {
-    return Math.ceil(searchResults.value.length / PAGE_SIZE)
-  }
-  return Math.ceil(featuredTotal.value / PAGE_SIZE)
+// Ranked variant (sorted by overall_score desc, rank assigned client-side).
+const ranked = computed(() => {
+  if (companies.value.length === 0) return []
+  const sorted = [...companies.value].sort((a, b) => b.overall_score - a.overall_score)
+  return sorted.map((r, i) => ({ ...r, rank: i + 1 }))
 })
 
-const paginatedList = computed(() => {
-  if (committedQuery.value.trim()) {
-    const start = (currentPage.value - 1) * PAGE_SIZE
-    return searchResults.value.slice(start, start + PAGE_SIZE)
-  }
-  return featuredCompanies.value
-})
+// Detail modal state — shared by Intro CTA flow, search hub picks,
+// and leaderboard rows.
+const modalOpen = ref(false)
+const detail = ref(null)
+const isDetailLoading = ref(false)
+const detailCache = new Map()
 
-const visiblePages = computed(() => {
-  const total   = totalPages.value
-  const current = currentPage.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-
-  const pages = new Set([1, total, current])
-  for (let i = Math.max(2, current - 2); i <= Math.min(total - 1, current + 2); i++) {
-    pages.add(i)
-  }
-
-  const sorted = [...pages].sort((a, b) => a - b)
-  const result = []
-  let prev = 0
-  for (const p of sorted) {
-    if (p - prev > 1) result.push('...')
-    result.push(p)
-    prev = p
-  }
-  return result
-})
-
-watch(committedQuery, () => { currentPage.value = 1 })
-
-async function goToPage(p) {
-  currentPage.value = p
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-  if (committedQuery.value.trim()) {
-    prefetchDetails(paginatedList.value)
-  } else {
-    await loadFeaturedPage(p)
-  }
+// ── View transitions ──────────────────────────────────────────────
+function goIntro() {
+  view.value = 'intro'
+  scrollTop()
 }
 
-async function loadFeaturedPage(page) {
-  isFeaturedLoading.value = true
-  featuredLoadError.value = false
+function goSearch() {
+  view.value = 'search'
+  scrollTop()
+}
+
+async function onCompare(picks) {
+  selected.value = picks
+  view.value = 'results'
+  scrollTop()
+  await ensureCompaniesLoaded()
+}
+
+function scrollTop() {
+  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+}
+
+// ── Companies dataset (paged fetch, cached for the session) ───────
+// Backend caps page_size at 50, so fetchAllCompaniesAll() pages through
+// in parallel and concatenates the result.
+async function ensureCompaniesLoaded() {
+  if (companies.value.length > 0 || isCompaniesLoading.value) return
+  isCompaniesLoading.value = true
   try {
-    const data = await fetchAllCompanies(page, PAGE_SIZE)
-    featuredCompanies.value = data.results
-    featuredTotal.value     = data.total
-    currentPage.value       = page
-    prefetchDetails(data.results)
-  } catch {
-    featuredLoadError.value = true
+    companies.value = await fetchAllCompaniesAll()
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[BrandSearch] failed to fetch companies', err)
+    companies.value = []
   } finally {
-    isFeaturedLoading.value = false
+    isCompaniesLoading.value = false
   }
 }
 
-// ── Modal state ───────────────────────────────────────────────────────────────
-const showModal       = ref(false)
-const selectedCompany = ref(null)
-const companyDetail   = ref(null)
-const isLoadingDetail = ref(false)
-
-watch(showModal, (open) => {
-  document.body.style.overflow = open ? 'hidden' : ''
+onMounted(() => {
+  // Pre-load on mount so carousel + leaderboard are ready before
+  // the user navigates to the search/results view.
+  ensureCompaniesLoaded()
 })
 
-async function openModal(item) {
-  selectedCompany.value = item
-  showModal.value = true
+function removeBrand(id) {
+  selected.value = selected.value.filter((s) => s.company_id !== id)
+}
 
-  const cached = companyDetails[item.company_id]
-  if (cached) {
-    companyDetail.value = cached
-    isLoadingDetail.value = false
+// ── Detail modal ─────────────────────────────────────────────────
+async function openDetail(companyId) {
+  modalOpen.value = true
+  if (detailCache.has(companyId)) {
+    detail.value = detailCache.get(companyId)
+    isDetailLoading.value = false
     return
   }
-
-  isLoadingDetail.value = true
-  companyDetail.value = null
+  detail.value = null
+  isDetailLoading.value = true
   try {
-    const detail = await fetchCompanyDetail(item.company_id)
-    companyDetails[item.company_id] = detail
-    companyDetail.value = detail
+    const d = await fetchCompanyDetail(companyId)
+    detailCache.set(companyId, d)
+    detail.value = d
   } catch {
-    // stays null
+    detail.value = null
   } finally {
-    isLoadingDetail.value = false
+    isDetailLoading.value = false
   }
 }
 
-function closeModal() {
-  showModal.value = false
-  selectedCompany.value = null
-}
-
-// ── Detail computed values ───────────────────────────────────────────────────
-const scoreColor      = computed(() => getLabelColor(companyDetail.value?.score_label))
-const scoreBg         = computed(() => getLabelBg(companyDetail.value?.score_label))
-const scoreDescription = computed(() => LABEL_DESCRIPTIONS[companyDetail.value?.score_label] || '')
-
-const avatarBg = computed(() =>
-  companyDetail.value ? getAvatarBg(companyDetail.value.company_name) : '#dbeafe'
-)
-
-const detailLogoOk  = ref(true)
-const detailLogoSrc = computed(() =>
-  companyDetail.value ? getLogoSrc(companyDetail.value.company_name, 80) : ''
-)
-watch(companyDetail, () => { detailLogoOk.value = true })
-
-// ── Data fetching ─────────────────────────────────────────────────────────────
-onMounted(() => loadFeaturedPage(1))
-
-function doSearch() {
-  handleSearch(searchQuery.value)
-}
-
-async function handleSearch(query) {
-  const q = query.trim()
-  committedQuery.value = q
-
-  if (!q) {
-    searchResults.value = []
-    showModal.value = false
-    await loadFeaturedPage(1)
-    return
-  }
-
-  isSearching.value = true
-  selectedCompany.value = null
-  companyDetail.value = null
-  showModal.value = false
-
-  try {
-    const data = await searchBrands(q)
-    searchResults.value = data.results ?? []
-    emptyMessage.value = data.message || 'No brands found. Try a different spelling.'
-    prefetchDetails(searchResults.value.slice(0, PAGE_SIZE))
-  } catch {
-    searchResults.value = []
-    emptyMessage.value = 'Search failed. Please try again.'
-  } finally {
-    isSearching.value = false
-  }
+function closeDetail() {
+  modalOpen.value = false
+  // Keep `detail` so the panel content doesn't blank during close transition.
 }
 </script>
 
 <style scoped>
-/* ── Screen-reader only ─────────────────────────────────────────────────────── */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-/* ── Page shell ──────────────────────────────────────────────────────────────── */
 .brand-page {
-  background: var(--color-bg);
-  min-height: 100vh;
-}
-
-.page-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 32px 72px;
-}
-
-/* ── Page header ─────────────────────────────────────────────────────────────── */
-.brand-page-header {
-  margin-bottom: 24px;
-}
-
-.brand-page-header h1 {
-  font-size: 56px;
-  font-weight: 900;
-  line-height: 0.85;
-  color: var(--color-text);
-  margin-bottom: 14px;
-  letter-spacing: -0.02em;
-}
-
-.brand-page-header p {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--color-text-muted);
-  max-width: 600px;
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* ── Search bar ──────────────────────────────────────────────────────────────── */
-.brand-search-wrap {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 32px;
-}
-
-.brand-search-wrap > :first-child { flex: 1; }
-
-.search-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  background: var(--color-primary);
-  color: var(--color-primary-text);
-  border: none;
-  border-radius: var(--radius-pill);
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform var(--transition-base);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.search-btn:hover {
-  transform: scale(1.05);
-}
-
-.search-btn:active {
-  transform: scale(0.95);
-}
-
-/* ── Section label row ───────────────────────────────────────────────────────── */
-.grid-label-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.grid-section-label {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-text);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.result-count {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-subtle);
-  background: var(--color-surface-alt);
-  padding: 2px 10px;
-  border-radius: var(--radius-pill);
-}
-
-.grid-sublabel {
-  font-size: 14px;
-  color: var(--color-text-faint);
-}
-
-/* ── Card grid ───────────────────────────────────────────────────────────────── */
-.brand-card-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-/* ── Brand card ──────────────────────────────────────────────────────────────── */
-.brand-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  cursor: pointer;
-  text-align: left;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   position: relative;
-  overflow: hidden;
-}
-
-.brand-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--color-primary);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  border-radius: 30px 0 0 30px;
-}
-
-.brand-card:hover {
-  border-color: var(--color-primary);
-  transform: scale(1.02);
-}
-
-.brand-card:hover::before,
-.brand-card--active::before {
-  opacity: 1;
-}
-
-.brand-card--active {
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
-}
-
-/* Card identity row */
-.card-identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-card-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 18px;
+  min-height: 100vh;
   color: var(--color-text);
-  flex-shrink: 0;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  background: white;
+  font-family: 'Inter', system-ui, -apple-system, Arial, sans-serif;
+  overflow-x: hidden;
+  /* QuizBackground paints the cream canvas as a fixed full-screen layer. */
+  background: transparent;
 }
 
-.card-logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 5px;
-  background: white;
-}
-
-.avatar-letter { line-height: 1; }
-.card-name-block { min-width: 0; }
-
-.card-brand-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0;
-  line-height: 1.23;
-  letter-spacing: -0.108px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-matched {
-  font-size: 12px;
-  color: var(--color-text-faint);
-  margin: 3px 0 0;
-}
-
-/* Score area */
-.card-score-area {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.card-score-number-wrap {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-}
-
-.card-score-num {
-  font-size: 44px;
-  font-weight: 900;
-  line-height: 0.85;
-  letter-spacing: -0.02em;
-}
-
-.card-score-denom {
-  font-size: 14px;
-  color: var(--color-text-faint);
-  font-weight: 500;
-}
-
-.card-label-pill {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-}
-
-/* Dimension mini-bars */
-.card-mini-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mini-bar-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mini-bar-label {
-  font-size: 11px;
-  color: var(--color-text-subtle);
-  width: 74px;
-  flex-shrink: 0;
-  font-weight: 500;
-}
-
-.mini-bar-track {
-  flex: 1;
-  height: 5px;
-  background: var(--color-border-light);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-
-.mini-bar-fill {
-  height: 100%;
-  border-radius: var(--radius-pill);
-  transition: width 0.5s ease;
-}
-
-.mini-bar-pct {
-  font-size: 11px;
-  color: var(--color-text-faint);
-  width: 28px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-/* Card footer / CTA */
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 14px;
-  border-top: 1px solid var(--color-border-light);
-}
-
-.card-cta-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.card-arrow {
-  color: var(--color-primary);
-  transition: transform 0.15s ease;
-}
-
-.brand-card:hover .card-arrow {
-  transform: translateX(4px);
-}
-
-/* ── Skeleton cards ───────────────────────────────────────────────────────────── */
-.brand-card--skeleton { pointer-events: none; }
-
-.sk {
-  background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 8px;
-}
-
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.sk-identity { display: flex; align-items: center; gap: 12px; }
-.sk-avatar   { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }
-.sk-text     { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.sk-line-long  { height: 14px; width: 70%; }
-.sk-line-short { height: 12px; width: 45%; }
-.sk-score-block { height: 48px; border-radius: 12px; }
-.sk-mini-rows { display: flex; flex-direction: column; gap: 8px; }
-.sk-mini-row  { display: flex; align-items: center; gap: 8px; }
-.sk-mini-label { width: 60px; height: 10px; flex-shrink: 0; }
-.sk-mini-track { flex: 1; height: 5px; border-radius: var(--radius-pill); }
-.sk-cta-bar { height: 12px; width: 50%; border-radius: 6px; }
-
-.detail-skeleton   { display: flex; flex-direction: column; gap: 16px; }
-.sk-detail-header  { height: 160px; border-radius: 20px; }
-.sk-detail-body    { height: 180px; border-radius: 20px; }
-.sk-detail-body-sm { height: 100px; border-radius: 20px; }
-
-/* ── Empty state ─────────────────────────────────────────────────────────────── */
-.empty-state {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 72px 24px;
-  gap: 12px;
-}
-
-.empty-icon  { opacity: 0.35; color: var(--color-text-faint); }
-.empty-title { font-size: 16px; font-weight: 600; color: var(--color-text-subtle); margin: 0; }
-.empty-sub   { font-size: 14px; color: var(--color-text-faint); margin: 0; }
-
-/* ── Pagination ──────────────────────────────────────────────────────────────── */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 40px;
-}
-
-.page-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, transform var(--transition-base);
-}
-
-.page-nav-btn:hover:not(:disabled) {
-  background: var(--color-primary-light);
-  color: var(--color-primary-text);
-  transform: scale(1.05);
-}
-
-.page-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-.page-numbers { display: flex; align-items: center; gap: 6px; }
-
-.page-number {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, transform var(--transition-base);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.page-number:hover:not(.page-number--active) {
-  background: var(--color-primary-light);
-  color: var(--color-primary-text);
-  transform: scale(1.05);
-}
-
-.page-number--active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-primary-text);
-}
-
-.page-ellipsis {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--color-text-faint);
-  user-select: none;
-}
-
-/* ── Modal (Radix Dialog) ────────────────────────────────────────────────────── */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(14, 15, 12, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 200;
-  animation: fadeIn 200ms ease;
-}
-
-.modal-panel {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(100% - 48px);
-  max-width: 640px;
-  max-height: 88vh;
-  background: var(--color-bg);
-  border-radius: var(--radius-card-lg);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  z-index: 201;
-  box-shadow: var(--shadow-modal);
-  animation: modalScaleIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes modalScaleIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
-.modal-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-subtle);
+.brand-page__main {
+  position: relative;
   z-index: 1;
-  flex-shrink: 0;
-  transition: background 0.15s, color 0.15s, transform var(--transition-base);
 }
 
-.modal-close:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary-text);
-  transform: scale(1.05);
+.brand-view-enter-active,
+.brand-view-leave-active {
+  transition:
+    opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.modal-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 56px 24px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* ── Detail cards (inside modal) ─────────────────────────────────────────────── */
-.detail-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  padding: 24px;
-}
-
-.detail-card h3 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.396px;
-  line-height: 1.25;
-  color: var(--color-text);
-  margin-bottom: 8px;
-}
-
-.brand-summary-header {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.brand-avatar-large {
-  width: 54px;
-  height: 54px;
-  border-radius: var(--radius-card-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 22px;
-  color: var(--color-text);
-  flex-shrink: 0;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-}
-
-.detail-logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 6px;
-  background: white;
-}
-
-.brand-summary-header h2 {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.39px;
-  line-height: 1.23;
-  color: var(--color-text);
-  margin-bottom: 6px;
-}
-
-.category-tag {
-  font-size: 12px;
-  background: var(--color-surface-alt);
-  color: var(--color-text-muted);
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  font-weight: 500;
-}
-
-.score-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.score-badge {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 14px 24px;
-  border-radius: var(--radius-card-sm);
-  border: 2px solid transparent;
-}
-
-.score-badge-inner {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-}
-
-.score-number     { font-size: 44px; font-weight: 900; line-height: 0.85; letter-spacing: -0.02em; }
-.score-max        { font-size: 15px; font-weight: 500; opacity: 0.65; }
-.score-label-text { font-size: 14px; font-weight: 700; }
-.score-desc       { font-size: 14px; font-weight: 500; color: var(--color-text-muted); line-height: 1.5; margin: 0; }
-
-.scores-desc {
-  font-size: 13px;
-  color: var(--color-text-subtle);
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.policy-list { margin-bottom: 14px; }
-
-.fibre-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border-light);
-}
-
-.fibre-label { font-size: 14px; color: var(--color-text-muted); }
-.fibre-value { font-size: 14px; font-weight: 700; color: var(--color-text); }
-
-.brands-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.brand-chip {
-  background: var(--color-primary-light);
-  color: var(--color-primary-text);
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.data-source-box { background: var(--color-info); border-color: rgba(56, 200, 255, 0.3); }
-.data-source-box p { color: var(--color-text-muted); line-height: 1.5; font-size: 14px; margin: 0 0 14px; }
-
-.source-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: var(--color-primary);
-  color: var(--color-primary-text);
-  border-radius: var(--radius-pill);
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: transform var(--transition-base);
-}
-
-.source-link:hover { transform: scale(1.05); }
-.source-link:active { transform: scale(0.95); }
-.source-link .cta-arrow { transition: transform 0.15s ease; }
-.source-link:hover .cta-arrow { transform: translateX(3px); }
-
-/* ── Responsive ──────────────────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .brand-card-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 768px) {
-  .page-container { padding: 24px 16px 56px; }
-  .brand-page-header h1 { font-size: 38px; line-height: 0.85; }
-  .brand-search-wrap { flex-direction: column; }
-  .search-btn { width: 100%; justify-content: center; }
-  .brand-card-grid { grid-template-columns: 1fr; gap: 14px; }
-  .modal-panel { max-height: 94vh; border-radius: var(--radius-card); }
-  .pagination { flex-wrap: wrap; }
-}
+.brand-view-enter-from { opacity: 0; transform: translateY(20px); }
+.brand-view-leave-to   { opacity: 0; transform: translateY(-12px); }
 </style>
