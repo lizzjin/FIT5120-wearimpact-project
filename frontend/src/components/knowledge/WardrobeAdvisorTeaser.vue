@@ -71,7 +71,7 @@
 
 <script setup>
 // Visual placeholder only. This component:
-// - imports NO AI SDK (Anthropic, OpenAI, etc.)
+// - imports NO LLM SDK
 // - performs NO fetch / axios / WebSocket / SSE call
 // - reads NO wardrobe data — every bubble is hand-written copy
 // Epic 3 will hydrate this shell with the real advisor.

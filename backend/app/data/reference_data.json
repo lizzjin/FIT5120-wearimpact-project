@@ -1,0 +1,358 @@
+{
+  "schema_version": "1.0.0",
+  "last_updated": "2026-04-30",
+  "sources": [
+    {
+      "id": "WRAP_2017",
+      "title": "Valuing Our Clothes: the cost of UK fashion",
+      "publisher": "WRAP (Waste & Resources Action Programme)",
+      "year": 2017,
+      "scope": "UK aggregate, cradle-to-grave"
+    },
+    {
+      "id": "IMPRO_2014",
+      "title": "Environmental Improvement Potential of Textiles (IMPRO Textiles)",
+      "publisher": "European Commission Joint Research Centre (JRC)",
+      "year": 2014,
+      "scope": "EU-27, per-fibre and per-garment LCA"
+    },
+    {
+      "id": "QUANTIS_2018",
+      "title": "Measuring Fashion: Environmental Impact of the Global Apparel and Footwear Industries Study",
+      "publisher": "Quantis",
+      "year": 2018,
+      "scope": "Global, IMPACT 2002+ method, includes footwear"
+    }
+  ],
+  "disclaimers": {
+    "geography": "Australia-specific benchmarks were not available at time of publication. Figures are derived from UK (WRAP), EU (IMPRO), and global (Quantis) datasets and used as best available proxies.",
+    "use_phase": "Quantis 2018 excludes the consumer use phase (washing, drying). Use-phase intensities are sourced from IMPRO 2014.",
+    "fibre_assumption": "All fibres are modelled as conventional (non-organic, non-recycled) unless explicitly stated."
+  },
+
+  "subcategory_aliases": {
+    "_purpose": "Map fine-grained subcategories returned by the HuggingFace model to the coarser keys present in per_garment. The audit keeps the original subcategory name in its output (so the UI shows 'sports_shorts'), but uses the alias target's LCA figures.",
+    "tank_top_vest": "t_shirt",
+    "shirt_blouse": "shirt",
+    "polo_shirt": "shirt",
+    "hoodie_sweatshirt": "jumper",
+    "sweater_pullover": "jumper",
+    "cardigan": "jumper",
+    "suit_jacket": "jacket",
+    "trench_coat": "coat",
+    "overcoat": "coat",
+    "down_jacket": "coat",
+    "dress_pants": "trousers",
+    "sweatpants_joggers": "trousers",
+    "leggings": "trousers",
+    "casual_shorts": "shorts",
+    "sports_shorts": "shorts",
+    "mini_skirt": "skirt",
+    "maxi_skirt": "skirt",
+    "pleated_skirt": "skirt",
+    "skate_shoes": "sneakers",
+    "running_shoes": "sneakers",
+    "oxfords": "leather_shoes",
+    "loafers": "leather_shoes",
+    "derby_shoes": "leather_shoes",
+    "ankle_boots": "boots",
+    "high_boots": "boots",
+    "martin_boots": "boots",
+    "slippers": "sandals",
+    "flip_flops": "sandals"
+  },
+
+  "per_garment": {
+    "t_shirt": {
+      "category": "upper_body",
+      "weight_kg": 0.21,
+      "co2_kg_lifecycle": 4.6,
+      "water_L_lifecycle": 1480,
+      "lifetime_washes": 50,
+      "lifetime_years_typical": 3.3,
+      "dominant_fibre": "cotton",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "shirt": {
+      "category": "upper_body",
+      "weight_kg": 0.22,
+      "co2_kg_lifecycle": 5.1,
+      "water_L_lifecycle": 1620,
+      "lifetime_washes": 55,
+      "lifetime_years_typical": 3.5,
+      "dominant_fibre": "cotton",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "jumper": {
+      "category": "upper_body",
+      "weight_kg": 0.575,
+      "co2_kg_lifecycle": 14.7,
+      "water_L_lifecycle": 1300,
+      "lifetime_washes": 30,
+      "lifetime_years_typical": 4.0,
+      "dominant_fibre": "acrylic_or_wool_blend",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "jacket": {
+      "category": "upper_body",
+      "weight_kg": 0.7,
+      "co2_kg_lifecycle": 19.0,
+      "water_L_lifecycle": 1500,
+      "lifetime_washes": 10,
+      "lifetime_years_typical": 5.0,
+      "dominant_fibre": "polyester_blend",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "coat": {
+      "category": "upper_body",
+      "weight_kg": 1.0,
+      "co2_kg_lifecycle": 26.5,
+      "water_L_lifecycle": 1800,
+      "lifetime_washes": 1,
+      "lifetime_years_typical": 6.0,
+      "dominant_fibre": "wool_blend",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "dress": {
+      "category": "upper_body",
+      "weight_kg": 0.45,
+      "co2_kg_lifecycle": 11.0,
+      "water_L_lifecycle": 2900,
+      "lifetime_washes": 30,
+      "lifetime_years_typical": 3.5,
+      "dominant_fibre": "cotton_or_synthetic",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "jeans": {
+      "category": "lower_body",
+      "weight_kg": 0.568,
+      "co2_kg_lifecycle": 13.2,
+      "water_L_lifecycle": 4020,
+      "lifetime_washes": 92,
+      "lifetime_years_typical": 4.0,
+      "dominant_fibre": "cotton",
+      "source": "IMPRO_2014 Annex 1; cotton water from WRAP_2017"
+    },
+    "trousers": {
+      "category": "lower_body",
+      "weight_kg": 0.5,
+      "co2_kg_lifecycle": 11.5,
+      "water_L_lifecycle": 2800,
+      "lifetime_washes": 60,
+      "lifetime_years_typical": 3.5,
+      "dominant_fibre": "cotton_or_polyester",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "shorts": {
+      "category": "lower_body",
+      "weight_kg": 0.3,
+      "co2_kg_lifecycle": 7.0,
+      "water_L_lifecycle": 1900,
+      "lifetime_washes": 50,
+      "lifetime_years_typical": 3.0,
+      "dominant_fibre": "cotton",
+      "source": "IMPRO_2014 Annex 1 (derived)"
+    },
+    "skirt": {
+      "category": "lower_body",
+      "weight_kg": 0.3,
+      "co2_kg_lifecycle": 7.5,
+      "water_L_lifecycle": 1700,
+      "lifetime_washes": 40,
+      "lifetime_years_typical": 3.5,
+      "dominant_fibre": "cotton_or_polyester",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "underwear": {
+      "category": "upper_body",
+      "weight_kg": 0.05,
+      "co2_kg_lifecycle": 1.2,
+      "water_L_lifecycle": 350,
+      "lifetime_washes": 104,
+      "lifetime_years_typical": 2.0,
+      "dominant_fibre": "cotton",
+      "source": "IMPRO_2014 Annex 1"
+    },
+    "sneakers": {
+      "category": "footwear",
+      "weight_kg": 1.0,
+      "co2_kg_lifecycle": 14.0,
+      "water_L_lifecycle": 590,
+      "lifetime_wears": 200,
+      "lifetime_years_typical": 2.0,
+      "dominant_fibre": "synthetic_textile_blend",
+      "source": "QUANTIS_2018 (synthetic shoes share, derived from 700 Mt / 23 bn pairs)"
+    },
+    "leather_shoes": {
+      "category": "footwear",
+      "weight_kg": 1.0,
+      "co2_kg_lifecycle": 19.0,
+      "water_L_lifecycle": 700,
+      "lifetime_wears": 400,
+      "lifetime_years_typical": 4.0,
+      "dominant_fibre": "leather",
+      "source": "QUANTIS_2018 Table 3 (leather 34% of 700 Mt across 25% of 23bn pairs)"
+    },
+    "boots": {
+      "category": "footwear",
+      "weight_kg": 1.4,
+      "co2_kg_lifecycle": 26.0,
+      "water_L_lifecycle": 980,
+      "lifetime_wears": 400,
+      "lifetime_years_typical": 5.0,
+      "dominant_fibre": "leather",
+      "source": "QUANTIS_2018 (leather shoes scaled by weight)"
+    },
+    "sandals": {
+      "category": "footwear",
+      "weight_kg": 0.5,
+      "co2_kg_lifecycle": 7.0,
+      "water_L_lifecycle": 300,
+      "lifetime_wears": 150,
+      "lifetime_years_typical": 2.0,
+      "dominant_fibre": "synthetic",
+      "source": "QUANTIS_2018 (synthetic shoes scaled by weight)"
+    }
+  },
+
+  "per_fibre_per_kg_fabric": {
+    "_unit": "kg CO2eq per kg of finished fabric",
+    "cotton":      { "co2_kg": 22.0, "water_L": 11000, "source": "IMPRO_2014 Section 3.2.3 / WRAP_2017" },
+    "polyester":   { "co2_kg": 27.2, "water_L": 70,    "source": "IMPRO_2014 Figure 30-35" },
+    "acrylic":     { "co2_kg": 35.7, "water_L": 210,   "source": "IMPRO_2014 Figure 30-35" },
+    "wool":        { "co2_kg": 24.0, "water_L": 500,   "source": "IMPRO_2014 Figure 30-35" },
+    "viscose":     { "co2_kg": 19.0, "water_L": 640,   "source": "IMPRO_2014 Figure 30-35" },
+    "linen":       { "co2_kg": 15.0, "water_L": 780,   "source": "IMPRO_2014 Figure 30-35" },
+    "silk":        { "co2_kg": 14.9, "water_L": 1000,  "source": "IMPRO_2014 Figure 30-35" },
+    "nylon":       { "co2_kg": 30.0, "water_L": 90,    "source": "IMPRO_2014 Figure 30-35" }
+  },
+
+  "interventions": {
+    "extend_lifetime_2x": {
+      "label": "Wear each item twice as long before disposal",
+      "co2_reduction_pct": 44,
+      "water_reduction_pct": 44,
+      "waste_reduction_pct": 44,
+      "applies_to": "all_garments",
+      "source": "WRAP_2017 Table 10 (extending active life of clothes by 9 months)"
+    },
+    "extend_lifetime_9_months": {
+      "label": "Extend active life by 9 months",
+      "co2_reduction_pct": 8,
+      "water_reduction_pct": 10,
+      "waste_reduction_pct": 9,
+      "applies_to": "all_garments",
+      "source": "WRAP_2017 Table 10"
+    },
+    "wash_cold_30c": {
+      "label": "Wash at 30 degC instead of 40 degC",
+      "co2_reduction_pct": 5,
+      "applies_to": "use_phase",
+      "source": "IMPRO_2014 Section 4.5"
+    },
+    "full_load_washing": {
+      "label": "Wait for a full load before washing",
+      "co2_reduction_pct": 10,
+      "water_reduction_pct": 12,
+      "applies_to": "use_phase",
+      "source": "IMPRO_2014 Section 4.5"
+    },
+    "line_dry_no_tumble": {
+      "label": "Air-dry clothes instead of tumble drying",
+      "co2_reduction_pct": 13,
+      "applies_to": "use_phase",
+      "source": "IMPRO_2014 Section 4.5"
+    },
+    "buy_second_hand": {
+      "label": "Buy a second-hand garment instead of new",
+      "co2_avoided_pct": 80,
+      "water_avoided_pct": 80,
+      "applies_to": "purchase_decision",
+      "source": "WRAP_2017 Figure 18 (re-use displaces new production)"
+    },
+    "donate_dont_landfill": {
+      "label": "Donate / resell instead of binning",
+      "co2_avoided_per_kg": 3.2,
+      "applies_to": "disposal",
+      "source": "WRAP_2017 Figure 15 (UK disposal route mix)"
+    },
+    "switch_to_recycled_fibre": {
+      "label": "Buy garments made from 40% recycled fibre",
+      "co2_reduction_pct": 5.9,
+      "water_reduction_pct": 4.4,
+      "applies_to": "purchase_decision",
+      "source": "QUANTIS_2018 Action Item 3 (40% recycled fibre target)"
+    },
+    "renewable_energy_supply_chain": {
+      "label": "Choose brands committed to 60% renewable energy",
+      "co2_reduction_pct": 39,
+      "water_reduction_pct": 16.9,
+      "applies_to": "purchase_decision",
+      "source": "QUANTIS_2018 Action Item 1"
+    }
+  },
+
+  "benchmarks": {
+    "eu_per_capita_kg_co2_apparel_year": {
+      "value": 442,
+      "unit": "kg CO2eq / person / year",
+      "source": "QUANTIS_2018 p.19",
+      "note": "Equivalent to a 4,100 km flight or driving 2,400 km"
+    },
+    "eu_per_capita_water_L_apparel_year": {
+      "value": 23900,
+      "unit": "L / person / year",
+      "source": "QUANTIS_2018 p.19",
+      "note": "Equivalent to ~150 baths"
+    },
+    "eu_per_capita_kg_co2_footwear_year": {
+      "value": 94,
+      "unit": "kg CO2eq / person / year",
+      "source": "QUANTIS_2018 p.26"
+    },
+    "eu_per_capita_pairs_shoes_year": {
+      "value": 2.1,
+      "unit": "pairs / person / year",
+      "source": "QUANTIS_2018 p.26 (EU figure used as AU proxy)"
+    },
+    "uk_per_capita_kg_clothing_purchased_year": {
+      "value": 26.7,
+      "unit": "kg / person / year",
+      "source": "WRAP_2017"
+    },
+    "uk_per_capita_kg_clothing_landfilled_year": {
+      "value": 11.0,
+      "unit": "kg / person / year",
+      "source": "WRAP_2017 (used as AU proxy in absence of local data)"
+    },
+    "australia_data_status": "not_available_use_uk_eu_proxies"
+  },
+
+  "equivalences": {
+    "_purpose": "Help users translate kg CO2 into intuitive comparisons",
+    "km_driven_per_kg_co2": 5.7,
+    "km_flown_per_kg_co2": 9.3,
+    "smartphones_charged_per_kg_co2": 121,
+    "trees_year_to_offset_per_kg_co2": 0.045,
+    "source": "EPA Greenhouse Gas Equivalencies Calculator (2024)"
+  },
+
+  "industry_context": {
+    "global_apparel_share_of_emissions_pct": 6.7,
+    "global_footwear_share_of_emissions_pct": 1.4,
+    "global_combined_share_of_emissions_pct": 8.1,
+    "global_apparel_co2_Mt_year": 3290,
+    "global_footwear_co2_Mt_year": 700,
+    "projected_2030_growth_pct_vs_2016": 49,
+    "source": "QUANTIS_2018 Table 1, Table 3"
+  },
+
+  "disposal_routes_uk": {
+    "_unit": "percent of disposed clothing by mass",
+    "reuse_donated": 14,
+    "recycled_fibre": 13,
+    "incinerated_with_energy": 24,
+    "landfilled": 49,
+    "source": "WRAP_2017 Figure 15"
+  }
+}

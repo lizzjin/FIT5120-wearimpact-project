@@ -25,6 +25,15 @@ class Settings(BaseSettings):
     # PostgreSQL connection URL — used by Epic 4 brand service (asyncpg driver)
     database_url: str = ""
 
+    # Epic 3 — Claude API credentials for the wardrobe sustainability advisor
+    anthropic_api_key: str = ""
+
+    # Claude model used by the advisor; Haiku 4.5 by default for cost/latency
+    anthropic_model: str = "claude-haiku-4-5-20251001"
+
+    # Wardrobe audit cache TTL — identical wardrobe returns same advice within 24h
+    wardrobe_audit_cache_ttl: int = 86400
+
     # CORS origins allowed to call the backend (comma-separated in .env)
     cors_origins: list[str] = [
         "http://localhost:5173",

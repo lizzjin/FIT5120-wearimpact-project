@@ -17,6 +17,14 @@
         <button
           v-if="total > 0"
           type="button"
+          class="wd-main__advisor"
+          @click="emit('open-advisor')"
+        >
+          <Sparkles :size="13" :stroke-width="2" /> AI advisor
+        </button>
+        <button
+          v-if="total > 0"
+          type="button"
           class="wd-main__clear"
           @click="emit('clear')"
         >
@@ -24,6 +32,7 @@
         </button>
       </div>
     </header>
+
 
     <div class="wd-main__grid">
       <!-- Left: detail panel -->
@@ -69,7 +78,7 @@ const props = defineProps({
   total: { type: Number, default: 0 },
   recent: { type: Number, default: 0 }
 })
-const emit = defineEmits(['back', 'saved', 'delete', 'clear'])
+const emit = defineEmits(['back', 'saved', 'delete', 'clear', 'open-advisor'])
 
 const selectedId = ref(null)
 
@@ -171,6 +180,23 @@ function onDelete(id) {
   color: var(--color-danger);
   border-color: var(--color-danger);
 }
+
+.wd-main__advisor {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary-text);
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition-base), background var(--transition-base);
+}
+.wd-main__advisor:hover {
+  transform: scale(1.04);
+  background: var(--color-primary-dark);
+}
+
 
 .wd-main__grid {
   display: grid;
