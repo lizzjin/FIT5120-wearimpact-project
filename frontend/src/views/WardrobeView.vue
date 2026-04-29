@@ -22,7 +22,7 @@
           @enter="goWardrobe"
         />
         <WardrobeMain
-          v-else
+          v-else-if="view === 'wardrobe'"
           key="wardrobe"
           :garments="garments"
           :total="total"
@@ -31,6 +31,13 @@
           @saved="refresh"
           @delete="onDelete"
           @clear="onClearAll"
+          @open-advisor="goAdvisor"
+        />
+        <WardrobeAdvisor
+          v-else
+          key="advisor"
+          :garments="garments"
+          @close="goWardrobe"
         />
       </Transition>
     </main>
@@ -44,6 +51,7 @@ import QuizBackground from '../components/knowledge/QuizBackground.vue'
 import WardrobeIntro from '../components/wardrobe/WardrobeIntro.vue'
 import WardrobeOnboarding from '../components/wardrobe/WardrobeOnboarding.vue'
 import WardrobeMain from '../components/wardrobe/WardrobeMain.vue'
+import WardrobeAdvisor from '../components/wardrobe/WardrobeAdvisor.vue'
 
 import {
   getAllGarments,
@@ -73,6 +81,7 @@ function scrollTop() {
 function goIntro() { view.value = 'intro'; scrollTop() }
 function goOnboarding() { view.value = 'onboarding'; scrollTop() }
 function goWardrobe() { view.value = 'wardrobe'; scrollTop() }
+function goAdvisor() { view.value = 'advisor'; scrollTop() }
 
 async function onDelete(id) {
   await deleteGarment(id)

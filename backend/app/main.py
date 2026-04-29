@@ -11,9 +11,9 @@ import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import epic1_locations, epic4_brands
+from app.api import epic1_locations, epic3_advisor, epic4_brands
 from app.core.config import settings
-from app.services import maps_service
+from app.services import advisor_cache, maps_service
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,12 +37,14 @@ async def lifespan(app: FastAPI):
         # Verify the connection is reachable before accepting traffic
         await redis_client.ping()
         maps_service.set_redis_client(redis_client)
+        advisor_cache.set_redis_client(redis_client)
         logger.info("Redis connection established")
     except Exception as exc:
         logger.warning(
-            "Redis unavailable (%s) — place details caching is disabled", exc
+            "Redis unavailable (%s) — place details and advisor caching are disabled",
+            exc,
         )
-        # App continues without cache; details endpoint will call Google every time
+        # App continues without cache; details and advisor endpoints work uncached
 
     yield  # Application runs here
 
@@ -67,6 +69,7 @@ app.add_middleware(
 )
 
 app.include_router(epic1_locations.router)
+app.include_router(epic3_advisor.router)
 app.include_router(epic4_brands.router)
 
 
