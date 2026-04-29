@@ -7,6 +7,10 @@ backend/.env
 # Frontend secrets
 frontend/.env.local
 
+# Root env / MCP config (contains PAT)
+.env
+.mcp.json
+
 # Python cache
 __pycache__/
 *.pyc

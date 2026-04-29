@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import EcoShopView from '../views/EcoShopView.vue'
 import KnowledgeView from '../views/KnowledgeView.vue'
 import BrandSearchView from '../views/BrandSearchView.vue'
+import WardrobeView from '../views/WardrobeView.vue'
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: '/brand-search',
     name: 'brandSearch',
     component: BrandSearchView
+  },
+  {
+    path: '/wardrobe',
+    name: 'wardrobe',
+    component: WardrobeView
   }
 ]
 
