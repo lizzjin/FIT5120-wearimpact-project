@@ -66,6 +66,7 @@ const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/eco-shop', label: 'Eco-Shop' },
   { to: '/brand-search', label: 'Brand Search' },
+  { to: '/wardrobe', label: 'My Wardrobe' },
   { to: '/knowledge', label: 'Knowledge Hub' },
 ]
 </script>
