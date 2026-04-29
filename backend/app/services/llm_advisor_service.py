@@ -18,7 +18,7 @@ import json
 import logging
 from functools import lru_cache
 
-from anthropic import Anthropic, APIError
+from anthropic import Anthropic, APIConnectionError, APIError
 from pydantic import ValidationError
 
 from app.core.config import settings
@@ -118,7 +118,27 @@ def generate_advice(audit: AuditFacts, preset: PresetKey) -> Advice:
             tool_choice={"type": "tool", "name": "provide_advice"},
             messages=[{"role": "user", "content": user_prompt}],
         )
+    except APIConnectionError as exc:
+        # Network-layer failure: the underlying httpx error often has the
+        # actionable detail (DNS, TLS, ECONNREFUSED, etc.). Surface it.
+        cause = exc.__cause__ or exc.__context__
+        cause_repr = repr(cause) if cause else "no underlying cause"
+        logger.error(
+            "Advisor connection error: type=%s msg=%r cause=%s",
+            type(exc).__name__,
+            str(exc),
+            cause_repr,
+        )
+        raise AdvisorUpstreamError(
+            f"Claude API connection failed: {cause_repr}"
+        ) from exc
     except APIError as exc:
+        logger.error(
+            "Advisor API error: type=%s status=%s msg=%r",
+            type(exc).__name__,
+            getattr(exc, "status_code", "n/a"),
+            str(exc),
+        )
         raise AdvisorUpstreamError(f"Claude API failed: {exc}") from exc
 
     # Persistent visibility on cost — aggregate over time via log scraping.
