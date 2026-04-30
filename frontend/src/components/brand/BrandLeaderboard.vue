@@ -34,7 +34,7 @@
         :class="{ 'leaderboard__row--highlight': highlightIds.includes(row.company_id) }"
       >
         <button type="button" class="leaderboard__btn" @click="$emit('open', row.company_id)">
-          <span class="leaderboard__rank">#{{ row.rank }}</span>
+          <span class="leaderboard__rank">{{ row.rank }}</span>
           <span class="leaderboard__avatar" :style="logoErr[row.company_id] ? { background: avatarBg(row.company_name) } : {}">
             <img
               v-if="!logoErr[row.company_id]"

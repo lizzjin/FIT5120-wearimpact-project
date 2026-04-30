@@ -64,10 +64,10 @@ watch(() => route.path, () => { mobileOpen.value = false })
 
 const navLinks = [
   { to: '/', label: 'Home' },
-  { to: '/eco-shop', label: 'Eco-Shop' },
-  { to: '/brand-search', label: 'Brand Search' },
+  { to: '/eco-shop', label: 'Act' },
+  { to: '/knowledge', label: 'Discovery' },
+  { to: '/brand-search', label: 'Evaluate' },
   { to: '/wardrobe', label: 'My Wardrobe' },
-  { to: '/knowledge', label: 'Knowledge Hub' },
 ]
 </script>
 

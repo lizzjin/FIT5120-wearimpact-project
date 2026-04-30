@@ -45,9 +45,9 @@ const props = defineProps({
 defineEmits(['select'])
 
 const META = {
-  upper_body: { label: 'Upper body', icon: Shirt },
-  lower_body: { label: 'Lower body', icon: ShoppingBag },
-  footwear:   { label: 'Footwear',   icon: Footprints }
+  upper_body: { label: 'Tops',    icon: Shirt },
+  lower_body: { label: 'Bottoms', icon: ShoppingBag },
+  footwear:   { label: 'Shoes',   icon: Footprints }
 }
 const meta = computed(() => META[props.category] || { label: props.category, icon: Layers })
 const label = computed(() => meta.value.label)
@@ -65,6 +65,14 @@ function formatSub(v) {
   border-radius: var(--radius-card);
   padding: 16px 18px;
   box-shadow: var(--shadow-card);
+  /* Lock the row to a single fixed height so the empty state and a
+     full strip occupy exactly the same vertical space — that's what
+     keeps the left detail panel and right rail aligned with this column.
+     Sized to hold a 110×110 thumbnail + caption without clipping. */
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .wd-row__head {
@@ -104,22 +112,28 @@ function formatSub(v) {
 }
 
 .wd-row__empty {
+  flex: 1;
   background: var(--color-surface-alt);
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-card-sm);
   padding: 18px;
+  display: grid;
+  place-items: center;
   text-align: center;
   color: var(--color-text-subtle);
   font-size: 13px;
 }
 
 .wd-row__strip {
+  flex: 1;
   display: flex;
   gap: 12px;
   overflow-x: auto;
+  overflow-y: hidden;
   padding: 4px 2px 8px;
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
+  min-width: 0;
 }
 .wd-row__strip::-webkit-scrollbar { height: 6px; }
 .wd-row__strip::-webkit-scrollbar-thumb {

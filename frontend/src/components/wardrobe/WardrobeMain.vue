@@ -17,14 +17,6 @@
         <button
           v-if="total > 0"
           type="button"
-          class="wd-main__advisor"
-          @click="emit('open-advisor')"
-        >
-          <Sparkles :size="13" :stroke-width="2" /> AI advisor
-        </button>
-        <button
-          v-if="total > 0"
-          type="button"
           class="wd-main__clear"
           @click="emit('clear')"
         >
@@ -35,14 +27,32 @@
 
 
     <div class="wd-main__grid">
-      <!-- Left: detail panel -->
-      <GarmentDetailPanel
-        :garment="selectedGarment"
-        @close="selectedId = null"
-        @delete="onDelete"
-      />
+      <!-- Left column: detail panel on top, AI advisor pinned to the
+           bottom edge so it lines up with the upload card on the right. -->
+      <div class="wd-main__left">
+        <GarmentDetailPanel
+          :garment="selectedGarment"
+          @close="selectedId = null"
+          @delete="onDelete"
+        />
+        <button
+          v-if="total > 0"
+          type="button"
+          class="wd-main__advisor-card"
+          @click="emit('open-advisor')"
+        >
+          <span class="wd-main__advisor-icon">
+            <Sparkles :size="20" :stroke-width="2" />
+          </span>
+          <span class="wd-main__advisor-text">
+            <span class="wd-main__advisor-title">Ask the AI advisor</span>
+            <span class="wd-main__advisor-sub">Outfit ideas from your closet</span>
+          </span>
+          <ArrowRight :size="16" :stroke-width="2" class="wd-main__advisor-arrow" />
+        </button>
+      </div>
 
-      <!-- Right: wardrobe canvas -->
+      <!-- Middle + right: wardrobe canvas -->
       <div class="wd-main__canvas">
         <div class="wd-main__rows">
           <CategoryRow
@@ -66,7 +76,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { ArrowLeft, Sparkles, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, ArrowRight, Sparkles, Trash2 } from 'lucide-vue-next'
 import GarmentDetailPanel from './GarmentDetailPanel.vue'
 import CategoryRow from './CategoryRow.vue'
 import MannequinSlot from './MannequinSlot.vue'
@@ -181,23 +191,64 @@ function onDelete(id) {
   border-color: var(--color-danger);
 }
 
-.wd-main__advisor {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
+/* Prominent advisor entry — lives at the top of the right rail so it's
+   always in the user's eyeline alongside the wardrobe rows. */
+.wd-main__advisor-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 14px 14px 12px;
+  border-radius: var(--radius-card);
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
   color: var(--color-primary-text);
-  font-size: 12px; font-weight: 700;
   cursor: pointer;
-  transition: transform var(--transition-base), background var(--transition-base);
+  text-align: left;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
 }
-.wd-main__advisor:hover {
-  transform: scale(1.04);
+.wd-main__advisor-card:hover {
+  transform: translateY(-2px);
   background: var(--color-primary-dark);
+  box-shadow: var(--shadow-card-hover);
+}
+.wd-main__advisor-icon {
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  background: var(--color-primary-text);
+  color: var(--color-primary);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.wd-main__advisor-text {
+  display: flex; flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.wd-main__advisor-title {
+  font-size: 13px; font-weight: 800;
+  letter-spacing: -0.2px;
+}
+.wd-main__advisor-sub {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.78;
+}
+.wd-main__advisor-arrow {
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+}
+.wd-main__advisor-card:hover .wd-main__advisor-arrow {
+  transform: translateX(3px);
 }
 
 
+/* Locked layout height: 3 category rows (220px) + 2 × 14px gap.
+   Driving every column from this single value keeps the advisor card
+   and the upload card flush with the third row's bottom edge, even
+   when a tall garment-detail view is open in the left column. */
 .wd-main__grid {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -205,10 +256,16 @@ function onDelete(id) {
   align-items: start;
 }
 
+.wd-main__left,
+.wd-main__canvas {
+  height: 688px;
+}
+
 .wd-main__canvas {
   display: grid;
-  grid-template-columns: 1fr 240px;
+  grid-template-columns: 1fr 280px;
   gap: 18px;
+  align-items: stretch;
 }
 
 .wd-main__rows {
@@ -216,14 +273,26 @@ function onDelete(id) {
   gap: 14px;
 }
 
+.wd-main__left {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
 .wd-main__rail {
   display: flex; flex-direction: column;
   gap: 14px;
+  min-height: 0;
 }
 
 @media (max-width: 1100px) {
   .wd-main__grid { grid-template-columns: 1fr; }
   .wd-main__canvas { grid-template-columns: 1fr; }
+  /* Drop the locked height when columns stack — they're no longer
+     side-by-side, so there's nothing to align to. */
+  .wd-main__left,
+  .wd-main__canvas { height: auto; }
 }
 @media (max-width: 700px) {
   .wd-main { padding: 20px 16px 48px; }

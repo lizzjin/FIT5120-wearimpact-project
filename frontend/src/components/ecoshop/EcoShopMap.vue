@@ -180,13 +180,18 @@ function buildPinElement(type, isActive) {
   const el = document.createElement('div')
   el.className = `es-pin${isActive ? ' es-pin--active' : ''}`
   el.style.setProperty('--pin-colour', colour)
+  // Inner wrapper hosts hover/active transforms — keeping the root free
+  // of any `transition: transform` so Mapbox's per-frame translate3d
+  // (used to reposition markers on zoom) is never animated.
   el.innerHTML = `
-    <svg viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">
-      <path d="M16 2 C 8 2 3 8 3 16 C 3 24 16 38 16 38 C 16 38 29 24 29 16 C 29 8 24 2 16 2 Z"
-        fill="${colour}" stroke="#163300" stroke-width="1.6" />
-      <circle cx="16" cy="16" r="6.5" fill="${cream}" stroke="${colour}" stroke-width="0.5" />
-    </svg>
-    <span class="es-pin__icon" style="color: ${iconColour}">${getIconSvg(type)}</span>
+    <div class="es-pin__inner">
+      <svg viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">
+        <path d="M16 2 C 8 2 3 8 3 16 C 3 24 16 38 16 38 C 16 38 29 24 29 16 C 29 8 24 2 16 2 Z"
+          fill="${colour}" stroke="#163300" stroke-width="1.6" />
+        <circle cx="16" cy="16" r="6.5" fill="${cream}" stroke="${colour}" stroke-width="0.5" />
+      </svg>
+      <span class="es-pin__icon" style="color: ${iconColour}">${getIconSvg(type)}</span>
+    </div>
   `
   return el
 }
@@ -533,13 +538,23 @@ onBeforeUnmount(() => {
 </style>
 
 <style>
+/* Root pin element — Mapbox writes inline transform: translate3d(...) here
+   on every zoom frame to keep the pin glued to its lng/lat. NO `transform`
+   or `transition: transform` rules may live on this selector or markers
+   will visibly drift during wheel-zooms. */
 .es-pin {
-  position: relative;
   width: 32px;
   height: 40px;
   cursor: pointer;
+}
+
+.es-pin__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 180ms ease;
   transform-origin: bottom center;
+  will-change: transform;
 }
 
 .es-pin svg {
@@ -560,16 +575,17 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.es-pin:hover,
-.es-pin--hover {
+.es-pin:hover .es-pin__inner,
+.es-pin--hover .es-pin__inner {
   transform: scale(1.12) translateY(-2px);
-  z-index: 2;
 }
+.es-pin:hover,
+.es-pin--hover { z-index: 2; }
 
-.es-pin--active {
+.es-pin--active .es-pin__inner {
   transform: scale(1.22) translateY(-3px);
-  z-index: 3;
 }
+.es-pin--active { z-index: 3; }
 
 .es-pin--active svg {
   filter: drop-shadow(0 6px 14px rgba(22, 51, 0, 0.35));

@@ -70,7 +70,7 @@
 
           <!-- Rank line -->
           <span v-if="item.rank && pool > 1" class="brand-suggestion__rank">
-            Ranked <strong>#{{ item.rank }}</strong> of {{ pool }}
+            Ranked <strong>{{ item.rank }}</strong> of {{ pool }}
           </span>
 
           <!-- Mini distribution bar — neutral track, marker shows position -->
