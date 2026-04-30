@@ -79,7 +79,7 @@
         </Transition>
       </div>
 
-      <!-- Right: animation placeholder -->
+      <!-- Right: Lottie hero -->
       <div
         class="wd-intro__art"
         v-motion
@@ -87,11 +87,12 @@
         :enter="{ opacity: 1, scale: 1, transition: { duration: 800, delay: 200 } }"
         aria-hidden="true"
       >
-        <div class="wd-anim-placeholder">
-          <Sparkles :size="28" :stroke-width="1.6" />
-          <p class="wd-anim-placeholder__title">Hero animation</p>
-          <p class="wd-anim-placeholder__hint">Lottie / illustration — TBD</p>
-        </div>
+        <Vue3Lottie
+          :animation-data="heroAnim"
+          :loop="true"
+          :autoplay="true"
+          class="wd-intro__lottie"
+        />
       </div>
     </div>
   </section>
@@ -102,6 +103,8 @@ import { ref } from 'vue'
 import {
   Sparkles, Lock, BookOpen, ArrowRight, CircleAlert, Shirt
 } from 'lucide-vue-next'
+import { Vue3Lottie } from 'vue3-lottie'
+import heroAnim from '../../assets/lottie/wardrobe-hero.json'
 
 const props = defineProps({
   total: { type: Number, default: 0 }
@@ -251,32 +254,15 @@ const Hanger = Shirt
   text-decoration: underline; text-underline-offset: 2px;
 }
 
-/* ── Animation placeholder ──────────────────────────────────────────── */
+/* ── Lottie hero ─────────────────────────────────────────────────────── */
 .wd-intro__art {
-  height: 420px;
+  height: 540px;
   display: flex; align-items: center; justify-content: center;
 }
-.wd-anim-placeholder {
-  width: 100%; height: 100%;
-  border-radius: var(--radius-card-lg);
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(159, 232, 112, 0.08) 0 12px,
-      transparent 12px 24px
-    ),
-    var(--color-surface);
-  border: 2px dashed rgba(22, 51, 0, 0.18);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 10px;
-  color: var(--color-primary-text);
-}
-.wd-anim-placeholder__title {
-  font-size: 14px; font-weight: 700; letter-spacing: 0.5px;
-}
-.wd-anim-placeholder__hint {
-  font-size: 12px; color: var(--color-text-subtle);
+.wd-intro__lottie {
+  width: 100%;
+  height: 100%;
+  max-width: 640px;
 }
 
 .wd-empty-fade-enter-active, .wd-empty-fade-leave-active {
@@ -289,7 +275,7 @@ const Hanger = Shirt
 @media (max-width: 900px) {
   .wd-intro { padding: 64px 20px 40px; }
   .wd-intro__inner { grid-template-columns: 1fr; gap: 32px; }
-  .wd-intro__art { height: 260px; }
+  .wd-intro__art { height: 320px; }
   .wd-intro__index, .wd-intro__label { top: 64px; }
 }
 </style>

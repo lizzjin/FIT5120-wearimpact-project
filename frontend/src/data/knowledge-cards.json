@@ -1,0 +1,206 @@
+{
+  "schema_version": "1.0.0",
+  "last_updated": "2026-04-30",
+  "_purpose": "Educational deep-dive cards for the Knowledge Hub page 4 (Knowledge Cards). Two cards per theme, fourteen total. Sourced from Ellen MacArthur Foundation, UNEP, Quantis 2018, Textile Exchange, Levi Strauss LCA, Australian Bureau of Statistics, and ACCC greenwashing reports.",
+
+  "themes": [
+    { "key": "pollution",   "label": "Fashion's pollution footprint",  "accent": "#9fe870" },
+    { "key": "materials",   "label": "Material truths",                "accent": "#9fe870" },
+    { "key": "production",  "label": "Behind the factory door",        "accent": "#9fe870" },
+    { "key": "consumption", "label": "How we buy & wear",              "accent": "#9fe870" },
+    { "key": "care",        "label": "The hidden cost of laundry",     "accent": "#9fe870" },
+    { "key": "waste",       "label": "Where clothes go to die",        "accent": "#9fe870" },
+    { "key": "brand",       "label": "Greenwashing watch",             "accent": "#9fe870" }
+  ],
+
+  "cards": [
+    {
+      "id": "pollution-1",
+      "theme": "pollution",
+      "image": "/knowledge-cards/pollution-1.webp",
+      "title": "Fashion is responsible for up to 8% of global carbon emissions",
+      "summary": "Bigger than aviation and shipping combined — and it's still growing.",
+      "body": [
+        "The global fashion industry produces between 2% and 8% of all human-caused greenhouse-gas emissions. The upper end of that range puts fashion ahead of international aviation and maritime shipping combined.",
+        "It also drinks deep: an estimated 215 trillion litres of water are used by the industry each year, and about 15,000 different chemicals are applied across the supply chain — from pesticides on cotton fields to dyes and finishes in fabric mills.",
+        "On current trajectory the sector's emissions are projected to rise by more than 50% by 2030 unless production volumes and material choices change."
+      ],
+      "source": "UNEP — The Environmental Cost of Fashion (2019); Quantis 2018"
+    },
+    {
+      "id": "pollution-2",
+      "theme": "pollution",
+      "image": "/knowledge-cards/pollution-2.webp",
+      "title": "Most of your wardrobe is made from oil",
+      "summary": "Polyester, nylon and acrylic are plastics — and they now dominate clothing.",
+      "body": [
+        "Synthetic fibres make up around 60% of all clothing produced today. Polyester alone accounts for more than half of global fibre production, and like nylon and acrylic, it is derived from crude oil.",
+        "Producing one kilogram of virgin polyester releases roughly 27 kg of CO₂ — about three times the footprint of cotton on a per-kilogram basis. The fossil-fuel feedstock also means these fibres never fully biodegrade; they persist in landfill and oceans for centuries.",
+        "Every wash cycle of a synthetic garment also sheds microscopic plastic fibres that flow through wastewater treatment plants and into rivers, oceans and ultimately the food chain."
+      ],
+      "source": "Textile Exchange — Preferred Fiber & Materials Market Report 2023"
+    },
+
+    {
+      "id": "materials-1",
+      "theme": "materials",
+      "image": "/knowledge-cards/materials-1.webp",
+      "title": "One cotton T-shirt = 2.5 years of drinking water",
+      "summary": "It takes ~2,700 litres of water to grow the cotton in a single shirt.",
+      "body": [
+        "Cotton is one of the thirstiest crops on the planet. Producing the cotton for a single T-shirt takes about 2,700 litres of water — roughly what one person drinks over two and a half years.",
+        "Most of that water goes into irrigating cotton fields in regions that are already water-stressed. The Aral Sea in Central Asia, once the world's fourth-largest inland body of water, has shrunk by more than 90% — driven largely by cotton irrigation diverted from its feeder rivers.",
+        "Switching to organic, rainfed, or recycled cotton cuts that water footprint by 80–90%, while keeping the same comfort and breathability."
+      ],
+      "source": "WWF — The Impact of a Cotton T-Shirt; UNEP 2019"
+    },
+    {
+      "id": "materials-2",
+      "theme": "materials",
+      "image": "/knowledge-cards/materials-2.webp",
+      "title": "Less than 4% of fibres, but 75% of the methane",
+      "summary": "Animal fibres are a sliver of the wardrobe — and a huge slice of the impact.",
+      "body": [
+        "Wool, leather, silk, cashmere and other animal-derived materials together make up less than 4% of global fibre production. Yet they are responsible for an estimated three-quarters of fashion's biogenic methane emissions.",
+        "The reason is livestock: sheep and goats release methane through digestion, and methane is more than 80 times more potent than CO₂ over a 20-year horizon. Cashmere goats in particular have caused severe overgrazing across the Mongolian steppe, driving desertification.",
+        "Recycled wool, deadstock leather, and plant-based alternatives like Tencel-blended knitwear offer the warmth and feel of animal fibres at a fraction of the environmental cost."
+      ],
+      "source": "Collective Fashion Justice — CIRCUMFAUNA Initiative; FAO Livestock Methane Report"
+    },
+
+    {
+      "id": "production-1",
+      "theme": "production",
+      "image": "/knowledge-cards/production-1.webp",
+      "title": "Dyeing causes 20% of the world's water pollution",
+      "summary": "The colour in your jeans came from a river somewhere.",
+      "body": [
+        "Textile dyeing and finishing is the second-largest polluter of clean water globally, responsible for roughly 20% of all industrial wastewater pollution. In countries with weak environmental enforcement, untreated dye effluent often runs straight into rivers — colouring them visibly red, blue or black.",
+        "A single pair of jeans can require 70+ litres of water just for dyeing, alongside heavy metals, formaldehyde, and azo dyes that are linked to cancer and skin disorders in textile workers.",
+        "Closed-loop dyeing systems and waterless techniques like CO₂ dyeing exist and use up to 95% less water — but they remain rare because they require capital investment most factories can't afford on tight fast-fashion margins."
+      ],
+      "source": "World Bank — Pollution from the Textile Industry; Ellen MacArthur Foundation"
+    },
+    {
+      "id": "production-2",
+      "theme": "production",
+      "image": "/knowledge-cards/production-2.webp",
+      "title": "Up to 30% of clothes made are never sold",
+      "summary": "Burned, shredded, or buried — overproduction is the industry's open secret.",
+      "body": [
+        "The fashion industry consistently produces 20–30% more clothing than it sells. Excess stock is routinely incinerated, shredded, or sent to landfill — often by luxury brands protecting brand exclusivity.",
+        "Burberry famously admitted to burning £28 million of unsold stock in a single year before public outcry forced a policy change in 2018. France has since banned the destruction of unsold clothing, but most other countries have no such law.",
+        "On-demand manufacturing, smaller seasonal drops, and made-to-order capsules are emerging as alternatives — but they remain a tiny share of the global market."
+      ],
+      "source": "Ellen MacArthur Foundation — A New Textiles Economy"
+    },
+
+    {
+      "id": "consumption-1",
+      "theme": "consumption",
+      "image": "/knowledge-cards/consumption-1.webp",
+      "title": "We buy twice as much, but wear it half as long",
+      "summary": "Clothing production has doubled in 20 years; how often we wear each piece has dropped 40%.",
+      "body": [
+        "Between 2000 and 2015, global garment production roughly doubled. Over the same period, the average number of times a piece of clothing was worn before being discarded fell by about 40%.",
+        "Fast-fashion brands now release 12 to 24 collections a year, compared with the traditional two seasons. Garments are designed to feel disposable — and the price points reinforce that, with shirts priced lower than a coffee.",
+        "The result is a wardrobe that grows faster than ever, while individual items leave it sooner than ever. The gap between what we own and what we actually wear has never been wider."
+      ],
+      "source": "Ellen MacArthur Foundation 2017; McKinsey State of Fashion"
+    },
+    {
+      "id": "consumption-2",
+      "theme": "consumption",
+      "image": "/knowledge-cards/consumption-2.webp",
+      "title": "Wearing a garment 9 months longer cuts its impact by 20–30%",
+      "summary": "Use what you already own — it's the highest-leverage move you can make.",
+      "body": [
+        "WRAP's landmark Valuing Our Clothes study found that extending the active life of a garment by just nine months reduces its carbon, water and waste footprints by 20–30% each.",
+        "That's a bigger reduction than switching to organic cotton or recycled polyester would deliver. It's also the easiest: it requires no new purchase, no certification scheme, no logistics — just a willingness to repair, restyle and rewear.",
+        "Buying second-hand, mending small holes, and learning a single garment-care skill (like correct washing temperature) all extend life. The most sustainable garment is the one already in your wardrobe."
+      ],
+      "source": "WRAP UK — Valuing Our Clothes 2017"
+    },
+
+    {
+      "id": "care-1",
+      "theme": "care",
+      "image": "/knowledge-cards/care-1.webp",
+      "title": "Washing your jeans accounts for 37% of their lifetime carbon",
+      "summary": "Levi's tracked one pair of 501s for years — the dryer was the biggest culprit.",
+      "body": [
+        "Levi Strauss & Co conducted a full life-cycle assessment on a pair of 501 jeans and found that consumer use — washing, drying and ironing — accounted for 37% of the garment's total carbon footprint, more than the cotton farming or manufacturing stages.",
+        "The biggest single contributor is tumble drying. A single dryer cycle uses around 5x more energy than the wash itself. Hot-water washing also dwarfs cold-water washing in energy use.",
+        "Switching to cold-wash, line-drying, and washing jeans every 10 wears instead of every 2 cuts the in-use footprint by more than half — without changing the garment at all."
+      ],
+      "source": "Levi Strauss & Co — Lifecycle of a Jean (2015)"
+    },
+    {
+      "id": "care-2",
+      "theme": "care",
+      "image": "/knowledge-cards/care-2.webp",
+      "title": "Small loads release 5x more microfibres",
+      "summary": "Half-empty washing machines tumble synthetic clothes harder — and shed more plastic.",
+      "body": [
+        "Researchers at the University of Newcastle found that washing a small load of synthetic clothes releases roughly five times more microfibres than washing a full load. The reason is mechanical: in a half-empty drum, fabric tumbles further and abrades against itself more aggressively.",
+        "A single laundry load of synthetic garments can release up to 700,000 microscopic plastic fibres. They pass through wastewater treatment plants and accumulate in oceans and freshwater systems.",
+        "Washing full loads at 30°C, using a microfibre-catching wash bag (like Guppyfriend), and choosing natural fibres for items washed frequently are the simplest interventions."
+      ],
+      "source": "Napper & Thompson 2016; Plymouth Marine Lab"
+    },
+
+    {
+      "id": "waste-1",
+      "theme": "waste",
+      "image": "/knowledge-cards/waste-1.webp",
+      "title": "Australia recycles only 7% of its used clothing",
+      "summary": "We send 200,000 tonnes of textiles to landfill every year — most still wearable.",
+      "body": [
+        "Australians are among the largest textile consumers per capita in the world, buying an average of 27 kg of new clothing each year. Yet only about 7% of that ends up in any form of recycling or reuse system.",
+        "More than 200,000 tonnes of clothing — much of it still wearable — is sent to Australian landfill every year. In landfill, synthetic fibres release methane as they break down, and dyes and chemicals leach into soil and groundwater.",
+        "Charity bins are not a get-out-of-guilt-free card either: Australian charities export or destroy roughly 60% of the clothing donated to them, because the supply far exceeds local demand for second-hand goods."
+      ],
+      "source": "Australian Bureau of Statistics; Australia's National Clothing Product Stewardship Scheme 2023"
+    },
+    {
+      "id": "waste-2",
+      "theme": "waste",
+      "image": "/knowledge-cards/waste-2.webp",
+      "title": "A garbage truck of clothing is landfilled every second",
+      "summary": "Globally, the equivalent of one full garbage truck of textiles is dumped or burned every second.",
+      "body": [
+        "Worldwide, the equivalent of one garbage truck of textiles is sent to landfill or incinerated every single second. That works out to over 92 million tonnes of textile waste per year — and the figure keeps climbing as fast-fashion volumes grow.",
+        "The Atacama Desert in Chile has become an unofficial dumping ground for the world's discarded fashion. Satellite images now show a textile pile visible from space — a mound of unsold and donated clothing that has accumulated over the last decade.",
+        "Less than 1% of material used in clothing is recycled into new clothing. The rest is downcycled into insulation or wiping cloths, exported, or simply burned."
+      ],
+      "source": "Ellen MacArthur Foundation 2017; AFP / Atacama Desert reporting"
+    },
+
+    {
+      "id": "brand-1",
+      "theme": "brand",
+      "image": "/knowledge-cards/brand-1.webp",
+      "title": "\"Bamboo\" clothing is usually rebranded viscose",
+      "summary": "If a label says \"bamboo\" without certification, it's most likely the dirtiest fibre on the shelf.",
+      "body": [
+        "Most clothing sold as \"bamboo\" is actually viscose rayon made from bamboo pulp — and the conversion process uses carbon disulfide and other toxic chemicals that are released into the air and water around the mills.",
+        "The US Federal Trade Commission has fined multiple major retailers for marketing viscose-from-bamboo as natural \"bamboo fibre\". In Australia, the ACCC has issued similar guidance: claims about bamboo must distinguish between mechanically-processed bamboo (rare and rough) and chemically-processed viscose (common and polluting).",
+        "Genuinely cleaner alternatives exist — Tencel Lyocell, made from FSC-certified wood pulp in a closed-loop solvent process, recovers 99% of its solvent and is what \"sustainable bamboo\" is usually pretending to be."
+      ],
+      "source": "US FTC — Bamboo Marketing Guidelines; ACCC Greenwashing Guidance 2023"
+    },
+    {
+      "id": "brand-2",
+      "theme": "brand",
+      "image": "/knowledge-cards/brand-2.webp",
+      "title": "Vague green claims now require proof in Australia",
+      "summary": "The ACCC found 57% of green claims by fashion brands were misleading or unsubstantiated.",
+      "body": [
+        "An ACCC sweep in 2023 reviewed environmental marketing claims across Australian businesses, including fashion. It found that 57% of claims raised concerns — using vague language like \"eco-friendly\", \"conscious\", or \"sustainable\" without any evidence to back them up.",
+        "Look for specific, third-party verified claims instead. Trustworthy signals include: GOTS (Global Organic Textile Standard) for organic fibres, GRS (Global Recycled Standard) for recycled content, OEKO-TEX for chemical safety, and B Corp for company-wide accountability.",
+        "If a brand can't tell you which factory made the garment, what percentage of it is recycled, or how much water it took to produce — assume the green label is marketing first and accountability second."
+      ],
+      "source": "ACCC Internet Sweep 2023; Changing Markets Foundation — Synthetics Anonymous"
+    }
+  ]
+}

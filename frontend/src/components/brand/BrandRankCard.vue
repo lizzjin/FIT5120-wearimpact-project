@@ -1,5 +1,5 @@
 <template>
-  <article class="rank-card" :style="{ '--accent': labelColor, '--accent-bg': labelBg }">
+  <article class="rank-card" :style="{ '--pill-color': labelColor, '--pill-bg': labelBg }">
     <div class="rank-card__top">
       <div
         class="rank-card__avatar"
@@ -30,7 +30,7 @@
 
     <p class="rank-card__rank-line">
       Ranked
-      <span class="rank-card__rank-num">#{{ rank }}</span>
+      <span class="rank-card__rank-num">{{ rank }}</span>
       <span class="rank-card__rank-of">of {{ total }}</span>
     </p>
 
@@ -116,12 +116,9 @@ function guessDomain(name) {
 
 <style scoped>
 .rank-card {
-  --accent: var(--color-text);
-  --accent-bg: rgba(255, 255, 255, 0.85);
   position: relative;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--color-kh-glass-border);
-  border-top: 4px solid var(--accent);
   border-radius: 18px;
   padding: 22px 22px 20px;
   display: flex;
@@ -180,8 +177,8 @@ function guessDomain(name) {
   display: inline-block;
   align-self: flex-start;
   padding: 3px 10px;
-  background: var(--accent-bg);
-  color: var(--accent);
+  background: var(--pill-bg);
+  color: var(--pill-color);
   border-radius: var(--radius-pill);
   font-size: 11px;
   font-weight: 700;
@@ -221,7 +218,7 @@ function guessDomain(name) {
 .rank-card__rank-num {
   font-size: 32px;
   font-weight: 900;
-  color: var(--accent);
+  color: var(--color-text);
   letter-spacing: -0.02em;
 }
 
@@ -238,15 +235,14 @@ function guessDomain(name) {
 
 .rank-card__bar-track {
   height: 6px;
-  background: linear-gradient(to right, #054d28, #16a34a 25%, #ca8a04 50%, #ea580c 75%, #d03238);
+  background: rgba(22, 51, 0, 0.08);
   border-radius: 999px;
   overflow: hidden;
-  opacity: 0.85;
 }
 
 .rank-card__bar-fill {
   height: 100%;
-  background: rgba(22, 51, 0, 0.12);
+  background: var(--color-primary);
 }
 
 .rank-card__bar-marker {
@@ -254,8 +250,8 @@ function guessDomain(name) {
   top: 0;
   width: 14px;
   height: 14px;
-  background: var(--color-warm-cream);
-  border: 3px solid var(--accent);
+  background: var(--color-warm-cream, #fff);
+  border: 3px solid var(--color-primary-text);
   border-radius: 50%;
   transform: translate(-50%, -2px);
   box-shadow: 0 2px 8px rgba(22, 51, 0, 0.2);
@@ -287,7 +283,7 @@ function guessDomain(name) {
 .rank-card__score {
   font-size: 28px;
   font-weight: 900;
-  color: var(--accent);
+  color: var(--color-text);
   letter-spacing: -0.02em;
 }
 
@@ -302,18 +298,19 @@ function guessDomain(name) {
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary-text);
   border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
-  transition: background 180ms var(--motion-entrance);
+  transition: background 180ms var(--motion-entrance), transform 180ms var(--motion-entrance);
 }
 
 .rank-card__view:hover {
-  background: var(--accent-bg);
+  background: var(--color-primary-dark, var(--color-primary));
+  transform: translateX(2px);
 }
 </style>

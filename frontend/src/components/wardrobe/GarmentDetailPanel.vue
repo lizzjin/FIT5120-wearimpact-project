@@ -1,5 +1,9 @@
 <template>
   <aside class="wd-detail" :class="{ 'wd-detail--empty': !garment }">
+    <!-- Inner scroll container: the outer card clips with border-radius +
+         overflow:hidden so the scrollbar can never poke out of the rounded
+         corner. The actual scrolling happens here. -->
+    <div class="wd-detail__scroll">
     <div v-if="!garment" class="wd-detail__placeholder">
       <div class="wd-detail__placeholder-icon">
         <Hand :size="22" :stroke-width="1.6" />
@@ -26,10 +30,6 @@
       <div class="wd-detail__media">
         <img v-if="garment.image_base64" :src="garment.image_base64" :alt="garment.filename" />
       </div>
-
-      <h3 class="wd-detail__filename" :title="garment.filename">
-        {{ garment.filename || 'Untitled garment' }}
-      </h3>
 
       <!-- Washing label info — placeholder block until OCR/laundry data is wired up. -->
       <section class="wd-detail__section">
@@ -70,6 +70,7 @@
         Remove from wardrobe
       </button>
     </template>
+    </div>
   </aside>
 </template>
 
@@ -86,9 +87,9 @@ const props = defineProps({
 defineEmits(['close', 'delete'])
 
 const MAIN_LABEL = {
-  upper_body: 'Upper body',
-  lower_body: 'Lower body',
-  footwear: 'Footwear'
+  upper_body: 'Tops',
+  lower_body: 'Bottoms',
+  footwear: 'Shoes'
 }
 
 function formatMain(v) { return MAIN_LABEL[v] || v || 'Unknown' }
@@ -115,22 +116,52 @@ const careGuesses = computed(() => [
 .wd-detail {
   background: var(--color-surface);
   border-radius: var(--radius-card-lg);
-  padding: 22px;
   box-shadow: var(--shadow-card);
+  /* Clip the rounded corners so the inner scrollbar can never poke past them. */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Stretch to fill the left column above the AI advisor card so the panel
+     and the rest of the page top-edge / bottom-edge align cleanly. */
+  flex: 1;
+  min-height: 0;
+}
+
+.wd-detail__scroll {
+  flex: 1;
+  min-height: 0;
+  padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  position: sticky;
-  top: 88px;
-  max-height: calc(100vh - 110px);
   overflow-y: auto;
+  /* Thin scrollbar that lives entirely inside the rounded outer clip. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+.wd-detail__scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.wd-detail__scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wd-detail__scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 999px;
+}
+.wd-detail__scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-faint);
+}
+.wd-detail__scroll::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
 }
 
-.wd-detail--empty {
+.wd-detail--empty .wd-detail__scroll {
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 360px;
 }
 
 .wd-detail__placeholder-icon {
@@ -156,6 +187,7 @@ const careGuesses = computed(() => [
 
 .wd-detail__head {
   display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
 }
 .wd-detail__main-tag {
   display: inline-block;
@@ -183,19 +215,25 @@ const careGuesses = computed(() => [
   background: linear-gradient(135deg, var(--color-primary-lighter), var(--color-surface-alt));
   display: grid; place-items: center;
   overflow: hidden;
+  /* Padding lives on the parent so the inner img has a clean 100%/100%
+     box to fit into — no border-box gotchas, no overflow-clipping. */
+  padding: 18px;
+  box-sizing: border-box;
+  /* In a fixed-height flex column the media would otherwise be the first
+     thing to shrink — pin it so the photo always shows at full square. */
+  flex-shrink: 0;
 }
 .wd-detail__media img {
-  width: 100%; height: 100%; object-fit: contain; padding: 18px;
-}
-
-.wd-detail__filename {
-  font-size: 15px; font-weight: 700;
-  color: var(--color-text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .wd-detail__section {
   display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
 }
 
 .wd-detail__section-title {
@@ -238,6 +276,7 @@ const careGuesses = computed(() => [
 
 .wd-detail__delete {
   margin-top: auto;
+  flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   padding: 10px 14px;
   border-radius: var(--radius-pill);

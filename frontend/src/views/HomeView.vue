@@ -25,18 +25,31 @@
         <div class="story-text" data-reveal>
           <p class="eyebrow" data-line>FOR SUSTAINABLE FASHION IN AUSTRALIA</p>
           <h1 class="hero-headline">
-            <span class="hero-line" data-line>Look good.</span>
-            <span class="hero-line" data-line>Feel good.</span>
-            <span class="hero-line" data-line>Choose better.</span>
+            <span class="hero-line" data-line>Wear it longer.</span>
+            <span class="hero-line" data-line>Waste it less.</span>
+            <span class="hero-line" data-line>Look<span class="hero-line__accent"> way </span>better doing both.</span>
           </h1>
           <p class="hero-sub" data-line>
-            Fast fashion gives instant joy.<br />
-            But its impact lasts far longer than trends.
+            Fashion is one of the world's most polluting industries &mdash; and
+            most of its damage is already locked in long before a garment
+            reaches the hanger. Every wardrobe choice we make today outlives
+            the trend that inspired it.
+          </p>
+          <p class="hero-sub hero-sub--solution" data-line>
+            <strong>That's why WearImpact exists.</strong> We turn sustainable
+            fashion from guesswork into something simple &mdash; see every
+            brand's transparency score, find second-hand shops nearby, and
+            rediscover the wardrobe you already own.
           </p>
           <p class="hero-stat" data-line>
             <span class="big-quote big-quote--open" aria-hidden="true">&ldquo;</span>
-            Every year, Australians throw away <strong>220,000 tonnes</strong> of clothing.
-            Most of it was bought with good intentions.
+            The global fashion industry is responsible for an estimated
+            <strong class="hero-stat__nowrap">2&#8209;8%</strong>
+            of all human&#8209;caused carbon emissions &mdash; more than
+            international flights and maritime shipping combined.
+            <span class="hero-stat__src">
+              UN Environment Programme &middot; <em>The Environmental Cost of Fashion</em> (2019)
+            </span>
           </p>
           <span class="scroll-hint" data-line>
             Still curious?
@@ -44,96 +57,6 @@
           </span>
         </div>
         <div class="story-art story-art--hero" data-art v-html="artHero" aria-hidden="true" />
-      </div>
-    </section>
-
-    <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
-
-    <!-- §2 Sound Familiar? — animated wardrobe + question stagger -->
-    <section class="story story--familiar" data-section="familiar">
-      <span class="section-index section-index--right" aria-hidden="true">02</span>
-      <span class="section-label section-label--right" aria-hidden="true">SECTION 02 — THE MIRROR</span>
-      <span class="sprinkle sprinkle--shirt-1" aria-hidden="true"><Shirt :size="22" :stroke-width="1.6" /></span>
-      <span class="sprinkle sprinkle--tag-2" aria-hidden="true"><Tag :size="16" :stroke-width="1.6" /></span>
-      <span class="sprinkle sprinkle--check-1" aria-hidden="true"><CircleX :size="18" :stroke-width="1.6" /></span>
-      <div class="story-grid story-grid--reverse">
-        <div class="story-art story-art--wardrobe" data-art v-html="artWardrobe" aria-hidden="true" />
-        <div class="story-text" data-reveal>
-          <h2 data-line>Sound familiar?</h2>
-          <div class="questions">
-            <span class="big-quote big-quote--questions" aria-hidden="true">&ldquo;</span>
-            <p
-              v-for="(q, i) in familiarQuestions"
-              :key="i"
-              :class="`question question--${i + 1}`"
-              data-line
-            >
-              {{ q }}
-            </p>
-          </div>
-          <p class="familiar-stat" data-line>
-            You're not alone&nbsp;—
-            <strong><OdometerNumber :value="84" :duration="1200" />% of Australians</strong>
-            own clothes they haven't worn in over a year.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
-
-    <!-- §3 Hidden Cost — three motif columns on cream (no dark canvas). -->
-    <section class="story story--cost" data-section="cost">
-      <span class="section-index" aria-hidden="true">03</span>
-      <span class="section-label" aria-hidden="true">SECTION 03 — THE COST</span>
-      <span class="sprinkle sprinkle--leaf-2" aria-hidden="true"><Leaf :size="18" :stroke-width="1.6" /></span>
-      <span class="sprinkle sprinkle--droplet-1" aria-hidden="true"><Droplet :size="16" :stroke-width="1.6" /></span>
-      <div class="cost-content" data-reveal>
-        <p class="eyebrow" data-line>THE HIDDEN COST OF EVERY TREND</p>
-        <div class="stat-row">
-          <div
-            v-for="(stat, idx) in impactStats"
-            :key="stat.key"
-            class="stat-col"
-            :class="`stat-col--${stat.key}`"
-            data-line
-          >
-            <span class="stat-corner stat-corner--tl" aria-hidden="true" />
-            <span class="stat-corner stat-corner--tr" aria-hidden="true" />
-            <span class="stat-corner stat-corner--bl" aria-hidden="true" />
-            <span class="stat-corner stat-corner--br" aria-hidden="true" />
-            <span class="stat-index" aria-hidden="true">0{{ idx + 1 }}</span>
-            <span class="stat-motif" aria-hidden="true" v-html="stat.motif" />
-            <p class="stat-num">
-              <OdometerNumber :value="stat.value" :duration="1200" :decimals="stat.decimals" />
-              <span class="stat-suffix">{{ stat.suffix }}</span>
-            </p>
-            <p class="stat-lbl">{{ stat.label }}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
-
-    <!-- §4 Bridge — Storyset "examining" character + tethered copy. -->
-    <section class="story story--bridge" data-section="bridge">
-      <span class="section-index" aria-hidden="true">04</span>
-      <span class="section-label" aria-hidden="true">SECTION 04 — THE BRIDGE</span>
-      <span class="sprinkle sprinkle--check-2" aria-hidden="true"><Check :size="20" :stroke-width="1.6" /></span>
-      <span class="sprinkle sprinkle--leaf-3" aria-hidden="true"><Leaf :size="18" :stroke-width="1.6" /></span>
-      <span class="sprinkle sprinkle--sparkle-2" aria-hidden="true"><Sparkles :size="16" :stroke-width="1.6" /></span>
-      <div class="story-grid">
-        <div class="story-text story-text--bridge" data-reveal>
-          <h2 data-line>Sustainable choices<br />shouldn't feel hard.</h2>
-          <p class="bridge-sub" data-line>You don't need to stop loving fashion.</p>
-          <p class="bridge-em" data-line>
-            <span class="bridge-em-text">You just need better information.</span>
-            <span class="bridge-em-underline" aria-hidden="true" />
-          </p>
-          <p class="bridge-hint" data-line>Here's how WearImpact helps&nbsp;↓</p>
-        </div>
-        <div class="story-art story-art--bridge" data-art v-html="artBridge" aria-hidden="true" />
       </div>
     </section>
 
@@ -218,54 +141,25 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '../components/Navbar.vue'
 import FooterSection from '../components/FooterSection.vue'
-import OdometerNumber from '../components/OdometerNumber.vue'
 import {
   ArrowRight,
   Tag,
   Leaf,
   Sparkles,
   Shirt,
-  Check,
-  CircleX,
-  Droplet,
   MapPin,
   Search,
   BookOpen,
   Compass,
   ShieldCheck,
   Lightbulb,
-  Sprout,
-  ShoppingBag,
-  Sun,
-  HelpCircle,
-  RefreshCw,
-  Globe,
-  Cloud,
-  TreePine,
-  Recycle,
-  Droplets,
-  NotebookPen,
-  Pencil,
-  CircleCheck,
-  Coffee,
-  Store,
-  Key,
-  Smartphone,
-  Star,
-  PenTool,
-  GraduationCap,
-  StickyNote,
 } from 'lucide-vue-next'
 
 // Storyset animated SVGs — entrance choreography embedded; we toggle the
 // `.animated` class on each SVG root via ScrollTrigger so the entrance
 // re-plays every time the section enters the viewport.
 import artHero from '../assets/illustrations/choosing-clothes-animate.svg?raw'
-import artWardrobe from '../assets/illustrations/home-scene-wardrobe.svg?raw'
 import artBridge from '../assets/illustrations/choosing-clothes-animate2.svg?raw'
-import motifFiberSvg from '../assets/illustrations/home-motif-fiber.svg?raw'
-import motifCo2Svg from '../assets/illustrations/home-motif-co2.svg?raw'
-import motifWaterSvg from '../assets/illustrations/home-motif-water.svg?raw'
 import artThrift from '../assets/illustrations/thrift-shopping-animate.svg?raw'
 import artWindowShop from '../assets/illustrations/find-ecoshop-animate.svg?raw'
 import artKnowledge from '../assets/illustrations/learn-knowledge-animate.svg?raw'
@@ -297,13 +191,11 @@ const triggers = []
 
 // Side progress rail — one entry per scroll-section.
 const railSections = [
-  { key: 'hero',     label: '01 — The Promise' },
-  { key: 'familiar', label: '02 — The Mirror' },
-  { key: 'cost',     label: '03 — The Cost' },
-  { key: 'bridge',   label: '04 — The Bridge' },
-  { key: 'sol-5',    label: '05 — The Map' },
-  { key: 'sol-6',    label: '06 — The Lens' },
-  { key: 'sol-7',    label: '07 — The Guide' },
+  { key: 'hero',  label: '01 — The Promise' },
+  { key: 'sol-2', label: '02 — Your Wardrobe' },
+  { key: 'sol-3', label: '03 — Act' },
+  { key: 'sol-4', label: '04 — Evaluate' },
+  { key: 'sol-5', label: '05 — Discover' },
 ]
 
 const activeSectionKey = ref('hero')
@@ -316,42 +208,22 @@ function jumpToSection(key) {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-const familiarQuestions = [
-  '"Bought something because it was on sale?"',
-  '"Worn an outfit once, then forgot about it?"',
-  '"Have clothes in your wardrobe you never touch?"',
-]
-
-const impactStats = [
-  {
-    key: 'fiber',
-    value: 220,
-    suffix: 'k t',
-    decimals: 0,
-    label: 'of clothing sent to landfill every year in Australia',
-    motif: motifFiberSvg,
-  },
-  {
-    key: 'co2',
-    value: 14.5,
-    suffix: 'M t',
-    decimals: 1,
-    label: 'of CO₂ from fashion-related carbon emissions',
-    motif: motifCo2Svg,
-  },
-  {
-    key: 'water',
-    value: 1.8,
-    suffix: 'B t',
-    decimals: 1,
-    label: 'of water used by the global fashion industry annually',
-    motif: motifWaterSvg,
-  },
-]
-
 const solutions = [
   {
-    id: 5,
+    id: 2,
+    problem: 'Most of your impact lives in clothes you already own.',
+    title: 'See what\'s really in your wardrobe.',
+    description:
+      'Snap your clothes — we sort, tag, and store them in your browser. No login, no cloud. Then ask the AI advisor for outfit ideas built only from what you actually own.',
+    cta: 'Open My Wardrobe',
+    link: '/wardrobe',
+    art: artBridge,
+    labelTag: 'YOUR CLOSET',
+    sprinkleA: Shirt,
+    sprinkleB: Sparkles,
+  },
+  {
+    id: 3,
     problem: "You want to shop sustainably — but you don't know where to start.",
     title: 'Find second-hand stores near you.',
     description:
@@ -359,12 +231,12 @@ const solutions = [
     cta: 'Find Eco-Shops Near Me',
     link: '/eco-shop',
     art: artThrift,
-    labelTag: 'THE MAP',
+    labelTag: 'ACT',
     sprinkleA: MapPin,
     sprinkleB: Compass,
   },
   {
-    id: 6,
+    id: 4,
     problem: 'A brand says "sustainable." But is it really?',
     title: 'See how transparent your brands are.',
     description:
@@ -372,12 +244,12 @@ const solutions = [
     cta: 'Search a Brand',
     link: '/brand-search',
     art: artWindowShop,
-    labelTag: 'THE LENS',
+    labelTag: 'EVALUATE',
     sprinkleA: Search,
     sprinkleB: ShieldCheck,
   },
   {
-    id: 7,
+    id: 5,
     problem: "It's hard to choose better when you don't know what to look for.",
     title: 'Learn what actually matters.',
     description:
@@ -385,7 +257,7 @@ const solutions = [
     cta: 'Start Learning',
     link: '/knowledge',
     art: artKnowledge,
-    labelTag: 'THE GUIDE',
+    labelTag: 'DISCOVER',
     sprinkleA: BookOpen,
     sprinkleB: Lightbulb,
   },
@@ -510,23 +382,6 @@ function buildScrollChoreography() {
     updateRail()
   }
 
-  // Wardrobe glow choreography — pulse one item per question revealed.
-  const familiar = page.querySelector('[data-section="familiar"]')
-  if (familiar && !prefersReduced) {
-    const fireGlow = (cls) => familiar.classList.add(cls)
-    const glowTrig = ScrollTrigger.create({
-      trigger: familiar,
-      start: 'top 60%',
-      once: true,
-      onEnter: () => {
-        setTimeout(() => fireGlow('q1-active'), 320)
-        setTimeout(() => fireGlow('q2-active'), 620)
-        setTimeout(() => fireGlow('q3-active'), 920)
-        setTimeout(() => fireGlow('stat-active'), 1280)
-      },
-    })
-    triggers.push(glowTrig)
-  }
 }
 
 onMounted(async () => {
@@ -840,11 +695,24 @@ onBeforeUnmount(() => {
 }
 
 .hero-sub {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 500;
   color: var(--color-text-muted);
-  line-height: 1.44;
+  line-height: 1.55;
+  margin-bottom: 14px;
+  max-width: 540px;
+}
+
+.hero-sub--solution {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 16px;
+  color: var(--color-text);
+  font-weight: 500;
   margin-bottom: 22px;
+}
+.hero-sub--solution strong {
+  color: var(--color-primary-text);
+  font-weight: 800;
 }
 
 .hero-stat {
@@ -861,6 +729,28 @@ onBeforeUnmount(() => {
 .hero-stat strong {
   color: var(--color-text);
   font-weight: 700;
+}
+
+.hero-stat__src {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text-faint);
+}
+.hero-stat__src em {
+  font-style: italic;
+}
+
+/* Keep 2–8% from breaking across lines and showing a stray hyphen. */
+.hero-stat__nowrap {
+  white-space: nowrap;
+}
+
+.hero-line__accent {
+  color: var(--color-primary);
+  font-style: italic;
 }
 
 .scroll-hint {

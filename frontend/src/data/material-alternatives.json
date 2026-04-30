@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0.0",
+  "last_updated": "2026-04-30",
+  "_purpose": "Educational content for the Knowledge Hub material truths page. Conventional-fibre LCA numbers come from IMPRO 2014 / Quantis 2018 (consistent with backend reference_data.json). Preferred-alternative numbers and narrative text come from Textile Exchange Preferred Fiber Reports, Lenzing Tencel LCAs, Aquafil Econyl LCAs, and the Higg MSI library.",
+
+  "sources": [
+    "IMPRO Textiles 2014 (JRC)",
+    "Quantis 2018 — Measuring Fashion",
+    "Textile Exchange — Preferred Fiber & Materials Market Report 2023",
+    "Lenzing AG — TENCEL Lyocell life-cycle assessment",
+    "Aquafil — ECONYL regenerated nylon LCA",
+    "Sustainable Apparel Coalition — Higg Materials Sustainability Index"
+  ],
+
+  "fibres": [
+    {
+      "key": "cotton",
+      "label": "Cotton",
+      "fibre_type": "natural",
+      "co2_kg": 22.0,
+      "water_L": 11000,
+      "alternatives": [
+        {
+          "key": "organic_cotton",
+          "label": "Organic cotton",
+          "co2_kg": 16.5,
+          "water_L": 1000,
+          "co2_reduction_pct": 25,
+          "water_reduction_pct": 91,
+          "why_better": "Grown without synthetic pesticides or fertilisers, mostly rainfed rather than irrigated. Soil health improves over rotation cycles, and farmers avoid the most acutely toxic chemicals.",
+          "caveats": "Each field grows about a quarter less cotton, so more land is needed for the same number of clothes. It's also pricier, and only about 1% of cotton grown worldwide is certified organic.",
+          "source": "Textile Exchange 2023"
+        },
+        {
+          "key": "recycled_cotton",
+          "label": "Recycled cotton",
+          "co2_kg": 14.0,
+          "water_L": 800,
+          "co2_reduction_pct": 36,
+          "water_reduction_pct": 93,
+          "why_better": "Skips the entire farming, ginning and spinning chain by mechanically shredding old textiles. Diverts cotton from landfill in the process.",
+          "caveats": "Shredding old fabric breaks the cotton into shorter pieces, so recycled cotton is usually mixed with new cotton to keep the garment durable.",
+          "source": "Textile Exchange 2023"
+        }
+      ]
+    },
+
+    {
+      "key": "polyester",
+      "label": "Polyester (virgin)",
+      "fibre_type": "synthetic",
+      "co2_kg": 27.2,
+      "water_L": 70,
+      "alternatives": [
+        {
+          "key": "rpet",
+          "label": "Recycled polyester (rPET)",
+          "co2_kg": 9.5,
+          "water_L": 50,
+          "co2_reduction_pct": 65,
+          "water_reduction_pct": 29,
+          "why_better": "Made from melted-down PET bottles, skipping crude-oil extraction, polymerisation, and most of the energy-heavy upstream stages.",
+          "caveats": "Still releases tiny plastic fibres when you wash it. The bottles it's made from could also have been recycled into new bottles instead, which keeps that plastic in a cleaner loop for longer.",
+          "source": "Quantis 2018; Textile Exchange 2023"
+        }
+      ]
+    },
+
+    {
+      "key": "nylon",
+      "label": "Nylon (virgin)",
+      "fibre_type": "synthetic",
+      "co2_kg": 30.0,
+      "water_L": 90,
+      "alternatives": [
+        {
+          "key": "econyl",
+          "label": "Recycled nylon (Econyl)",
+          "co2_kg": 15.0,
+          "water_L": 80,
+          "co2_reduction_pct": 50,
+          "water_reduction_pct": 11,
+          "why_better": "Regenerated from discarded fishing nets, carpet scraps, and industrial nylon waste through chemical depolymerisation. Same performance as virgin nylon, indefinitely recyclable.",
+          "caveats": "It's still a plastic, so it still sheds tiny fibres in the wash. The recycling process also uses a lot of energy — just less than making nylon from scratch.",
+          "source": "Aquafil Econyl LCA"
+        }
+      ]
+    },
+
+    {
+      "key": "acrylic",
+      "label": "Acrylic",
+      "fibre_type": "synthetic",
+      "co2_kg": 35.7,
+      "water_L": 210,
+      "alternatives": [
+        {
+          "key": "hemp",
+          "label": "Hemp",
+          "co2_kg": 5.5,
+          "water_L": 2700,
+          "co2_reduction_pct": 85,
+          "water_reduction_pct": -1186,
+          "why_better": "Hemp is one of the highest-yielding plant fibres and grows on poor soil with minimal pesticides. The whole plant is used (fibre, seed, oil), and it actively sequesters carbon while growing.",
+          "caveats": "Uses much more water than acrylic to make the fabric — most of it during the soaking step that breaks the plant down into usable fibre. The texture also feels rough unless it's heavily softened.",
+          "source": "IMPRO 2014; Higg MSI"
+        }
+      ]
+    },
+
+    {
+      "key": "viscose",
+      "label": "Viscose / Rayon",
+      "fibre_type": "cellulosic",
+      "co2_kg": 19.0,
+      "water_L": 640,
+      "alternatives": [
+        {
+          "key": "tencel",
+          "label": "TENCEL Lyocell",
+          "co2_kg": 10.0,
+          "water_L": 150,
+          "co2_reduction_pct": 47,
+          "water_reduction_pct": 77,
+          "why_better": "Made from FSC-certified wood pulp using a closed-loop solvent process — over 99% of the solvent is recovered and reused, versus viscose's open-loop carbon-disulfide process.",
+          "caveats": "Tencel is a brand name with a specific clean-recycling process. Generic 'lyocell' on a label might be made differently — look for the Tencel logo to be sure.",
+          "source": "Lenzing AG"
+        }
+      ]
+    },
+
+    {
+      "key": "wool",
+      "label": "Wool",
+      "fibre_type": "natural",
+      "co2_kg": 24.0,
+      "water_L": 500,
+      "alternatives": [
+        {
+          "key": "recycled_wool",
+          "label": "Recycled wool",
+          "co2_kg": 3.0,
+          "water_L": 60,
+          "co2_reduction_pct": 88,
+          "water_reduction_pct": 88,
+          "why_better": "Eliminates the entire farm-to-yarn stage by reclaiming wool from end-of-life garments. Italy's Prato district has been doing this for over a century.",
+          "caveats": "Recycled fibres are shorter and a bit weaker, so the fabric is usually mixed with new wool to hold its shape. Supply is also limited.",
+          "source": "Textile Exchange 2023"
+        }
+      ]
+    },
+
+    {
+      "key": "silk",
+      "label": "Silk",
+      "fibre_type": "natural",
+      "co2_kg": 14.9,
+      "water_L": 1000,
+      "alternatives": [
+        {
+          "key": "peace_silk",
+          "label": "Peace silk (Ahimsa)",
+          "co2_kg": 13.0,
+          "water_L": 950,
+          "co2_reduction_pct": 13,
+          "water_reduction_pct": 5,
+          "why_better": "Silkworms are allowed to emerge from the cocoon as moths before the silk is harvested, eliminating the conventional practice of boiling the cocoons alive.",
+          "caveats": "When the moth flies out it breaks the silk thread, so each cocoon yields shorter pieces. That makes peace silk pricier and a little less smooth than regular silk.",
+          "source": "Textile Exchange 2023"
+        }
+      ]
+    },
+
+    {
+      "key": "linen",
+      "label": "Linen",
+      "fibre_type": "natural",
+      "co2_kg": 15.0,
+      "water_L": 780,
+      "is_preferred": true,
+      "preferred_note": "Linen (flax) is already one of the lowest-impact fibres — rainfed, grown on poor soil that wouldn't sustain food crops, with the whole plant used (fibre, seed, oil-cake feed). The 'alternative' here isn't a different fibre, it's choosing European-grown, dew-retted, GOTS-certified linen.",
+      "caveats": "Linen creases easily. Some manufacturers use chemicals to break down the flax stalks faster, which pollutes more water — look for linen labelled 'European' or 'dew-retted' for a cleaner version.",
+      "alternatives": []
+    }
+  ]
+}

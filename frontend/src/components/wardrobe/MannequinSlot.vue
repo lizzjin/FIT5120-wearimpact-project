@@ -1,48 +1,47 @@
 <template>
   <div class="wd-mannequin" aria-hidden="true">
-    <div class="wd-mannequin__placeholder">
-      <PersonStanding :size="34" :stroke-width="1.4" />
-      <p class="wd-mannequin__title">Mannequin animation</p>
-      <p class="wd-mannequin__hint">Outfit preview — TBD</p>
-    </div>
+    <Vue3Lottie
+      :animation-data="mannequinAnim"
+      :loop="true"
+      :autoplay="true"
+      class="wd-mannequin__lottie"
+    />
+    <p class="wd-mannequin__hint">Outfit preview</p>
   </div>
 </template>
 
 <script setup>
-import { PersonStanding } from 'lucide-vue-next'
+import { Vue3Lottie } from 'vue3-lottie'
+import mannequinAnim from '../../assets/lottie/my-wardrobe.json'
 </script>
 
 <style scoped>
 .wd-mannequin {
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-  padding: 14px;
-  box-shadow: var(--shadow-card);
+  /* Transparent so the Lottie blends into the page cream — no card frame. */
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  /* Fill all leftover vertical space in the rail above the upload card. */
+  flex: 1;
+  min-height: 0;
 }
 
-.wd-mannequin__placeholder {
+.wd-mannequin__lottie {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius-card-sm);
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(159, 232, 112, 0.08) 0 12px,
-      transparent 12px 24px
-    ),
-    var(--color-primary-lighter);
-  border: 1.5px dashed rgba(22, 51, 0, 0.18);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 6px;
-  color: var(--color-primary-text);
-  text-align: center;
-  padding: 12px;
+  flex: 1;
+  min-height: 0;
+  background: transparent;
 }
-.wd-mannequin__title {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
-}
+
 .wd-mannequin__hint {
-  font-size: 11px; color: var(--color-text-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--color-primary-text);
+  text-transform: uppercase;
+  flex-shrink: 0;
 }
 </style>
