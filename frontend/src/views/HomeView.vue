@@ -27,29 +27,16 @@
           <h1 class="hero-headline">
             <span class="hero-line" data-line>Wear it longer.</span>
             <span class="hero-line" data-line>Waste it less.</span>
-            <span class="hero-line" data-line>Look<span class="hero-line__accent"> way </span>better doing both.</span>
+            <span class="hero-line" data-line>Look better doing both.</span>
           </h1>
           <p class="hero-sub" data-line>
-            Fashion is one of the world's most polluting industries &mdash; and
-            most of its damage is already locked in long before a garment
-            reaches the hanger. Every wardrobe choice we make today outlives
-            the trend that inspired it.
+            Fashion leaves a footprint long before it reaches your wardrobe.
+            WearImpact helps you choose better, buy second-hand, and make
+            more of what you already own.
           </p>
           <p class="hero-sub hero-sub--solution" data-line>
-            <strong>That's why WearImpact exists.</strong> We turn sustainable
-            fashion from guesswork into something simple &mdash; see every
-            brand's transparency score, find second-hand shops nearby, and
-            rediscover the wardrobe you already own.
-          </p>
-          <p class="hero-stat" data-line>
-            <span class="big-quote big-quote--open" aria-hidden="true">&ldquo;</span>
-            The global fashion industry is responsible for an estimated
-            <strong class="hero-stat__nowrap">2&#8209;8%</strong>
-            of all human&#8209;caused carbon emissions &mdash; more than
-            international flights and maritime shipping combined.
-            <span class="hero-stat__src">
-              UN Environment Programme &middot; <em>The Environmental Cost of Fashion</em> (2019)
-            </span>
+            <strong>That's why WearImpact exists:</strong> to make sustainable
+            fashion easier to understand, easier to find, and easier to act on.
           </p>
           <span class="scroll-hint" data-line>
             Still curious?
@@ -586,33 +573,6 @@ onBeforeUnmount(() => {
   50%      { opacity: 0.4;  transform: scale(1.1); }
 }
 
-/* ── Big quote marks — typographic punctuation as decoration ── */
-.big-quote {
-  font-family: Georgia, 'Times New Roman', serif;
-  color: var(--color-primary);
-  opacity: 0.3;
-  font-size: 120px;
-  line-height: 1;
-  font-weight: 900;
-  pointer-events: none;
-  user-select: none;
-}
-
-.big-quote--open {
-  position: absolute;
-  left: -28px;
-  top: -32px;
-  z-index: 0;
-}
-
-.big-quote--questions {
-  position: absolute;
-  left: -32px;
-  top: -48px;
-  z-index: 0;
-  font-size: 140px;
-}
-
 /* ── Story divider — thin lime-dotted seam between sections ── */
 .story-divider {
   position: relative;
@@ -713,44 +673,6 @@ onBeforeUnmount(() => {
 .hero-sub--solution strong {
   color: var(--color-primary-text);
   font-weight: 800;
-}
-
-.hero-stat {
-  position: relative;
-  font-size: 14px;
-  color: var(--color-text-subtle);
-  line-height: 1.65;
-  border-left: 3px solid var(--color-primary);
-  padding-left: 16px;
-  margin-bottom: 36px;
-  max-width: 440px;
-}
-
-.hero-stat strong {
-  color: var(--color-text);
-  font-weight: 700;
-}
-
-.hero-stat__src {
-  display: block;
-  margin-top: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--color-text-faint);
-}
-.hero-stat__src em {
-  font-style: italic;
-}
-
-/* Keep 2–8% from breaking across lines and showing a stray hyphen. */
-.hero-stat__nowrap {
-  white-space: nowrap;
-}
-
-.hero-line__accent {
-  color: var(--color-primary);
-  font-style: italic;
 }
 
 .scroll-hint {
