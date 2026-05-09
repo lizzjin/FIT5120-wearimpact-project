@@ -1,6 +1,6 @@
 <template>
   <div class="wardrobe-page">
-    <!-- Shared Wise canvas — same component used by /brand-search and
+    <!-- Shared cream canvas — same component used by /brand-search and
          /knowledge so the cream + drifting blobs stay seamless. -->
     <QuizBackground />
 

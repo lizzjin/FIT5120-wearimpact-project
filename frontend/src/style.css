@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* ── Custom theme tokens — Wise-inspired palette ───────────────────────── */
+/* ── Custom theme tokens — lime + cream palette ───────────────────────── */
 @theme {
-  /* Brand palette — Wise Lime + Dark Green */
-  --color-primary: #9fe870;            /* Wise Green — accent / CTA bg */
+  /* Brand palette — lime + dark green */
+  --color-primary: #9fe870;            /* Lime — accent / CTA bg */
   --color-primary-dark: #cdffad;       /* Pastel green — hover/contrast */
   --color-primary-text: #163300;       /* Dark green — text on lime */
   --color-primary-light: #e2f6d5;      /* Light mint — soft surface */
@@ -12,13 +12,13 @@
   /* Surfaces — warm off-white canvas */
   --color-bg: #faf7f2;
   --color-surface: #ffffff;
-  --color-surface-alt: #e8ebe6;        /* Wise light surface (green-tinted) */
+  --color-surface-alt: #e8ebe6;        /* Light surface (green-tinted) */
 
-  /* Text — Wise neutral system */
+  /* Text — neutral system */
   --color-text: #0e0f0c;               /* Near black, warm undertone */
   --color-text-muted: #454745;         /* Warm dark */
   --color-text-faint: #aeaeae;
-  --color-text-subtle: #868685;        /* Wise gray */
+  --color-text-subtle: #868685;        /* Subtle gray */
 
   /* Borders — ring style */
   --color-border: rgba(14, 15, 12, 0.12);
@@ -30,10 +30,10 @@
   --radius-card: 30px;                 /* Medium feature card */
   --radius-card-lg: 40px;              /* Large card / table */
   --radius-pill: 9999px;
-  --radius-btn: 9999px;                /* Wise pill buttons */
+  --radius-btn: 9999px;                /* Pill buttons */
   --radius-input: 10px;
 
-  /* Wise minimal ring shadows */
+  /* Minimal ring shadows */
   --shadow-card: rgba(14, 15, 12, 0.12) 0 0 0 1px;
   --shadow-card-hover: rgba(14, 15, 12, 0.2) 0 0 0 1px;
   --shadow-modal: 0 24px 64px rgba(14, 15, 12, 0.22), 0 4px 16px rgba(14, 15, 12, 0.08);
@@ -67,14 +67,14 @@
   --color-warm-cream: #f6f0e6;
   --color-warm-alt: #faf7f2;
 
-  /* Score / label colours — semantic, Wise-aligned */
-  --color-score-great: #054d28;        /* Wise positive primary */
+  /* Score / label colours — semantic */
+  --color-score-great: #054d28;        /* Positive primary */
   --color-score-good: #16a34a;
   --color-score-start: #ca8a04;
   --color-score-below: #ea580c;
-  --color-score-avoid: #d03238;        /* Wise danger */
+  --color-score-avoid: #d03238;        /* Danger */
 
-  /* Wise semantic */
+  /* Semantic */
   --color-positive: #054d28;
   --color-danger: #d03238;
   --color-warning: #ffd11a;
@@ -95,7 +95,7 @@
   --color-kh-text: var(--color-text);
   --color-kh-text-muted: var(--color-text-muted);
   --color-kh-text-faint: var(--color-text-subtle);
-  --color-kh-accent: #9fe870;          /* Wise lime */
+  --color-kh-accent: #9fe870;          /* Lime accent */
   --color-kh-accent-strong: #163300;   /* Dark green emphasis on cream */
   --color-kh-correct: #cdffad;
   --color-kh-wrong: #ffc091;
@@ -123,7 +123,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  /* OpenType contextual alternates — Wise enables this on ALL text */
+  /* OpenType contextual alternates enabled site-wide */
   font-feature-settings: "calt" 1;
 }
 
@@ -142,7 +142,7 @@ body {
   font-family: 'Inter', 'Helvetica', Arial, sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
-  /* Wise body default is Inter Semibold (600) — confident, not light */
+  /* Body default is Inter Semibold (600) — confident, not light */
   font-weight: 600;
   font-size: 18px;
   line-height: 1.44;

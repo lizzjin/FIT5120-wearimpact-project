@@ -14,7 +14,7 @@
       <span class="canvas-grid" />
     </div>
 
-    <!-- §1 Hero — Storyset wardrobe character, headline reveals on scroll-progress. -->
+    <!-- §1 Hero — wardrobe illustration, headline reveals on scroll-progress. -->
     <section class="story story--hero" data-section="hero">
       <span class="section-index" aria-hidden="true">01</span>
       <span class="section-label" aria-hidden="true">SECTION 01 — THE PROMISE</span>
@@ -49,7 +49,7 @@
 
     <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
 
-    <!-- §5–7 Solutions — each pairs copy with a sourced Storyset scene. -->
+    <!-- §5–7 Solutions — each pairs copy with an animated illustration. -->
     <template v-for="(sol, i) in solutions" :key="sol.id">
       <section class="story story--solution" :data-section="`sol-${sol.id}`">
         <span class="section-index" :class="{ 'section-index--right': i % 2 === 1 }" aria-hidden="true">0{{ sol.id }}</span>
@@ -142,7 +142,7 @@ import {
   Lightbulb,
 } from 'lucide-vue-next'
 
-// Storyset animated SVGs — entrance choreography embedded; we toggle the
+// Animated illustrations — entrance choreography embedded; we toggle the
 // `.animated` class on each SVG root via ScrollTrigger so the entrance
 // re-plays every time the section enters the viewport.
 import artHero from '../assets/illustrations/choosing-clothes-animate.svg?raw'
@@ -320,7 +320,7 @@ function buildScrollChoreography() {
       })
       triggers.push(artTl.scrollTrigger)
 
-      // Storyset SVGs ship with their entrance gated by `.animated` on the
+      // Animated SVGs ship with their entrance gated by `.animated` on the
       // svg root. We strip that class at build time (sed) and re-apply it
       // here so the entrance plays every time the section enters viewport
       // (and reverses out on leave-back, ready to replay on re-enter).
@@ -697,7 +697,7 @@ onBeforeUnmount(() => {
   50%      { transform: rotate(2deg); }
 }
 
-/* Hero illustration — large, no frame. The Storyset SVG already has its
+/* Hero illustration — large, no frame. The animated SVG already has its
    own background shapes, so it sits unframed on the cream canvas. */
 .story-art--hero :deep(svg) {
   max-width: 620px;

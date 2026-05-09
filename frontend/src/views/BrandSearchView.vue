@@ -1,6 +1,6 @@
 <template>
   <div class="brand-page">
-    <!-- Unified Wise canvas — same component used on /knowledge to keep
+    <!-- Unified cream canvas — same component used on /knowledge to keep
          the cream + drifting blobs + topography aesthetic seamless. -->
     <QuizBackground />
 

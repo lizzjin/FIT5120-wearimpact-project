@@ -1,5 +1,5 @@
 <template>
-  <!-- Knowledge background — unified Wise cream canvas matching HomeView.
+  <!-- Knowledge background — unified cream canvas matching HomeView.
        Topography pattern + drifting blobs + abstract shapes, all on the
        warm-cream base so /knowledge feels like the same site as /. -->
   <div class="kh-canvas" aria-hidden="true">

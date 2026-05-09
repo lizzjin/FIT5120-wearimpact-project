@@ -121,7 +121,7 @@ const navLinks = [
   transition: color var(--transition-base), background-color var(--transition-base), transform var(--transition-base);
 }
 
-/* Wise green-tinted nav hover — see DESIGN.md §4 Navigation */
+/* Green-tinted nav hover */
 .nav-link:hover {
   color: var(--color-text);
   background-color: rgba(211, 242, 192, 0.4);
