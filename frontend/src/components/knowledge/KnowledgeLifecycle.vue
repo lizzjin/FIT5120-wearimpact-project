@@ -12,14 +12,13 @@
       </div>
     </header>
 
-    <!-- Top half: text on the left, video on the right -->
-    <div class="kh-life__split">
-      <div
-        class="kh-life__copy"
-        v-motion
-        :initial="{ opacity: 0, y: 18 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-      >
+    <div
+      class="kh-life__copy-wrap"
+      v-motion
+      :initial="{ opacity: 0, y: 18 }"
+      :enter="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+    >
+      <div class="kh-life__copy">
         <h3 class="kh-life__copy-title">A garment lives many lives</h3>
         <p>
           Before a piece of clothing reaches your wardrobe, it has already
@@ -28,8 +27,7 @@
           consumes water, and emits greenhouse gases.
         </p>
         <p>
-          The video on the right walks through that journey end-to-end. The
-          timeline beneath shows where each stage sits in the global apparel
+          The timeline below shows where each stage sits in the global apparel
           industry's footprint — based on
           <em>Quantis 2018: Measuring Fashion</em>, the most-cited
           sector-wide LCA study to date.
@@ -41,24 +39,6 @@
             apparel's climate impact — more than any other production stage.
           </span>
         </p>
-      </div>
-
-      <div
-        class="kh-life__video"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.96 }"
-        :enter="{ opacity: 1, scale: 1, transition: { duration: 700, delay: 150 } }"
-      >
-        <div class="kh-life__video-frame">
-          <iframe
-            src="https://www.youtube.com/embed/BiSYoeqb_VY?rel=0"
-            title="Lifecycle of a garment"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            loading="lazy"
-          ></iframe>
-        </div>
       </div>
     </div>
 
@@ -233,13 +213,10 @@ const stages = [
   color: var(--color-text);
 }
 
-/* ── Top split (text + video) ───────────────────────────────── */
-.kh-life__split {
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 36px;
-  align-items: stretch;
+/* ── Intro copy (full width above timeline) ─────────────────── */
+.kh-life__copy-wrap {
   margin-bottom: 72px;
+  max-width: 820px;
 }
 .kh-life__copy {
   background: var(--color-surface);
@@ -277,34 +254,6 @@ const stages = [
   background: var(--color-primary);
   color: var(--color-primary-text);
   display: grid; place-items: center;
-}
-
-/* ── Video ──────────────────────────────────────────────────── */
-/* The video container stretches to match the left card's height
-   (set by `align-items: stretch` on the grid). The frame inside
-   centres its 16:9 iframe vertically, so when the column is taller
-   than the frame's natural aspect ratio there's symmetric padding
-   above and below — bottoms still line up with the left card. */
-.kh-life__video {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.kh-life__video-frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: var(--radius-card-lg);
-  overflow: hidden;
-  background: var(--color-text);
-  box-shadow: var(--shadow-card);
-}
-.kh-life__video-frame iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
 }
 
 /* ── Timeline ───────────────────────────────────────────────── */
@@ -465,9 +414,6 @@ const stages = [
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 1100px) {
-  .kh-life__split { grid-template-columns: 1fr; gap: 24px; }
-}
 @media (max-width: 900px) {
   .kh-life { padding: 22px 18px 56px; }
   .kh-timeline {
