@@ -393,9 +393,71 @@ function buildScrollChoreography() {
     }
 
     if (prefersReduced) {
-      const everything = section.querySelectorAll('[data-line], [data-art]')
-      gsap.set(everything, { opacity: 1, y: 0 })
+      const everything = section.querySelectorAll('[data-line], [data-art], .story-text, .story-art')
+      gsap.set(everything, { opacity: 1, x: 0, y: 0 })
       return
+    }
+
+    // Per-section box entrance: .story-text + .story-art slide in from
+    // their visual sides on wide screens, fade-up on narrow stacks. The
+    // cascade inside .story-text plays a beat later so users see the box
+    // land first, then the lines light up.
+    //
+    // Note: .story-grid--reverse only widens the right column — it does
+    // NOT swap DOM order, so visually .story-text is always left and
+    // .story-art is always right across every section.
+    const textBox = section.querySelector('.story-text')
+    const artBox = section.querySelector('.story-art')
+    const leftBox = textBox
+    const rightBox = artBox
+    const isNarrow = window.matchMedia('(max-width: 1024px)').matches
+
+    // The side-slide finishes ~SLIDE_DUR + delay seconds after the trigger
+    // fires; we hand that timestamp to the inner-svg `.animated` gate below
+    // so the illustration's own entrance only starts after the box landed.
+    const SLIDE_DUR = 1.0
+    let slideSettleAt = 0    // ms timestamp when the slide finishes
+
+    if (leftBox && rightBox) {
+      if (isNarrow) {
+        gsap.set([leftBox, rightBox], { y: 60, opacity: 0 })
+        const enter = () => {
+          gsap.to(leftBox,  { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' })
+          gsap.to(rightBox, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: 0.08 })
+          slideSettleAt = performance.now() + 780
+        }
+        const reset = () => gsap.set([leftBox, rightBox], { y: 60, opacity: 0 })
+        triggers.push(ScrollTrigger.create({
+          trigger: section,
+          start: 'top 82%',
+          onEnter: enter, onEnterBack: enter, onLeaveBack: reset,
+        }))
+      } else {
+        // Wide-screen "open the curtain": each box starts fully off-screen
+        // (xPercent: ±120 puts the wrapper one viewport-width past its
+        // anchor) and slides in. .home now owns the horizontal clip so the
+        // off-screen position never leaks a scrollbar. Hero uses a softer
+        // ±60 because it's already in view on page load and a full curtain
+        // open from off-screen reads as jarring on first paint.
+        const lead = isHero ? -60 : -120
+        const trail = isHero ? 60 : 120
+        gsap.set(leftBox,  { xPercent: lead, opacity: 0 })
+        gsap.set(rightBox, { xPercent: trail, opacity: 0 })
+        const enter = () => {
+          gsap.to(leftBox,  { xPercent: 0, opacity: 1, duration: SLIDE_DUR, ease: 'power3.out' })
+          gsap.to(rightBox, { xPercent: 0, opacity: 1, duration: SLIDE_DUR, ease: 'power3.out', delay: 0.08 })
+          slideSettleAt = performance.now() + SLIDE_DUR * 1000 + 80
+        }
+        const reset = () => {
+          gsap.set(leftBox,  { xPercent: lead, opacity: 0 })
+          gsap.set(rightBox, { xPercent: trail, opacity: 0 })
+        }
+        triggers.push(ScrollTrigger.create({
+          trigger: section,
+          start: 'top 78%',
+          onEnter: enter, onEnterBack: enter, onLeaveBack: reset,
+        }))
+      }
     }
 
     // Per-section enter contract:
@@ -410,13 +472,17 @@ function buildScrollChoreography() {
       // The hero headline is owned by <AnimatedHeading>, do not double-wrap.
       if (el.classList.contains('hero-headline')) return
 
+      // The box-slide trigger above already owns the wrapper's opacity, so
+      // line-cascade pre-sets keep their motion (y / yPercent / blur) but
+      // skip opacity:0 — otherwise the wrapper slides in carrying invisible
+      // content and the side-entrance reads as empty.
       let initial, animated
       if (el.classList.contains('eyebrow') || el.classList.contains('sol-problem')) {
         const { chars } = splitText(el, 'char')
         if (!chars.length) return
-        gsap.set(chars, { opacity: 0, y: 12 })
+        gsap.set(chars, { y: 12 })
         initial = chars
-        animated = { opacity: 1, y: 0, duration: 0.55, stagger: 0.022, ease: 'power3.out' }
+        animated = { y: 0, duration: 0.55, stagger: 0.022, ease: 'power3.out' }
       } else if (el.tagName === 'H1' || el.tagName === 'H2' || el.classList.contains('bridge-em-text')) {
         const { inners } = splitInlineHTML(el)
         if (!inners.length) return
@@ -424,63 +490,71 @@ function buildScrollChoreography() {
         initial = inners
         animated = { yPercent: 0, duration: 1, stagger: 0.07, ease: 'power3.out' }
       } else if (el.classList.contains('hero-sub') || el.classList.contains('sol-desc') || el.tagName === 'P') {
-        gsap.set(el, { opacity: 0, y: 60, filter: 'blur(8px)' })
+        gsap.set(el, { y: 60, filter: 'blur(8px)' })
         initial = [el]
-        animated = { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.9, ease: 'power3.out' }
+        animated = { y: 0, filter: 'blur(0px)', duration: 0.9, ease: 'power3.out' }
       } else {
-        gsap.set(el, { opacity: 0, y: 18 })
+        gsap.set(el, { y: 18 })
         initial = [el]
-        animated = { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+        animated = { y: 0, duration: 0.6, ease: 'power3.out' }
       }
 
       const lineTrig = ScrollTrigger.create({
         trigger: el,
-        start: 'top 88%',
+        start: 'top 75%',
         once: false,
         onEnter:     () => gsap.to(initial, animated),
         onEnterBack: () => gsap.to(initial, animated),
         onLeaveBack: () => {
-          // Reset to initial state so the animation re-plays on re-entry —
-          // this is what makes Shelby's scrolling feel alive.
+          // Reset to initial state so the animation re-plays on re-entry.
           if (animated.yPercent !== undefined) gsap.set(initial, { yPercent: 110 })
-          else if (animated.filter) gsap.set(initial, { opacity: 0, y: 60, filter: 'blur(8px)' })
-          else if (initial[0]?.classList?.contains('split-char') || initial.length > 1) gsap.set(initial, { opacity: 0, y: 12 })
-          else gsap.set(initial, { opacity: 0, y: 18 })
+          else if (animated.filter) gsap.set(initial, { y: 60, filter: 'blur(8px)' })
+          else if (initial[0]?.classList?.contains('split-char') || initial.length > 1) gsap.set(initial, { y: 12 })
+          else gsap.set(initial, { y: 18 })
         },
       })
       triggers.push(lineTrig)
     })
 
     if (art) {
-      // Beefier art entrance — visible scale + rise, then a soft scrub keeps
-      // it breathing while the section is in view.
-      gsap.set(art, { opacity: 0, y: 100, scale: isHero ? 0.96 : 0.9 })
-      const artTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 82%',
-          end: 'top 20%',
-          scrub: 0.8,
-        },
-      })
-      artTl.to(art, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 1,
-        ease: 'power3.out',
-      })
-      triggers.push(artTl.scrollTrigger)
+      // Hero keeps the y + scale scrub because it's on-screen at page load
+      // — there's no curtain entrance to compete with. Solution sections
+      // get the full curtain side-slide above, so we drop the scrub here
+      // to keep the motion language clean (one big move per box, not
+      // three layered tweens).
+      if (isHero) {
+        gsap.set(art, { y: 100, scale: 0.96 })
+        const artTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 82%',
+            end: 'top 20%',
+            scrub: 0.8,
+          },
+        })
+        artTl.to(art, {
+          y: 0,
+          scale: 1,
+          duration: 1,
+          ease: 'power3.out',
+        })
+        triggers.push(artTl.scrollTrigger)
+      }
 
       // Animated SVGs ship with their entrance gated by `.animated` on the
       // svg root. We strip that class at build time (sed) and re-apply it
       // here so the entrance plays every time the section enters viewport
       // (and reverses out on leave-back, ready to replay on re-enter).
+      // Critically: the gate fires on `top 35%` instead of `top 70%` so
+      // the box has finished its curtain slide before the inner SVG starts
+      // performing — otherwise the illustration's micro-animations play
+      // while the whole box is still flying across the screen.
       const innerSvg = art.querySelector('svg[id^="freepik_stories"]')
       if (innerSvg) {
+        const startSvg = isHero ? 'top 70%' : 'top 35%'
         const replayTrig = ScrollTrigger.create({
           trigger: section,
-          start: 'top 70%',
+          start: startSvg,
           end: 'bottom 30%',
           onEnter: () => innerSvg.classList.add('animated'),
           onEnterBack: () => innerSvg.classList.add('animated'),
@@ -550,6 +624,11 @@ onBeforeUnmount(() => {
   width: 100%;
   position: relative;
   background: var(--color-warm-cream);
+  /* Section-level overflow:hidden was lifted up here so the side-entrance
+     boxes can start fully off-screen (xPercent: ±120) without each section
+     clipping them at its own edge. The page itself still hides any
+     horizontal overflow so the body never gets a horizontal scrollbar. */
+  overflow-x: hidden;
 
   /* Per-section ambient tint. ScrollTrigger swaps these on entry so the
      whole canvas-tint sheet cross-fades between moods. Defaults = hero. */
@@ -622,7 +701,8 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   padding: 60px 48px 160px;       /* extra bottom for global floor rail (130px + breathing room) */
-  overflow: hidden;
+  /* No overflow:hidden here — boxes need to start off-screen for the
+     side-entrance. .home owns the page-level horizontal clip instead. */
 }
 
 .story-grid {
