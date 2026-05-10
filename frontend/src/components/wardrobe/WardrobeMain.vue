@@ -6,8 +6,14 @@
         Back
       </button>
       <div class="wd-main__heading">
-        <p class="wd-main__eyebrow">MY WARDROBE</p>
-        <h2 class="wd-main__title">{{ total }} item{{ total === 1 ? '' : 's' }} in your closet</h2>
+        <p ref="eyebrowRef" class="wd-main__eyebrow">MY WARDROBE</p>
+        <AnimatedHeading
+          as="h2"
+          class="wd-main__title"
+          :text="`${total} item${total === 1 ? '' : 's'} in your closet`"
+          :stagger="0.07"
+          :delay="0.1"
+        />
       </div>
       <div class="wd-main__stats">
         <span class="wd-main__stat">
@@ -26,7 +32,7 @@
     </header>
 
 
-    <div class="wd-main__grid">
+    <div ref="gridRef" class="wd-main__grid">
       <!-- Left column: detail panel on top, AI advisor pinned to the
            bottom edge so it lines up with the upload card on the right. -->
       <div class="wd-main__left">
@@ -81,7 +87,19 @@ import GarmentDetailPanel from './GarmentDetailPanel.vue'
 import CategoryRow from './CategoryRow.vue'
 import MannequinSlot from './MannequinSlot.vue'
 import UploadCompact from './UploadCompact.vue'
+import AnimatedHeading from '../AnimatedHeading.vue'
 import { MAIN_CATEGORIES } from '../../services/wardrobeDb.js'
+import { useReveal } from '../../motion/useReveal'
+
+const eyebrowRef = ref(null)
+const gridRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+// Soft fade-up on the grid container — earlier we staggered each direct
+// child, but grid children include interactive cards/buttons; staggering
+// them mid-mount caused timing edge-cases when the section state was
+// switched after the user already had items. A single fade keeps the
+// "wardrobe opens" feel without touching individual item interactivity.
+useReveal(gridRef, { mode: 'fade-up', y: 24, duration: 0.7, delay: 0.2 })
 
 const props = defineProps({
   garments: { type: Array, default: () => [] },

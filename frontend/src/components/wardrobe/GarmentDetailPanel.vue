@@ -3,7 +3,7 @@
     <!-- Inner scroll container: the outer card clips with border-radius +
          overflow:hidden so the scrollbar can never poke out of the rounded
          corner. The actual scrolling happens here. -->
-    <div class="wd-detail__scroll">
+    <div class="wd-detail__scroll" data-lenis-prevent>
     <div v-if="!garment" class="wd-detail__placeholder">
       <div class="wd-detail__placeholder-icon">
         <Hand :size="22" :stroke-width="1.6" />

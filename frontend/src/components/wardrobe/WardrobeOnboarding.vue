@@ -6,22 +6,25 @@
     </button>
 
     <header class="wd-onboard__head">
-      <p class="wd-onboard__eyebrow">FIRST TIME USING THIS</p>
-      <h2 class="wd-onboard__title">Three steps to a smarter closet.</h2>
-      <p class="wd-onboard__sub">
+      <p ref="eyebrowRef" class="wd-onboard__eyebrow">FIRST TIME USING THIS</p>
+      <AnimatedHeading
+        as="h2"
+        class="wd-onboard__title"
+        text="Three steps to a smarter closet."
+        :stagger="0.07"
+        :delay="0.1"
+      />
+      <p ref="subRef" class="wd-onboard__sub">
         Snap, sort, browse. Each piece you upload is processed locally and stays on your
         device. Here's what happens at each step.
       </p>
     </header>
 
-    <div class="wd-steps">
+    <div ref="stepsRef" class="wd-steps">
       <article
         v-for="(step, i) in steps"
         :key="step.title"
         class="wd-step"
-        v-motion
-        :initial="{ opacity: 0, y: 24 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 120 * i } }"
       >
         <span class="wd-step__num">{{ String(i + 1).padStart(2, '0') }}</span>
         <div class="wd-step__media">
@@ -36,18 +39,34 @@
     </div>
 
     <div class="wd-onboard__cta-row">
-      <button type="button" class="wd-cta wd-cta--primary" @click="$emit('enter')">
-        I'm ready — take me to my wardrobe
-        <ArrowRight :size="16" :stroke-width="2" />
+      <button type="button" class="wd-cta wd-cta--primary is-burst-host" @click="$emit('enter')">
+        <CtaBurst />
+        <CtaFlip>
+          I'm ready — take me to my wardrobe
+          <ArrowRight :size="16" :stroke-width="2" />
+        </CtaFlip>
       </button>
     </div>
   </section>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { ArrowLeft, ArrowRight, Camera, Brain, LayoutGrid } from 'lucide-vue-next'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
+import { useStagger } from '../../motion/useStagger'
 
 defineEmits(['back', 'enter'])
+
+const eyebrowRef = ref(null)
+const subRef = ref(null)
+const stepsRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subRef, { mode: 'fade-blur', y: 40, delay: 0.25 })
+useStagger(stepsRef, { selector: '.wd-step', stagger: 0.12, y: 32, delay: 0.4 })
 
 const steps = [
   {

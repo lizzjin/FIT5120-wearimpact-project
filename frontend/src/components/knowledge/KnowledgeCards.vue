@@ -5,11 +5,15 @@
         <ArrowLeft :size="16" :stroke-width="2" /> Back
       </button>
       <div class="kh-cards__heading">
-        <p class="kh-cards__eyebrow">STEP 04 · DEEP-DIVE CARDS</p>
-        <h2 class="kh-cards__title">
-          Fourteen short reads — the numbers behind the slogans.
-        </h2>
-        <p class="kh-cards__subtitle">
+        <p ref="eyebrowRef" class="kh-cards__eyebrow">STEP 04 · DEEP-DIVE CARDS</p>
+        <AnimatedHeading
+          as="h2"
+          class="kh-cards__title"
+          text="Fourteen short reads — the numbers behind the slogans."
+          :stagger="0.06"
+          :delay="0.1"
+        />
+        <p ref="subtitleRef" class="kh-cards__subtitle">
           Tap any card to see the full story, the data, and where it comes from.
         </p>
       </div>
@@ -133,8 +137,15 @@
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { ArrowLeft, ArrowRight, BookOpen, X } from 'lucide-vue-next'
 import data from '../../data/knowledge-cards.json'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import { useReveal } from '../../motion/useReveal'
 
 defineEmits(['back'])
+
+const eyebrowRef = ref(null)
+const subtitleRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subtitleRef, { mode: 'fade-blur', y: 40, delay: 0.25 })
 
 const themes = data.themes
 const cards = data.cards

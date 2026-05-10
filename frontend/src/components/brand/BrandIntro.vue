@@ -6,42 +6,33 @@
     <!-- ── Hero ─────────────────────────────────────────────────────── -->
     <div class="brand-intro__hero">
       <div class="brand-intro__hero-text">
-        <p
-          class="brand-intro__eyebrow"
-          v-motion
-          :initial="{ opacity: 0, y: 12 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
+        <p ref="eyebrowRef" class="brand-intro__eyebrow">
           BRAND TRANSPARENCY · WHY IT MATTERS
         </p>
-        <h1
+        <AnimatedHeading
+          as="h1"
           class="brand-intro__title"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 700, delay: 100 } }"
+          :stagger="0.07"
+          :delay="0.1"
         >
           Behind every label,<br />
           a supply chain.
-        </h1>
-        <p
-          class="brand-intro__subtitle"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 250 } }"
-        >
+        </AnimatedHeading>
+        <p ref="subtitleRef" class="brand-intro__subtitle">
           Greenwashing is everywhere. Independent disclosure scores cut through it.
           Here's how 247 brands stack up — and how to read the numbers without falling for the marketing.
         </p>
         <button
           type="button"
-          class="brand-intro__hero-cta"
+          class="brand-intro__hero-cta is-burst-host"
+          ref="ctaRef"
           @click="scrollTo('pillars')"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 450 } }"
         >
-          See how it works
-          <ArrowDown :size="18" :stroke-width="2" />
+          <CtaBurst />
+          <CtaFlip>
+            See how it works
+            <ArrowDown :size="18" :stroke-width="2" />
+          </CtaFlip>
         </button>
       </div>
       <div class="brand-intro__hero-art" aria-hidden="true">
@@ -215,11 +206,23 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { ArrowDown, ArrowRight, Filter, HeartHandshake, Hourglass, Leaf, Scale, Workflow } from 'lucide-vue-next'
 import { Vue3Lottie } from 'vue3-lottie'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
 import heroAnim from '../../assets/lottie/brand-hero.json'
 
 defineEmits(['start'])
+
+const eyebrowRef = ref(null)
+const subtitleRef = ref(null)
+const ctaRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subtitleRef, { mode: 'fade-blur', y: 60, delay: 0.25 })
+useReveal(ctaRef, { mode: 'fade-up', y: 18, delay: 0.5 })
 
 // Tonal scale: from full lime ("top") fading to dim cream ("bottom").
 // Single colour family keeps the explainer aligned with the cream + lime

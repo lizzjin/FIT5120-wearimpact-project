@@ -14,15 +14,17 @@
         >
           STEP 01 · FIND ECO-SHOPS NEAR YOU
         </p>
-        <h1
+        <AnimatedHeading
+          as="h1"
           class="es-hero__title"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 700, delay: 100 } }"
-        >
-          Donate, swap, recycle —<br />
-          right around the corner.
-        </h1>
+          :lines="['Donate, swap, recycle —', 'right around the corner.']"
+          :stagger="0.08"
+          :delay="0.1"
+          paint-from="#9fe870"
+          paint-to="#0e0f0c"
+          :paint-stagger="0.07"
+          :paint-duration="0.5"
+        />
         <p
           class="es-hero__subtitle"
           v-motion
@@ -41,12 +43,15 @@
         >
           <button
             type="button"
-            class="es-hero__cta"
+            class="es-hero__cta is-burst-host"
             :disabled="isLocating"
             @click="$emit('use-location')"
           >
-            <Navigation2 :size="18" :stroke-width="2.2" />
-            {{ isLocating ? 'Locating…' : 'Use my location' }}
+            <CtaBurst />
+            <CtaFlip>
+              <Navigation2 :size="18" :stroke-width="2.2" />
+              {{ isLocating ? 'Locating…' : 'Use my location' }}
+            </CtaFlip>
           </button>
 
           <span v-if="isFallback" class="es-hero__fallback">
@@ -79,6 +84,9 @@
 <script setup>
 import { Vue3Lottie } from 'vue3-lottie'
 import { Navigation2 } from 'lucide-vue-next'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
 import heroAnim from '../../assets/lottie/eco-shop-hero.json'
 
 defineProps({

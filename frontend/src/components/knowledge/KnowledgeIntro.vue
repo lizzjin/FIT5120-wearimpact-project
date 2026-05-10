@@ -6,29 +6,19 @@
     <div class="kh-intro__inner">
       <!-- Left: text + CTA -->
       <div class="kh-intro__text">
-        <p
-          class="kh-intro__eyebrow"
-          v-motion
-          :initial="{ opacity: 0, y: 12 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
+        <p ref="eyebrowRef" class="kh-intro__eyebrow">
           STEP 01 · UNDERSTAND THE THEME
         </p>
-        <h1
+        <AnimatedHeading
+          as="h1"
           class="kh-intro__title"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 700, delay: 100 } }"
+          :stagger="0.07"
+          :delay="0.1"
         >
           What is<br />
           <span class="kh-intro__title-accent">sustainable fashion?</span>
-        </h1>
-        <p
-          class="kh-intro__subtitle"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 250 } }"
-        >
+        </AnimatedHeading>
+        <p ref="subtitleRef" class="kh-intro__subtitle">
           It's a way of designing, producing, and wearing clothing that minimises
           environmental and social harm. Where fast fashion races to put the
           cheapest garment on a hanger, sustainable fashion treats clothes as
@@ -36,12 +26,7 @@
           and recirculated rather than discarded.
         </p>
 
-        <ul
-          class="kh-intro__bullets"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 400 } }"
-        >
+        <ul ref="bulletsRef" class="kh-intro__bullets">
           <li>
             <Hourglass :size="14" :stroke-width="2" />
             <span>
@@ -67,32 +52,24 @@
           </li>
         </ul>
 
-        <div
-          class="kh-intro__actions"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 550 } }"
-        >
+        <div ref="actionsRef" class="kh-intro__actions">
           <button
             type="button"
-            class="kh-cta kh-cta--primary"
+            class="kh-cta kh-cta--primary is-burst-host"
             @click="$emit('next')"
           >
-            <BookOpen :size="16" :stroke-width="2" />
-            Start the journey
-            <ArrowRight :size="16" :stroke-width="2" />
+            <CtaBurst />
+            <CtaFlip>
+              <BookOpen :size="16" :stroke-width="2" />
+              Start the journey
+              <ArrowRight :size="16" :stroke-width="2" />
+            </CtaFlip>
           </button>
         </div>
       </div>
 
       <!-- Right: hero illustration animation (Lottie) -->
-      <div
-        class="kh-intro__art"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.94 }"
-        :enter="{ opacity: 1, scale: 1, transition: { duration: 800, delay: 200 } }"
-        aria-hidden="true"
-      >
+      <div ref="artRef" class="kh-intro__art" aria-hidden="true">
         <Vue3Lottie
           :animation-data="heroAnim"
           :loop="true"
@@ -105,13 +82,31 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Vue3Lottie } from 'vue3-lottie'
 import {
   ArrowRight, BookOpen, Hourglass, Leaf, Recycle,
 } from 'lucide-vue-next'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
+import { useStagger } from '../../motion/useStagger'
 import heroAnim from '../../assets/lottie/knowledge-hero.json'
 
 defineEmits(['next'])
+
+const eyebrowRef = ref(null)
+const subtitleRef = ref(null)
+const bulletsRef = ref(null)
+const actionsRef = ref(null)
+const artRef = ref(null)
+
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subtitleRef, { mode: 'fade-blur', y: 60, delay: 0.25 })
+useStagger(bulletsRef, { selector: 'li', stagger: 0.08, y: 24, delay: 0.4 })
+useReveal(actionsRef, { mode: 'fade-up', y: 18, delay: 0.55 })
+useReveal(artRef, { mode: 'fade-up', y: 24, duration: 1, delay: 0.2 })
 </script>
 
 <style scoped>

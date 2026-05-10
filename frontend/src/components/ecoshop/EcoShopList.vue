@@ -18,7 +18,7 @@
     </div>
 
     <!-- Cards (with inline expansion) -->
-    <div v-else class="es-list__scroll" ref="scrollEl">
+    <div v-else class="es-list__scroll" ref="scrollEl" data-stagger-host>
       <div
         v-for="place in places"
         :key="place.place_id"
@@ -57,6 +57,7 @@ import { nextTick, ref, watch } from 'vue'
 import { MapPinOff } from 'lucide-vue-next'
 import EcoShopLocationCard from './EcoShopLocationCard.vue'
 import EcoShopLocationDetail from './EcoShopLocationDetail.vue'
+import { gsap } from 'gsap'
 
 const props = defineProps({
   places: { type: Array, default: () => [] },
@@ -92,6 +93,24 @@ watch(
       row.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
   },
+)
+
+// Re-stagger cards every time the list contents change (filter / radius /
+// new fetch). Avoids the "list pops in as one block" feeling.
+watch(
+  () => props.places.map((p) => p.place_id).join('|'),
+  async () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    await nextTick()
+    const rows = scrollEl.value?.querySelectorAll('.es-list__row')
+    if (!rows || !rows.length) return
+    gsap.fromTo(
+      rows,
+      { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: 'power3.out' },
+    )
+  },
+  { immediate: true },
 )
 </script>
 

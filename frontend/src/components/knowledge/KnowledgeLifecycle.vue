@@ -5,21 +5,20 @@
         <ArrowLeft :size="16" :stroke-width="2" /> Back
       </button>
       <div class="kh-life__heading">
-        <p class="kh-life__eyebrow">STEP 02 · LIFECYCLE OF A GARMENT</p>
-        <h2 class="kh-life__title">
-          From cotton field to landfill — every stage leaves a footprint.
-        </h2>
+        <p class="kh-life__eyebrow" ref="eyebrowRef">STEP 02 · LIFECYCLE OF A GARMENT</p>
+        <AnimatedHeading
+          as="h2"
+          class="kh-life__title"
+          text="From cotton field to landfill — every stage leaves a footprint."
+          mode="word"
+          :stagger="0.06"
+        />
       </div>
     </header>
 
     <!-- Top half: text on the left, video on the right -->
     <div class="kh-life__split">
-      <div
-        class="kh-life__copy"
-        v-motion
-        :initial="{ opacity: 0, y: 18 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-      >
+      <div ref="copyRef" class="kh-life__copy">
         <h3 class="kh-life__copy-title">A garment lives many lives</h3>
         <p>
           Before a piece of clothing reaches your wardrobe, it has already
@@ -43,12 +42,7 @@
         </p>
       </div>
 
-      <div
-        class="kh-life__video"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.96 }"
-        :enter="{ opacity: 1, scale: 1, transition: { duration: 700, delay: 150 } }"
-      >
+      <div ref="videoRef" class="kh-life__video">
         <div class="kh-life__video-frame">
           <iframe
             src="https://www.youtube.com/embed/BiSYoeqb_VY?rel=0"
@@ -63,12 +57,7 @@
     </div>
 
     <!-- Timeline -->
-    <section
-      class="kh-life__timeline-wrap"
-      v-motion
-      :initial="{ opacity: 0, y: 24 }"
-      :enter="{ opacity: 1, y: 0, transition: { duration: 700, delay: 250 } }"
-    >
+    <section class="kh-life__timeline-wrap">
       <header class="kh-life__timeline-head">
         <p class="kh-life__timeline-eyebrow">THE 7-STAGE FOOTPRINT</p>
         <h3 class="kh-life__timeline-title">
@@ -76,7 +65,7 @@
         </h3>
       </header>
 
-      <ol class="kh-timeline" role="list">
+      <ol class="kh-timeline" role="list" ref="timelineRef">
         <li
           v-for="(stage, i) in stages"
           :key="stage.key"
@@ -109,15 +98,25 @@
         <ArrowLeft :size="16" :stroke-width="2" />
         Back
       </button>
-      <button type="button" class="kh-cta kh-cta--primary" @click="$emit('next')">
-        Next: material truths
-        <ArrowRight :size="16" :stroke-width="2" />
+      <button type="button" class="kh-cta kh-cta--primary is-burst-host" @click="$emit('next')">
+        <CtaBurst />
+        <CtaFlip>
+          Next: material truths
+          <ArrowRight :size="16" :stroke-width="2" />
+        </CtaFlip>
       </button>
     </footer>
   </section>
 </template>
 
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
 import {
   ArrowLeft,
   ArrowRight,
@@ -132,6 +131,56 @@ import {
 } from 'lucide-vue-next'
 
 defineEmits(['back', 'next'])
+
+// Eyebrow gets a per-character fade so the section title block reads as one
+// composed reveal: tag → headline → timeline.
+const eyebrowRef = ref(null)
+const copyRef = ref(null)
+const videoRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5, replay: true })
+useReveal(copyRef, { mode: 'fade-blur', y: 60, delay: 0.25, replay: true })
+useReveal(videoRef, { mode: 'fade-up', y: 32, duration: 1, delay: 0.2, replay: true })
+
+// Lifecycle scrollytelling: as the timeline enters viewport, each stage
+// pops in turn — a lightweight, mobile-safe stand-in for a full pin.
+const timelineRef = ref(null)
+const lifecycleTriggers = []
+
+onMounted(() => {
+  const wrap = timelineRef.value
+  if (!wrap) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const stages = wrap.querySelectorAll('.kh-stage')
+  if (!stages.length) return
+
+  gsap.set(stages, { opacity: 0, y: 24, scale: 0.92 })
+
+  const play = () =>
+    gsap.to(stages, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.6,
+      ease: 'back.out(1.6)',
+      stagger: 0.08,
+    })
+  const reset = () => gsap.set(stages, { opacity: 0, y: 24, scale: 0.92 })
+
+  const trig = ScrollTrigger.create({
+    trigger: wrap,
+    start: 'top 78%',
+    onEnter: play,
+    onEnterBack: play,
+    onLeaveBack: reset,
+  })
+  lifecycleTriggers.push(trig)
+})
+
+onBeforeUnmount(() => {
+  lifecycleTriggers.forEach((t) => t?.kill?.())
+  lifecycleTriggers.length = 0
+})
 
 // CO2 share figures from Quantis 2018 Table 2 (global apparel, 2016).
 // "peak" flags the dominant stage so the UI can highlight it.

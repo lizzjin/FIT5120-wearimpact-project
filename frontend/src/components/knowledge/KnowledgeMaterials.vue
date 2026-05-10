@@ -5,10 +5,14 @@
         <ArrowLeft :size="16" :stroke-width="2" /> Back
       </button>
       <div class="kh-mat__heading">
-        <p class="kh-mat__eyebrow">STEP 03 · MATERIAL TRUTHS</p>
-        <h2 class="kh-mat__title">
-          Pick a fibre — see the better alternative.
-        </h2>
+        <p ref="eyebrowRef" class="kh-mat__eyebrow">STEP 03 · MATERIAL TRUTHS</p>
+        <AnimatedHeading
+          as="h2"
+          class="kh-mat__title"
+          text="Pick a fibre — see the better alternative."
+          :stagger="0.06"
+          :delay="0.1"
+        />
       </div>
     </header>
 
@@ -169,9 +173,12 @@
       <button type="button" class="kh-cta kh-cta--ghost" @click="$emit('back')">
         <ArrowLeft :size="16" :stroke-width="2" /> Back
       </button>
-      <button type="button" class="kh-cta kh-cta--primary" @click="$emit('next')">
-        Next: knowledge cards
-        <ArrowRight :size="16" :stroke-width="2" />
+      <button type="button" class="kh-cta kh-cta--primary is-burst-host" @click="$emit('next')">
+        <CtaBurst />
+        <CtaFlip>
+          Next: knowledge cards
+          <ArrowRight :size="16" :stroke-width="2" />
+        </CtaFlip>
       </button>
     </footer>
   </section>
@@ -183,8 +190,15 @@ import {
   ArrowLeft, ArrowRight, CircleAlert, Leaf, Sparkles,
 } from 'lucide-vue-next'
 import data from '../../data/material-alternatives.json'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
 
 defineEmits(['back', 'next'])
+
+const eyebrowRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
 
 const fibres = data.fibres
 const selected = ref(null)

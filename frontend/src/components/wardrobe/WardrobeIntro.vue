@@ -6,64 +6,47 @@
     <div class="wd-intro__inner">
       <!-- Left: text + CTAs -->
       <div class="wd-intro__text">
-        <p
-          class="wd-intro__eyebrow"
-          v-motion
-          :initial="{ opacity: 0, y: 12 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
+        <p ref="eyebrowRef" class="wd-intro__eyebrow">
           STEP 03 · CATALOGUE WHAT YOU ALREADY HAVE
         </p>
-        <h1
+        <AnimatedHeading
+          as="h1"
           class="wd-intro__title"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 700, delay: 100 } }"
+          :stagger="0.07"
+          :delay="0.1"
         >
           Your closet,<br />
           <span class="wd-intro__title-accent">made visible.</span>
-        </h1>
-        <p
-          class="wd-intro__subtitle"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 250 } }"
-        >
+        </AnimatedHeading>
+        <p ref="subtitleRef" class="wd-intro__subtitle">
           Snap the clothes you already own. We lift them off the background, sort each piece
           into upper-body, lower-body or footwear, and keep the whole wardrobe right here in
           your browser — no account, no upload to the cloud.
         </p>
 
-        <ul
-          class="wd-intro__bullets"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 400 } }"
-        >
+        <ul ref="bulletsRef" class="wd-intro__bullets">
           <li><Sparkles :size="14" :stroke-width="2" /> AI background removal + auto-categorisation</li>
           <li><Lock :size="14" :stroke-width="2" /> Stored only on this device — clearing browser data clears it</li>
           <li><Hanger :size="14" :stroke-width="2" /> Browse what you own, by category, in one place</li>
         </ul>
 
-        <div
-          class="wd-intro__actions"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 550 } }"
-        >
+        <div ref="actionsRef" class="wd-intro__actions">
           <button type="button" class="wd-cta wd-cta--ghost" @click="$emit('first-time')">
             <BookOpen :size="16" :stroke-width="2" />
             First time using this
           </button>
           <button
             type="button"
-            class="wd-cta wd-cta--primary"
+            class="wd-cta wd-cta--primary is-burst-host"
             :class="{ 'wd-cta--shake': shake }"
             @click="onEnter"
           >
-            <Hanger :size="16" :stroke-width="2" />
-            Enter my wardrobe
-            <ArrowRight :size="16" :stroke-width="2" />
+            <CtaBurst />
+            <CtaFlip>
+              <Hanger :size="16" :stroke-width="2" />
+              Enter my wardrobe
+              <ArrowRight :size="16" :stroke-width="2" />
+            </CtaFlip>
           </button>
         </div>
 
@@ -105,11 +88,25 @@ import {
 } from 'lucide-vue-next'
 import { Vue3Lottie } from 'vue3-lottie'
 import heroAnim from '../../assets/lottie/wardrobe-hero.json'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
+import { useStagger } from '../../motion/useStagger'
 
 const props = defineProps({
   total: { type: Number, default: 0 }
 })
 const emit = defineEmits(['first-time', 'enter'])
+
+const eyebrowRef = ref(null)
+const subtitleRef = ref(null)
+const bulletsRef = ref(null)
+const actionsRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subtitleRef, { mode: 'fade-blur', y: 60, delay: 0.25 })
+useStagger(bulletsRef, { selector: 'li', stagger: 0.08, y: 24, delay: 0.4 })
+useReveal(actionsRef, { mode: 'fade-up', y: 18, delay: 0.55 })
 
 const emptyHint = ref(false)
 const shake = ref(false)

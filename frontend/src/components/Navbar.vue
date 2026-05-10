@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar" :class="{ 'is-dark': isDarkRoute }">
+  <nav class="navbar" :class="{ 'is-dark': isDarkRoute }" ref="navRef">
     <router-link to="/" class="logo">
       <span class="logo-mark">Wear</span><span class="logo-tail">Impact</span>
     </router-link>
@@ -54,6 +54,7 @@ import { useRoute } from 'vue-router'
 
 const mobileOpen = ref(false)
 const route = useRoute()
+const navRef = ref(null)
 
 // Knowledge Hub no longer uses the dark glass theme — it now shares the
 // unified cream canvas with the rest of the site, so the navbar stays light.

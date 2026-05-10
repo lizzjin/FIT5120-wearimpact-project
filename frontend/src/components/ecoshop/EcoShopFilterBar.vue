@@ -1,5 +1,5 @@
 <template>
-  <div class="es-filter">
+  <div class="es-filter" ref="rootRef">
     <div class="es-filter__inner">
       <!-- Type chips -->
       <div class="es-filter__group">
@@ -81,7 +81,12 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { ShoppingBag, HandHeart, Recycle, Minus, Plus, Layers } from 'lucide-vue-next'
+import { useReveal } from '../../motion/useReveal'
+
+const rootRef = ref(null)
+useReveal(rootRef, { mode: 'fade-up', y: 24, duration: 0.7 })
 
 const props = defineProps({
   activeFilter: { type: String, default: 'all' },

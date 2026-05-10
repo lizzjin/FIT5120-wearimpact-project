@@ -1,5 +1,5 @@
 <template>
-  <div class="es-map">
+  <div class="es-map" ref="mapWrapRef">
     <div ref="mapContainer" class="es-map__canvas"></div>
 
     <div v-if="errorMessage" class="es-map__error">
@@ -23,6 +23,10 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { useReveal } from '../../motion/useReveal'
+
+const mapWrapRef = ref(null)
+useReveal(mapWrapRef, { mode: 'fade-up', y: 28, duration: 0.9, delay: 0.15 })
 import { AlertCircle, Navigation2 } from 'lucide-vue-next'
 
 const props = defineProps({

@@ -8,9 +8,12 @@
          and a faint mint grid anchors the depth. Each element has its own
          period so they never pulse together. -->
     <div class="home-canvas" aria-hidden="true">
-      <span class="canvas-blob canvas-blob--tr" />
-      <span class="canvas-blob canvas-blob--bl" />
-      <span class="canvas-blob canvas-blob--mid" />
+      <!-- One soft full-screen tint sheet replaces the four-corner blob
+           "headlights". Per-section palette swaps drive a 800ms CSS
+           transition between two diagonal stops, so the page feels lit by
+           a different ambient colour in each section without any visible
+           light pucks. -->
+      <span class="canvas-tint" />
       <span class="canvas-grid" />
     </div>
 
@@ -24,11 +27,19 @@
       <div class="story-grid">
         <div class="story-text" data-reveal>
           <p class="eyebrow" data-line>FOR SUSTAINABLE FASHION IN AUSTRALIA</p>
-          <h1 class="hero-headline">
-            <span class="hero-line" data-line>Wear it longer.</span>
-            <span class="hero-line" data-line>Waste it less.</span>
-            <span class="hero-line" data-line>Look better doing both.</span>
-          </h1>
+          <AnimatedHeading
+            as="h1"
+            class="hero-headline"
+            mode="flip"
+            :lines="[
+              'Wear it longer.',
+              'Waste it less.',
+              'Look better doing both.',
+            ]"
+            :stagger="0.12"
+            :delay="0.15"
+            :duration="1.05"
+          />
           <p class="hero-sub" data-line>
             Fashion leaves a footprint long before it reaches your wardrobe.
             WearImpact helps you choose better, buy second-hand, and make
@@ -45,6 +56,19 @@
         </div>
         <div class="story-art story-art--hero" data-art v-html="artHero" aria-hidden="true" />
       </div>
+
+      <!-- Hexagon scroll-cue button: anchored to the bottom of the hero
+           viewport, scrolls smoothly to the first solution section. The
+           shape is built with clip-path; bounces gently to invite a click. -->
+      <button
+        type="button"
+        class="hero-scroll-down"
+        aria-label="Scroll to next section"
+        @click="jumpToSection('sol-2')"
+      >
+        <span class="hero-scroll-down__hex" aria-hidden="true" />
+        <ChevronDown :size="18" :stroke-width="2.4" class="hero-scroll-down__icon" />
+      </button>
     </section>
 
     <div class="story-divider" aria-hidden="true"><span /><span /><span /></div>
@@ -61,10 +85,10 @@
             <p class="sol-problem" data-line>{{ sol.problem }}</p>
             <h2 data-line>{{ sol.title }}</h2>
             <p class="sol-desc" data-line>{{ sol.description }}</p>
-            <router-link :to="sol.link" class="sol-cta" data-line>
+            <CtaButton :to="sol.link" class="sol-cta" data-line>
               {{ sol.cta }}
               <ArrowRight :size="17" :stroke-width="2.5" class="cta-arrow" />
-            </router-link>
+            </CtaButton>
           </div>
           <div class="story-art story-art--solution" data-art v-html="sol.art" aria-hidden="true" />
         </div>
@@ -76,17 +100,39 @@
          SVG icons flowing left → right continuously, identical across all
          sections. Footer fade hides the whole rail when reaching footer. -->
     <div class="floor-rail" aria-hidden="true">
-      <!-- Wavy lime ground line — shared baseline. -->
-      <svg class="floor-rail__wave" viewBox="0 0 1440 24" preserveAspectRatio="none">
-        <path
-          d="M 0 12 Q 60 2 120 12 T 240 12 T 360 12 T 480 12 T 600 12 T 720 12 T 840 12 T 960 12 T 1080 12 T 1200 12 T 1320 12 T 1440 12"
-          stroke="#9fe870"
-          stroke-width="2"
-          fill="none"
-          stroke-linecap="round"
-          opacity="0.7"
-        />
-      </svg>
+      <!-- Lime "river" — two parallax water layers under a bright surface line. -->
+      <div class="floor-river">
+        <svg class="river-layer river-layer--back" viewBox="0 0 2880 80" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="home-river-back" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0"    stop-color="#bff0a0" stop-opacity="0.45"/>
+              <stop offset="0.55" stop-color="#a8e394" stop-opacity="0.22"/>
+              <stop offset="1"    stop-color="#9fe870" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path :d="riverBackPathD" fill="url(#home-river-back)" />
+        </svg>
+        <svg class="river-layer river-layer--front" viewBox="0 0 2880 80" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="home-river-front" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0"    stop-color="#b6ea90" stop-opacity="0.62"/>
+              <stop offset="0.55" stop-color="#9fe870" stop-opacity="0.34"/>
+              <stop offset="1"    stop-color="#9fe870" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path :d="riverFrontPathD" fill="url(#home-river-front)" />
+        </svg>
+        <svg class="river-edge" viewBox="0 0 1440 24" preserveAspectRatio="none">
+          <path
+            d="M 0 12 Q 60 2 120 12 T 240 12 T 360 12 T 480 12 T 600 12 T 720 12 T 840 12 T 960 12 T 1080 12 T 1200 12 T 1320 12 T 1440 12"
+            stroke="#9fe870"
+            stroke-width="2"
+            fill="none"
+            stroke-linecap="round"
+            opacity="0.85"
+          />
+        </svg>
+      </div>
       <div class="floor-flow">
         <img
           v-for="(src, i) in floorIcons"
@@ -128,8 +174,12 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '../components/Navbar.vue'
 import FooterSection from '../components/FooterSection.vue'
+import AnimatedHeading from '../components/AnimatedHeading.vue'
+import CtaButton from '../components/CtaButton.vue'
+import { splitText, splitInlineHTML } from '../motion/splitText'
 import {
   ArrowRight,
+  ChevronDown,
   Tag,
   Leaf,
   Sparkles,
@@ -170,6 +220,21 @@ const floorIcons = [
   floorShoes,
   floorLightBulb,
 ]
+
+// River wave paths — drawn 2× viewport wide (2880) so the CSS
+// translateX(-50%) loop wraps seamlessly.
+function buildFrontRiverPath() {
+  const ts = []
+  for (let x = 240; x <= 2880; x += 120) ts.push(`T ${x} 32`)
+  return `M 0 32 Q 60 22 120 32 ${ts.join(' ')} L 2880 80 L 0 80 Z`
+}
+function buildBackRiverPath() {
+  const ts = []
+  for (let x = 360; x <= 2880; x += 180) ts.push(`T ${x} 26`)
+  return `M 0 26 Q 90 18 180 26 ${ts.join(' ')} L 2880 80 L 0 80 Z`
+}
+const riverFrontPathD = buildFrontRiverPath()
+const riverBackPathD = buildBackRiverPath()
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -250,6 +315,20 @@ const solutions = [
   },
 ]
 
+// Per-section ambient palette. As the user scrolls into each .story, GSAP
+// scrub-tweens these CSS variables on the .home root, letting the fixed
+// background blobs cross-fade between moods. Indexed by data-section.
+// Two diagonal stops per section — drives the full-screen `.canvas-tint`
+// gradient. Colours are intentionally low-saturation so the tint reads as
+// "the light changed" rather than "the page got dyed".
+const SECTION_PALETTES = {
+  hero:    { '--bg-tint-a': '#d4f3b5', '--bg-tint-b': '#fff5e1', '--bg-tint-opacity': '0.06' },
+  'sol-2': { '--bg-tint-a': '#e0dcff', '--bg-tint-b': '#f0eaff', '--bg-tint-opacity': '0.05' },
+  'sol-3': { '--bg-tint-a': '#d4f3b5', '--bg-tint-b': '#cfe6ff', '--bg-tint-opacity': '0.07' },
+  'sol-4': { '--bg-tint-a': '#fde0c4', '--bg-tint-b': '#ffe9c8', '--bg-tint-opacity': '0.06' },
+  'sol-5': { '--bg-tint-a': '#cdffad', '--bg-tint-b': '#bfd9b3', '--bg-tint-opacity': '0.09' },
+}
+
 // Scroll-progress reveal: every section's lines + art rise from below as the
 // section enters. `scrub` ties the animation to scroll position so reverse
 // scroll un-reveals — the page feels like it tracks the wheel exactly.
@@ -259,9 +338,46 @@ function buildScrollChoreography() {
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+  // Background ambient: wheel-driven topography parallax + per-section
+  // palette scrub. Both short-circuit under reduce-motion.
+  if (!prefersReduced) {
+    const grid = page.querySelector('.canvas-grid')
+    if (grid) {
+      const gridTrig = gsap.to(grid, {
+        backgroundPosition: '0 -240px',
+        ease: 'none',
+        scrollTrigger: { trigger: page, start: 'top top', end: 'bottom bottom', scrub: true },
+      })
+      triggers.push(gridTrig.scrollTrigger)
+    }
+
+    // Palette swap on section enter/leave-back. CSS variables are switched
+    // instantly, but the blob `background` rules carry a 600ms transition,
+    // so visually the colour cross-fades across about half a second.
+    // GSAP can't smoothly tween hex colours stored in CSS vars, so we drive
+    // the swap with ScrollTrigger callbacks rather than a scrub tween.
+    const applyPalette = (key) => {
+      const palette = SECTION_PALETTES[key]
+      if (!palette) return
+      Object.entries(palette).forEach(([k, v]) => page.style.setProperty(k, v))
+    }
+    page.querySelectorAll('.story[data-section]').forEach((section) => {
+      const key = section.dataset.section
+      if (!SECTION_PALETTES[key]) return
+      const trig = ScrollTrigger.create({
+        trigger: section,
+        start: 'top 55%',
+        end: 'bottom 45%',
+        onEnter:     () => applyPalette(key),
+        onEnterBack: () => applyPalette(key),
+      })
+      triggers.push(trig)
+    })
+  }
+
   page.querySelectorAll('.story').forEach((section) => {
-    const lines = section.querySelectorAll('[data-line]')
     const art = section.querySelector('[data-art]')
+    const isHero = section.dataset.section === 'hero'
 
     // Track active section for the side progress rail + global floor swap
     const sectionKey = section.dataset.section
@@ -277,32 +393,68 @@ function buildScrollChoreography() {
     }
 
     if (prefersReduced) {
-      gsap.set([...lines, art].filter(Boolean), { opacity: 1, y: 0 })
+      const everything = section.querySelectorAll('[data-line], [data-art]')
+      gsap.set(everything, { opacity: 1, y: 0 })
       return
     }
 
-    if (lines.length) {
-      gsap.set(lines, { opacity: 0, y: 36 })
-      const linesTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 78%',
-          end: 'top 30%',
-          scrub: 0.6,
+    // Per-section enter contract:
+    //   .eyebrow / .sol-problem → char stagger (looks like a tag waking up).
+    //   h2 / .bridge-em-text    → word-mask rise.
+    //   .hero-sub / .sol-desc / paragraphs → fade-up + blur(8px → 0).
+    //   CTA / .scroll-hint → simple fade-up.
+    // Each one gets its own ScrollTrigger so the cadence within a section
+    // reads as a sequence (tag → headline → body → cta) rather than a single
+    // group fade. Replay on enter-back so scrolling backwards re-charges it.
+    section.querySelectorAll('[data-line]').forEach((el) => {
+      // The hero headline is owned by <AnimatedHeading>, do not double-wrap.
+      if (el.classList.contains('hero-headline')) return
+
+      let initial, animated
+      if (el.classList.contains('eyebrow') || el.classList.contains('sol-problem')) {
+        const { chars } = splitText(el, 'char')
+        if (!chars.length) return
+        gsap.set(chars, { opacity: 0, y: 12 })
+        initial = chars
+        animated = { opacity: 1, y: 0, duration: 0.55, stagger: 0.022, ease: 'power3.out' }
+      } else if (el.tagName === 'H1' || el.tagName === 'H2' || el.classList.contains('bridge-em-text')) {
+        const { inners } = splitInlineHTML(el)
+        if (!inners.length) return
+        gsap.set(inners, { yPercent: 110 })
+        initial = inners
+        animated = { yPercent: 0, duration: 1, stagger: 0.07, ease: 'power3.out' }
+      } else if (el.classList.contains('hero-sub') || el.classList.contains('sol-desc') || el.tagName === 'P') {
+        gsap.set(el, { opacity: 0, y: 60, filter: 'blur(8px)' })
+        initial = [el]
+        animated = { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.9, ease: 'power3.out' }
+      } else {
+        gsap.set(el, { opacity: 0, y: 18 })
+        initial = [el]
+        animated = { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+      }
+
+      const lineTrig = ScrollTrigger.create({
+        trigger: el,
+        start: 'top 88%',
+        once: false,
+        onEnter:     () => gsap.to(initial, animated),
+        onEnterBack: () => gsap.to(initial, animated),
+        onLeaveBack: () => {
+          // Reset to initial state so the animation re-plays on re-entry —
+          // this is what makes Shelby's scrolling feel alive.
+          if (animated.yPercent !== undefined) gsap.set(initial, { yPercent: 110 })
+          else if (animated.filter) gsap.set(initial, { opacity: 0, y: 60, filter: 'blur(8px)' })
+          else if (initial[0]?.classList?.contains('split-char') || initial.length > 1) gsap.set(initial, { opacity: 0, y: 12 })
+          else gsap.set(initial, { opacity: 0, y: 18 })
         },
       })
-      linesTl.to(lines, {
-        opacity: 1,
-        y: 0,
-        duration: 1,
-        stagger: 0.15,
-        ease: 'power2.out',
-      })
-      triggers.push(linesTl.scrollTrigger)
-    }
+      triggers.push(lineTrig)
+    })
 
     if (art) {
-      gsap.set(art, { opacity: 0, y: 80, scale: 0.94 })
+      // Beefier art entrance — visible scale + rise, then a soft scrub keeps
+      // it breathing while the section is in view.
+      gsap.set(art, { opacity: 0, y: 100, scale: isHero ? 0.96 : 0.9 })
       const artTl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
@@ -340,33 +492,39 @@ function buildScrollChoreography() {
     }
   })
 
-  // Floor rail — only footer fade is dynamic now.
-  // The rail content (single shared SVG flow) loops continuously via CSS;
-  // we just need to push the rail out of view when the footer arrives.
+  // Footer-arrival fade — pushes both the floor rail AND the full-screen
+  // background canvas (tint + topography) out of view as the dark footer
+  // enters. Without this, the footer's dark surface bleeds through the
+  // tint sheet as a green halo in its top-right corner.
   const railEl = page.querySelector('.floor-rail')
+  const canvasEl = page.querySelector('.home-canvas')
   const footerEl = document.querySelector('footer')
 
-  if (footerEl && railEl && !prefersReduced) {
-    const updateRail = () => {
+  if (footerEl && !prefersReduced) {
+    const updateFooterFade = () => {
       const vh = window.innerHeight
       const footerTop = footerEl.getBoundingClientRect().top
-      const fadeStart = vh * 0.95
-      const fadeEnd   = vh * 0.7
-      let railOpacity
-      if (footerTop >= fadeStart)      railOpacity = 1
-      else if (footerTop <= fadeEnd)   railOpacity = 0
-      else                             railOpacity = (footerTop - fadeEnd) / (fadeStart - fadeEnd)
-      gsap.set(railEl, { opacity: railOpacity, y: 150 * (1 - railOpacity) })
+      // Start fading the moment the footer's top enters the viewport, and
+      // be fully gone within ~10% of viewport so no green tint can bleed
+      // through the dark footer once it's visible at all.
+      const fadeStart = vh * 1.0
+      const fadeEnd   = vh * 0.88
+      let opacity
+      if (footerTop >= fadeStart)      opacity = 1
+      else if (footerTop <= fadeEnd)   opacity = 0
+      else                             opacity = (footerTop - fadeEnd) / (fadeStart - fadeEnd)
+      if (railEl) gsap.set(railEl, { opacity, y: 150 * (1 - opacity) })
+      if (canvasEl) gsap.set(canvasEl, { opacity })
     }
 
-    const railTrig = ScrollTrigger.create({
+    const fadeTrig = ScrollTrigger.create({
       start: 0,
       end: 'max',
-      onUpdate: updateRail,
-      onRefresh: updateRail,
+      onUpdate: updateFooterFade,
+      onRefresh: updateFooterFade,
     })
-    triggers.push(railTrig)
-    updateRail()
+    triggers.push(fadeTrig)
+    updateFooterFade()
   }
 
 }
@@ -392,6 +550,12 @@ onBeforeUnmount(() => {
   width: 100%;
   position: relative;
   background: var(--color-warm-cream);
+
+  /* Per-section ambient tint. ScrollTrigger swaps these on entry so the
+     whole canvas-tint sheet cross-fades between moods. Defaults = hero. */
+  --bg-tint-a: #d4f3b5;
+  --bg-tint-b: #fff5e1;
+  --bg-tint-opacity: 0.06;
 }
 
 .home :deep(.navbar) {
@@ -411,40 +575,23 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.canvas-blob {
+/* Full-screen ambient tint sheet — replaces the four-corner blobs. The
+   diagonal gradient is intentionally low-contrast so the tint reads as
+   light, not as colour blocks. */
+.canvas-tint {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(70px);
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    160deg,
+    var(--bg-tint-a) 0%,
+    transparent 45%,
+    transparent 60%,
+    var(--bg-tint-b) 100%
+  );
   opacity: 0.55;
-}
-
-.canvas-blob--tr {
-  top: -120px;
-  right: -160px;
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
-  animation: canvas-blob-drift 22s ease-in-out infinite;
-}
-
-.canvas-blob--bl {
-  bottom: -180px;
-  left: -200px;
-  width: 620px;
-  height: 620px;
-  background: radial-gradient(circle, var(--color-mint) 0%, transparent 70%);
-  animation: canvas-blob-drift 28s ease-in-out infinite reverse;
-}
-
-.canvas-blob--mid {
-  top: 38%;
-  left: 42%;
-  width: 360px;
-  height: 360px;
-  background: radial-gradient(circle, var(--color-pastel-green) 0%, transparent 70%);
-  opacity: 0.28;
-  animation: canvas-blob-drift 36s ease-in-out infinite;
-  animation-delay: -12s;
+  transition: background 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: background;
 }
 
 /* Hero Patterns "Topography" — full-page seamless contour texture.
@@ -453,17 +600,17 @@ onBeforeUnmount(() => {
    section a unified backdrop with no visible seams. */
 .canvas-grid {
   position: absolute;
-  inset: 0;
+  inset: -240px 0;
   background-image: url('../assets/illustrations/bg-topography.svg');
   background-repeat: repeat;
   background-size: 600px 600px;
-  opacity: 0.06;
+  opacity: var(--bg-tint-opacity, 0.06);
+  will-change: background-position, opacity;
+  transition: opacity 600ms ease;
 }
 
-@keyframes canvas-blob-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(40px, -30px) scale(1.06); }
-}
+/* canvas-blob-drift keyframe removed alongside the blobs — the new tint
+   sheet doesn't need its own motion; the page itself moves under it. */
 
 /* ──────────────────────────────────────────────────────────────────
    Story sections — shared layout
@@ -690,6 +837,66 @@ onBeforeUnmount(() => {
   font-size: 16px;
   color: var(--color-primary-text);
   animation: scroll-hint-rock 1.8s var(--motion-entrance) infinite;
+}
+
+/* Hero scroll-cue hexagon — anchored to the bottom-centre of the hero
+   section, sits just above the floor rail so the river never overlaps it. */
+.hero-scroll-down {
+  position: absolute;
+  bottom: 148px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 6;
+  animation: hero-scroll-down-bob 2.4s ease-in-out infinite;
+}
+
+.hero-scroll-down__hex {
+  position: absolute;
+  inset: 0;
+  background: var(--color-primary);
+  /* Pointy-top hexagon clip; box-shadow cannot follow clip-path so we use
+     a drop-shadow filter on the parent instead. */
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  transition: background 240ms ease, transform 240ms ease;
+}
+
+.hero-scroll-down:hover .hero-scroll-down__hex {
+  background: var(--color-primary-text);
+  transform: scale(1.08);
+}
+
+.hero-scroll-down__icon {
+  position: relative;
+  z-index: 1;
+  color: var(--color-primary-text);
+  transition: color 240ms ease, transform 240ms ease;
+}
+
+.hero-scroll-down:hover .hero-scroll-down__icon {
+  color: var(--color-primary);
+  transform: translateY(2px);
+}
+
+.hero-scroll-down:focus-visible {
+  outline: none;
+}
+.hero-scroll-down:focus-visible .hero-scroll-down__hex {
+  background: var(--color-primary-text);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+@keyframes hero-scroll-down-bob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50%      { transform: translate(-50%, 6px); }
 }
 
 @keyframes scroll-hint-rock {
@@ -1101,22 +1308,53 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Cream gradient veil so items pop above page content */
+  /* Cream veil — top is airy so the lime river surface reads against the
+     page; bottom settles back to the cream floor under drifting items. */
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(246, 240, 230, 0.35) 30%,
-    rgba(246, 240, 230, 0.85) 70%,
+    rgba(246, 240, 230, 0.18) 35%,
+    rgba(246, 240, 230, 0.78) 78%,
     rgba(246, 240, 230, 0.95) 100%
   );
 }
 
-/* Wavy lime ground — shared baseline across all sections */
-.floor-rail__wave {
+/* Lime "river" — two parallax water layers under a brighter surface edge.
+   Each layer SVG is 2× viewport wide and animates translateX -50% to loop
+   seamlessly; back layer drifts slower / paler for depth. */
+.floor-river {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 38px;
+  bottom: 0;
+  height: 80px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.river-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 200%;
+  display: block;
+  will-change: transform;
+}
+
+.river-layer--back  { animation: river-drift 22s linear infinite; opacity: 0.85; }
+.river-layer--front { animation: river-drift 14s linear infinite; opacity: 1; }
+
+@keyframes river-drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.river-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 28px;
   width: 100%;
   height: 24px;
   pointer-events: none;
@@ -1152,7 +1390,7 @@ onBeforeUnmount(() => {
    the path so the rail is always populated. */
 .floor-item {
   position: absolute;
-  bottom: 18px;
+  bottom: 38px;          /* sit just above the surface highlight line */
   left: 0;
   width: 56px;
   height: 56px;
@@ -1164,12 +1402,12 @@ onBeforeUnmount(() => {
 }
 
 /* Mild duration + height variety so items don't all march in sync */
-.floor-item:nth-child(2) { animation-duration: 40s; bottom: 26px; width: 52px; height: 52px; }
-.floor-item:nth-child(3) { animation-duration: 32s; }
-.floor-item:nth-child(4) { animation-duration: 38s; bottom: 22px; width: 60px; height: 60px; }
-.floor-item:nth-child(5) { animation-duration: 42s; bottom: 30px; }
-.floor-item:nth-child(6) { animation-duration: 35s; bottom: 24px; width: 50px; height: 50px; }
-.floor-item:nth-child(7) { animation-duration: 39s; bottom: 28px; }
+.floor-item:nth-child(2) { animation-duration: 40s; bottom: 46px; width: 52px; height: 52px; }
+.floor-item:nth-child(3) { animation-duration: 32s; bottom: 40px; }
+.floor-item:nth-child(4) { animation-duration: 38s; bottom: 42px; width: 60px; height: 60px; }
+.floor-item:nth-child(5) { animation-duration: 42s; bottom: 50px; }
+.floor-item:nth-child(6) { animation-duration: 35s; bottom: 44px; width: 50px; height: 50px; }
+.floor-item:nth-child(7) { animation-duration: 39s; bottom: 48px; }
 
 @keyframes floor-travel {
   0%   { transform: translateX(-10vw) scale(0.7) rotate(-4deg); opacity: 0; }
@@ -1278,11 +1516,12 @@ onBeforeUnmount(() => {
    Reduced motion
 ─────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .canvas-blob--tr,
-  .canvas-blob--bl,
-  .canvas-blob--mid,
+  .canvas-tint {
+    transition: none;
+  }
   .sprinkle,
-  .floor-item {
+  .floor-item,
+  .river-layer {
     animation: none;
   }
   /* Distribute items evenly along path when reduced-motion is on */
@@ -1321,6 +1560,8 @@ onBeforeUnmount(() => {
   .floor-rail {
     height: 90px;
   }
+  .floor-river { height: 56px; }
+  .river-edge { top: 18px; height: 18px; }
   .floor-rail__items {
     padding: 0 16px 12px;
     gap: 6px;
@@ -1328,7 +1569,14 @@ onBeforeUnmount(() => {
   .floor-item {
     width: 44px;
     height: 44px;
+    bottom: 28px;
   }
+  .floor-item:nth-child(2) { bottom: 32px; }
+  .floor-item:nth-child(3) { bottom: 30px; }
+  .floor-item:nth-child(4) { bottom: 30px; }
+  .floor-item:nth-child(5) { bottom: 36px; }
+  .floor-item:nth-child(6) { bottom: 32px; }
+  .floor-item:nth-child(7) { bottom: 34px; }
   .floor-item :deep(svg) { width: 22px; height: 22px; }
   .floor-rail__caption { display: none; }
   .story-grid,
@@ -1366,9 +1614,8 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
     gap: 48px;
   }
-  .canvas-blob {
-    filter: blur(50px);
-    opacity: 0.4;
+  .canvas-tint {
+    opacity: 0.45;
   }
 }
 </style>

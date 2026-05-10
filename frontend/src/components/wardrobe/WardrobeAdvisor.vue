@@ -6,10 +6,14 @@
         <ArrowLeft :size="16" :stroke-width="2" /> Back to wardrobe
       </button>
       <div class="wd-chat-page__title-block">
-        <p class="wd-chat-page__eyebrow">AI Sustainability Advisor</p>
-        <h2 class="wd-chat-page__title">
-          Grounded in your wardrobe — answers in seconds.
-        </h2>
+        <p ref="eyebrowRef" class="wd-chat-page__eyebrow">AI Sustainability Advisor</p>
+        <AnimatedHeading
+          as="h2"
+          class="wd-chat-page__title"
+          text="Grounded in your wardrobe — answers in seconds."
+          :stagger="0.06"
+          :delay="0.1"
+        />
       </div>
       <span class="wd-chat-page__badge">
         <Sparkles :size="13" :stroke-width="2" />
@@ -20,7 +24,7 @@
     <div class="wd-chat" role="region" aria-label="AI advisor conversation">
 
     <!-- Conversation stream -->
-    <div ref="streamRef" class="wd-chat__stream">
+    <div ref="streamRef" class="wd-chat__stream" data-lenis-prevent>
       <!-- Greeting always present at the top -->
       <div class="wd-bubble wd-bubble--ai">
         <span class="wd-bubble__avatar"><Sparkles :size="13" :stroke-width="2" /></span>
@@ -147,6 +151,11 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { ArrowLeft, CircleAlert, Sparkles } from 'lucide-vue-next'
 import { fetchPresetQuestions, fetchWardrobeAdvice } from '../../services/advisorApi.js'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import { useReveal } from '../../motion/useReveal'
+
+const eyebrowRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
 
 const props = defineProps({
   garments: { type: Array, default: () => [] },
