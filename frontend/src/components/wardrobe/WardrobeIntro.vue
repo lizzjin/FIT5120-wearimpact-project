@@ -275,4 +275,21 @@ const Hanger = Shirt
   .wd-intro__art { height: 320px; }
   .wd-intro__index, .wd-intro__label { top: 64px; }
 }
+
+/* Short-laptop tier — compress the wardrobe intro so "Enter my wardrobe"
+   fits above the fold on ≤820 px high screens. */
+@media (max-height: 820px) and (min-width: 901px) {
+  .wd-intro { padding: 56px 32px 28px; }
+  .wd-intro__index, .wd-intro__label { top: 56px; }
+  .wd-intro__inner { margin-top: 24px; gap: 36px; }
+  .wd-intro__title {
+    font-size: clamp(32px, 3.6vw, 44px);
+    margin-bottom: 14px;
+  }
+  .wd-intro__eyebrow { margin-bottom: 12px; }
+  .wd-intro__subtitle { font-size: 15px; margin-bottom: 16px; }
+  .wd-intro__bullets { margin-bottom: 18px; gap: 6px; }
+  .wd-intro__bullets li { font-size: 13.5px; }
+  .wd-intro__art { height: 380px; }
+}
 </style>

@@ -225,4 +225,18 @@ useReveal(artRef, { mode: 'fade-up', y: 24, duration: 1, delay: 0.2 })
   .kh-intro__art { height: 360px; }
   .kh-intro__index, .kh-intro__label { top: 64px; }
 }
+
+/* Short-laptop tier — compress so the "Start the journey" CTA fits above
+   the fold on ≤820 px high screens (13-15" Windows laptops, MacBook Air). */
+@media (max-height: 820px) and (min-width: 901px) {
+  .kh-intro { padding: 56px 32px 32px; }
+  .kh-intro__index, .kh-intro__label { top: 56px; }
+  .kh-intro__inner { margin-top: 24px; gap: 36px; }
+  .kh-intro__title { font-size: clamp(32px, 3.6vw, 44px); margin-bottom: 14px; }
+  .kh-intro__eyebrow { margin-bottom: 12px; }
+  .kh-intro__subtitle { font-size: 15px; margin-bottom: 16px; }
+  .kh-intro__bullets { margin-bottom: 20px; gap: 8px; }
+  .kh-intro__bullets li { font-size: 13.5px; }
+  .kh-intro__art { height: 420px; }
+}
 </style>

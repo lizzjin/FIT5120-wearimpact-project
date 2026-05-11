@@ -501,7 +501,13 @@ function buildScrollChoreography() {
 
       const lineTrig = ScrollTrigger.create({
         trigger: el,
-        start: 'top 75%',
+        // top 88% (not 75%): on short viewports a hero paragraph can sit
+        // at ~83 % of viewport height even when it's clearly visible, so
+        // a 75 % trigger leaves it stuck in its blur(8px) pre-state until
+        // the user scrolls further. 88 % fires as soon as the line peeks
+        // from below; the box-slide trigger (top 78 %) still runs first
+        // because lines have higher absolute Y than the section top.
+        start: 'top 88%',
         once: false,
         onEnter:     () => gsap.to(initial, animated),
         onEnterBack: () => gsap.to(initial, animated),
@@ -1624,6 +1630,31 @@ onBeforeUnmount(() => {
   .story--solution h2 { font-size: 42px; }
   .stat-num { font-size: 52px; }
   .story-grid { gap: 56px; }
+}
+
+/* Short-laptop tier: 13-15" screens where width is fine but vertical
+   height is tight (≤820 px). Compress the hero so the scroll-cue
+   hexagon and the auxiliary "Still curious?" hint both fit above the
+   fold without forcing the user to scroll. */
+@media (max-height: 820px) and (min-width: 1025px) {
+  .story {
+    padding: 36px 48px 110px;
+    min-height: auto;
+  }
+  .hero-headline {
+    font-size: 64px;
+    margin-bottom: 20px;
+  }
+  .eyebrow { margin-bottom: 14px; }
+  .hero-sub { font-size: 15px; margin-bottom: 10px; }
+  .hero-sub--solution { margin-bottom: 14px; padding-left: 12px; }
+  .story-art :deep(svg) { max-height: 56vh; }
+  .scroll-hint { display: none; }
+  .hero-scroll-down {
+    bottom: 86px;
+    width: 48px;
+    height: 56px;
+  }
 }
 
 @media (max-width: 1024px) {
