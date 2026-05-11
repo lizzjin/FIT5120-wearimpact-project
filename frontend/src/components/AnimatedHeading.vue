@@ -22,14 +22,15 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { splitText, splitInlineHTML, revert, prefersReducedMotion } from '../motion/splitText'
+import { ScrollTrigger, ensurePlugins } from '../motion/registry'
+import { isReduced } from '../motion/matchMedia'
+import { splitElement } from '../motion/composables/useTextSplit'
 
 // Word-mask reveal heading. Three input shapes:
 //  - text="..."        : plain string, single line
 //  - lines=[...]       : explicit multi-line strings (each line is a span)
 //  - <slot>...</slot>  : arbitrary inline markup (<strong>, <em>, <span>, <br>)
-//                        — auto-handled via splitInlineHTML.
+//                        — SplitText handles inline tags natively.
 //
 // mode='word' (default) : each word rises from yPercent:110 (mask reveal).
 // mode='flip'           : each word *flips down from above* on a 3D rotateX
@@ -37,8 +38,6 @@ import { splitText, splitInlineHTML, revert, prefersReducedMotion } from '../mot
 //
 // Optional "paint" colour stagger (set paintFrom to enable):
 //   paintFrom → paintTo, line-by-line, kicks in after the word-mask lands.
-//   Used on /eco-shop hero so the title visibly shifts from brand lime to
-//   final ink, one line at a time — Shelby-style chromatic rhythm.
 const props = defineProps({
   as: { type: String, default: 'h2' },
   text: { type: String, default: '' },
@@ -51,13 +50,9 @@ const props = defineProps({
   replay: { type: Boolean, default: false },
   paintFrom: { type: String, default: null },
   paintTo: { type: String, default: '#0e0f0c' },
-  // Per-word stagger inside one line — drives the left→right sweep speed.
   paintStagger: { type: Number, default: 0.06 },
   paintDuration: { type: Number, default: 0.55 },
-  paintDelay: { type: Number, default: null }, // null → auto = delay + duration * 0.6
-  // Pause between line N's sweep finishing and line N+1's sweep starting.
-  // Negative values overlap the sweeps. null → auto: tiny overlap so the
-  // baton hands off naturally line-to-line.
+  paintDelay: { type: Number, default: null },
   paintLineGap: { type: Number, default: null },
 })
 
@@ -66,49 +61,55 @@ const lineRefs = ref([])
 function setLineRef(el, i) { if (el) lineRefs.value[i] = el }
 
 let trigger = null
-let revertTargets = []
-let paintTargets = []
+let splits = []
 // Per-line arrays of inner word spans, used so the colour sweep can run
 // left→right inside each line and then hand off to the next line.
 let linesInners = []
 
 onMounted(() => {
+  ensurePlugins()
   const root = rootRef.value
   if (!root) return
 
-  if (prefersReducedMotion()) {
+  if (isReduced()) {
     root.style.opacity = '1'
     if (props.paintFrom) {
-      // Settle straight to the destination colour, no transition.
       const t = props.lines && props.lines.length ? lineRefs.value.filter(Boolean) : [root]
       t.forEach((el) => (el.style.color = props.paintTo))
     }
     return
   }
 
+  // Flip mode rotates each word as a 3D card; the mask would clip the
+  // rotated arc, so the word splitter must NOT add a mask wrapper. Plain
+  // word mode uses mask: 'words' for the overflow-clip reveal effect.
+  const splitOpts = props.mode === 'flip'
+    ? { type: 'words' }
+    : { type: 'words', mask: 'words' }
+
   let allInners = []
+  let paintTargets = []
 
   if (props.lines && props.lines.length) {
     lineRefs.value.filter(Boolean).forEach((el) => {
-      const { inners } = splitText(el, 'word')
-      allInners.push(...inners)
-      linesInners.push(inners)
-      revertTargets.push(el)
+      const split = splitElement(el, splitOpts)
+      splits.push(split)
+      allInners.push(...split.words)
+      linesInners.push(split.words)
     })
     paintTargets = lineRefs.value.filter(Boolean)
   } else {
-    // slot (arbitrary inline markup) or `text` prop — split via inline walker.
-    const { inners } = splitInlineHTML(root)
-    allInners = inners
-    linesInners = [inners]
-    revertTargets.push(root)
+    // Slot (arbitrary inline markup) or `text` prop. SplitText preserves
+    // inline elements (<strong>, <em>, <br>) automatically.
+    const split = splitElement(root, splitOpts)
+    splits.push(split)
+    allInners = split.words
+    linesInners = [split.words]
     paintTargets = [root]
   }
 
   if (!allInners.length) return
 
-  // Initial / animated states differ by mode. flip overrides yPercent with a
-  // 3D rotateX so each word looks like a card flipping down from the top.
   const initial = props.mode === 'flip'
     ? { rotateX: -85, yPercent: 60, opacity: 0, transformOrigin: '50% 0%' }
     : { yPercent: 110 }
@@ -118,36 +119,22 @@ onMounted(() => {
     : { yPercent: 0, duration: props.duration, stagger: props.stagger, delay: props.delay, ease: 'power3.out' }
 
   gsap.set(allInners, initial)
-  // Paint the lines immediately (inline style) so the brand colour shows up
-  // even before the ScrollTrigger fires on the first frame. Inner word spans
-  // inherit this colour until the per-word tween overrides them one by one.
   if (props.paintFrom) {
     paintTargets.forEach((el) => { el.style.color = props.paintFrom })
   }
 
-  // Auto-derive when paint should start: shortly after the word-mask is
-  // visually at rest, so the colour tween reads as a separate beat.
   const autoPaintDelay = props.delay + props.duration * 0.6
   const paintStart = props.paintDelay !== null ? props.paintDelay : autoPaintDelay
 
   const play = () => {
     gsap.to(allInners, animated)
     if (props.paintFrom && linesInners.length) {
-      // Build a single timeline so each line's colour sweep runs left→right
-      // (per-word stagger) and the next line picks up the baton with a small
-      // overlap. fromTo + delay sometimes collapses straight to the
-      // destination because of GSAP's immediateRender behaviour, so we
-      // sequence the colour from→to explicitly per scope.
       const tl = gsap.timeline({ delay: paintStart })
       tl.set(paintTargets, { color: props.paintFrom })
-      // Reset any inline colour left on inner spans from a prior cycle.
       tl.set(allInners, { clearProps: 'color' }, 0)
 
       linesInners.forEach((inners, idx) => {
         if (!inners.length) return
-        // Position each line's tween: line 0 starts immediately, then each
-        // subsequent line starts a touch before the previous line's last
-        // word finishes — so the sweep flows across line breaks.
         const sweepLength = inners.length * props.paintStagger + props.paintDuration
         const autoLineGap = -Math.min(props.paintDuration * 0.45, sweepLength * 0.25)
         const offset = idx === 0
@@ -166,15 +153,13 @@ onMounted(() => {
   const reset = () => {
     gsap.set(allInners, initial)
     if (props.paintFrom) {
-      // Clear per-word colour overrides so the inherited from-colour shows
-      // again on replay; then re-paint the line scope.
       gsap.set(allInners, { clearProps: 'color' })
       paintTargets.forEach((el) => { el.style.color = props.paintFrom })
     }
   }
 
   trigger = ScrollTrigger.create({
-    trigger: revertTargets[0] || root,
+    trigger: root,
     start: props.start,
     once: !props.replay,
     onEnter: play,
@@ -186,9 +171,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   trigger?.kill?.()
-  revertTargets.forEach((el) => {
-    if (el?.dataset?.split) revert(el)
-  })
+  splits.forEach((s) => s.revert())
+  splits = []
+  linesInners = []
 })
 </script>
 
@@ -199,18 +184,32 @@ onBeforeUnmount(() => {
 .animated-heading__line {
   display: block;
 }
+
+/* SplitText with mask:'words' produces:
+     <span class="split-word-mask">  ← mask wrapper, overflow:clip auto
+       <span class="split-word">     ← animation target (yPercent here)
+   The mask wrapper needs inline-block + line-height so the word baseline
+   matches the heading; .split-word stays inline-block so transforms apply. */
+.animated-heading :deep(.split-word-mask) {
+  display: inline-block;
+  vertical-align: top;
+  line-height: 1.05;
+  padding-bottom: 0.05em;
+}
+.animated-heading :deep(.split-word) {
+  display: inline-block;
+  will-change: transform;
+}
+
 .animated-heading.is-flip {
-  /* Enable 3D depth for the flip mode so rotateX on each word is rendered in
+  /* Enable 3D depth for the flip mode so rotateX on each word renders in
      perspective rather than collapsed. */
   perspective: 1200px;
   transform-style: preserve-3d;
 }
+/* flip mode does not use mask, so the .split-word-mask rule never matches.
+   The flipping card itself needs preserved 3D and a steady back-face. */
 .animated-heading.is-flip :deep(.split-word) {
-  /* Mask is no longer required for flip — overflow:hidden would clip the
-     rotated card during the rotation arc. */
-  overflow: visible;
-}
-.animated-heading.is-flip :deep(.split-word__inner) {
   transform-style: preserve-3d;
   backface-visibility: hidden;
 }

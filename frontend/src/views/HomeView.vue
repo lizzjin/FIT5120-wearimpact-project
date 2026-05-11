@@ -176,7 +176,7 @@ import Navbar from '../components/Navbar.vue'
 import FooterSection from '../components/FooterSection.vue'
 import AnimatedHeading from '../components/AnimatedHeading.vue'
 import CtaButton from '../components/CtaButton.vue'
-import { splitText, splitInlineHTML } from '../motion/splitText'
+import { splitElement } from '../motion/composables/useTextSplit'
 import {
   ArrowRight,
   ChevronDown,
@@ -478,16 +478,16 @@ function buildScrollChoreography() {
       // content and the side-entrance reads as empty.
       let initial, animated
       if (el.classList.contains('eyebrow') || el.classList.contains('sol-problem')) {
-        const { chars } = splitText(el, 'char')
+        const { chars } = splitElement(el, { type: 'chars, words' })
         if (!chars.length) return
         gsap.set(chars, { y: 12 })
         initial = chars
         animated = { y: 0, duration: 0.55, stagger: 0.022, ease: 'power3.out' }
       } else if (el.tagName === 'H1' || el.tagName === 'H2' || el.classList.contains('bridge-em-text')) {
-        const { inners } = splitInlineHTML(el)
-        if (!inners.length) return
-        gsap.set(inners, { yPercent: 110 })
-        initial = inners
+        const { words } = splitElement(el, { type: 'words', mask: 'words' })
+        if (!words.length) return
+        gsap.set(words, { yPercent: 110 })
+        initial = words
         animated = { yPercent: 0, duration: 1, stagger: 0.07, ease: 'power3.out' }
       } else if (el.classList.contains('hero-sub') || el.classList.contains('sol-desc') || el.tagName === 'P') {
         gsap.set(el, { y: 60, filter: 'blur(8px)' })

@@ -38,3 +38,6 @@ export {
   QUERIES,
 } from './matchMedia'
 export { useGsapContext } from './composables/useGsapContext'
+export { splitElement, useTextSplit } from './composables/useTextSplit'
+export { useReveal } from './useReveal'
+export { useStagger } from './useStagger'
