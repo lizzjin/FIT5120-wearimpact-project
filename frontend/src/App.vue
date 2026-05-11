@@ -11,18 +11,22 @@
 
 <script setup>
 import { ref, onBeforeUnmount, nextTick } from 'vue'
-import { armScrollTriggers, onRouteSettled } from './motion'
-import { startLenis, stopLenis, getLenis } from './motion/lenis'
+import {
+  armScrollTriggers,
+  onRouteSettled,
+  startLenis,
+  stopLenis,
+  scrollToTopImmediate,
+} from './motion'
 import PasswordGate from './components/PasswordGate.vue'
 import { isUnlocked } from './services/siteGate'
 
 const unlocked = ref(isUnlocked())
 
-// If we're already unlocked at boot (sessionStorage hit), start Lenis right
-// away. Otherwise it'll be started after the gate is cleared. Either way,
-// stopLenis on app teardown remains the cleanup path. Lenis is replaced by
-// ScrollSmoother in Phase 3 of the motion refactor; Phase 1 only routes the
-// ScrollTrigger refresh calls through the new scrollManager entry points.
+// Start Lenis after the first route mounts. Phase 3 of the motion refactor
+// kept Lenis (instead of the planned ScrollSmoother) because ScrollSmoother
+// transforms its #smooth-content wrapper, which would break the four
+// `position: sticky` elements in the codebase — most visibly the navbar.
 if (unlocked.value) {
   nextTick(() => {
     startLenis()
@@ -43,9 +47,7 @@ function onUnlocked() {
 }
 
 function onAfterEnter() {
-  const lenis = getLenis()
-  if (lenis) lenis.scrollTo(0, { immediate: true })
-  else window.scrollTo(0, 0)
+  scrollToTopImmediate()
   onRouteSettled()
 }
 </script>
