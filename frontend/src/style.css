@@ -163,6 +163,29 @@ select {
   font: inherit;
 }
 
+/* GSAP SplitText output. The plugin marks up words/chars/lines as <span>s
+   plus an optional `<el>-mask` wrapper when `mask: 'words'` (etc.) is used.
+   By default SplitText only sets `overflow: clip` on the mask wrapper and
+   leaves display as inline — but CSS transforms on inline elements are
+   inconsistent (Chrome ignores them, Safari sometimes renders), so the
+   word-mask reveal needs inline-block. Setting it here once means every
+   call site (HomeView, AnimatedHeading, future useReveal('word')) gets
+   correct behaviour without scoped CSS in each component. */
+.split-word,
+.split-word-mask,
+.split-char,
+.split-line {
+  display: inline-block;
+  vertical-align: top;
+  line-height: inherit;
+}
+.split-word-mask {
+  /* Belt-and-braces: SplitText already inlines overflow:clip, but some
+     browsers fall back to overflow:hidden, which produces the same visual
+     mask. */
+  overflow: hidden;
+}
+
 /* Global focus-visible ring — keyboard nav accessibility */
 :focus-visible {
   outline: 2px solid var(--color-primary-text);
