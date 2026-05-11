@@ -11,7 +11,7 @@
 
 <script setup>
 import { ref, onBeforeUnmount, nextTick } from 'vue'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { armScrollTriggers, onRouteSettled } from './motion'
 import { startLenis, stopLenis, getLenis } from './motion/lenis'
 import PasswordGate from './components/PasswordGate.vue'
 import { isUnlocked } from './services/siteGate'
@@ -20,12 +20,13 @@ const unlocked = ref(isUnlocked())
 
 // If we're already unlocked at boot (sessionStorage hit), start Lenis right
 // away. Otherwise it'll be started after the gate is cleared. Either way,
-// stopLenis on app teardown remains the cleanup path.
+// stopLenis on app teardown remains the cleanup path. Lenis is replaced by
+// ScrollSmoother in Phase 3 of the motion refactor; Phase 1 only routes the
+// ScrollTrigger refresh calls through the new scrollManager entry points.
 if (unlocked.value) {
-  // Defer to next tick so the router-view has actually mounted.
   nextTick(() => {
     startLenis()
-    window.addEventListener('load', () => ScrollTrigger.refresh())
+    armScrollTriggers()
   })
 }
 
@@ -35,20 +36,17 @@ onBeforeUnmount(() => {
 
 function onUnlocked() {
   unlocked.value = true
-  // Wait for router-view to mount the first route, then arm motion plumbing.
   nextTick(() => {
     startLenis()
-    ScrollTrigger.refresh()
+    armScrollTriggers()
   })
 }
 
-// After every route change, scroll to top via Lenis (so it stays in sync) and
-// re-measure ScrollTrigger so animations on the new page line up with viewport.
 function onAfterEnter() {
   const lenis = getLenis()
   if (lenis) lenis.scrollTo(0, { immediate: true })
   else window.scrollTo(0, 0)
-  ScrollTrigger.refresh()
+  onRouteSettled()
 }
 </script>
 
