@@ -110,9 +110,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref } from 'vue'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ScrollTrigger, useGsapContext, isReduced } from '../../motion'
 import AnimatedHeading from '../AnimatedHeading.vue'
 import CtaBurst from '../CtaBurst.vue'
 import CtaFlip from '../CtaFlip.vue'
@@ -143,43 +143,44 @@ useReveal(videoRef, { mode: 'fade-up', y: 32, duration: 1, delay: 0.2, replay: t
 
 // Lifecycle scrollytelling: as the timeline enters viewport, each stage
 // pops in turn — a lightweight, mobile-safe stand-in for a full pin.
+//
+// useGsapContext owns lifecycle: the tween + ScrollTrigger created inside
+// the callback are scoped to timelineRef and reverted on unmount, so the
+// previous manual `lifecycleTriggers[]` + `forEach kill` pattern (which
+// missed the ScrollTrigger instance hanging off each trigger) is gone.
+//
+// The back.out(1.6) overshoot has been replaced with power3.out per the
+// motion plan: the rest of the site uses restrained-elegant easing and a
+// bounce overshoot was the one place that read as "decorative" rather
+// than "informational" — kept everything else, just the easing changed.
 const timelineRef = ref(null)
-const lifecycleTriggers = []
 
-onMounted(() => {
+useGsapContext(timelineRef, () => {
+  if (isReduced()) return
   const wrap = timelineRef.value
-  if (!wrap) return
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
   const stages = wrap.querySelectorAll('.kh-stage')
   if (!stages.length) return
 
-  gsap.set(stages, { opacity: 0, y: 24, scale: 0.92 })
+  gsap.set(stages, { opacity: 0, y: 24, scale: 0.96 })
 
   const play = () =>
     gsap.to(stages, {
       opacity: 1,
       y: 0,
       scale: 1,
-      duration: 0.6,
-      ease: 'back.out(1.6)',
-      stagger: 0.08,
+      duration: 0.65,
+      ease: 'power3.out',
+      stagger: 0.07,
     })
-  const reset = () => gsap.set(stages, { opacity: 0, y: 24, scale: 0.92 })
+  const reset = () => gsap.set(stages, { opacity: 0, y: 24, scale: 0.96 })
 
-  const trig = ScrollTrigger.create({
+  ScrollTrigger.create({
     trigger: wrap,
     start: 'top 78%',
     onEnter: play,
     onEnterBack: play,
     onLeaveBack: reset,
   })
-  lifecycleTriggers.push(trig)
-})
-
-onBeforeUnmount(() => {
-  lifecycleTriggers.forEach((t) => t?.kill?.())
-  lifecycleTriggers.length = 0
 })
 
 // CO2 share figures from Quantis 2018 Table 2 (global apparel, 2016).

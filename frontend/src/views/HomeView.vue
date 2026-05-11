@@ -171,12 +171,11 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ScrollTrigger, splitElement, isReduced } from '../motion'
 import Navbar from '../components/Navbar.vue'
 import FooterSection from '../components/FooterSection.vue'
 import AnimatedHeading from '../components/AnimatedHeading.vue'
 import CtaButton from '../components/CtaButton.vue'
-import { splitElement } from '../motion/composables/useTextSplit'
 import {
   ArrowRight,
   ChevronDown,
@@ -236,10 +235,11 @@ function buildBackRiverPath() {
 const riverFrontPathD = buildFrontRiverPath()
 const riverBackPathD = buildBackRiverPath()
 
-gsap.registerPlugin(ScrollTrigger)
-
 const pageRef = ref(null)
-const triggers = []
+// All ScrollTriggers + tweens created by buildScrollChoreography below are
+// owned by a gsap.context() (see onMounted / onBeforeUnmount). On unmount,
+// ctx.revert() kills every trigger and tween at once — no manual array.
+let choreographyCtx = null
 
 // Side progress rail — one entry per scroll-section.
 const railSections = [
@@ -336,19 +336,18 @@ function buildScrollChoreography() {
   const page = pageRef.value
   if (!page) return
 
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const prefersReduced = isReduced()
 
   // Background ambient: wheel-driven topography parallax + per-section
   // palette scrub. Both short-circuit under reduce-motion.
   if (!prefersReduced) {
     const grid = page.querySelector('.canvas-grid')
     if (grid) {
-      const gridTrig = gsap.to(grid, {
+      gsap.to(grid, {
         backgroundPosition: '0 -240px',
         ease: 'none',
         scrollTrigger: { trigger: page, start: 'top top', end: 'bottom bottom', scrub: true },
       })
-      triggers.push(gridTrig.scrollTrigger)
     }
 
     // Palette swap on section enter/leave-back. CSS variables are switched
@@ -364,14 +363,13 @@ function buildScrollChoreography() {
     page.querySelectorAll('.story[data-section]').forEach((section) => {
       const key = section.dataset.section
       if (!SECTION_PALETTES[key]) return
-      const trig = ScrollTrigger.create({
+      ScrollTrigger.create({
         trigger: section,
         start: 'top 55%',
         end: 'bottom 45%',
         onEnter:     () => applyPalette(key),
         onEnterBack: () => applyPalette(key),
       })
-      triggers.push(trig)
     })
   }
 
@@ -382,14 +380,13 @@ function buildScrollChoreography() {
     // Track active section for the side progress rail + global floor swap
     const sectionKey = section.dataset.section
     if (sectionKey) {
-      const railTrig = ScrollTrigger.create({
+      ScrollTrigger.create({
         trigger: section,
         start: 'top 50%',
         end: 'bottom 50%',
         onEnter:     () => (activeSectionKey.value = sectionKey),
         onEnterBack: () => (activeSectionKey.value = sectionKey),
       })
-      triggers.push(railTrig)
     }
 
     if (prefersReduced) {
@@ -427,11 +424,11 @@ function buildScrollChoreography() {
           slideSettleAt = performance.now() + 780
         }
         const reset = () => gsap.set([leftBox, rightBox], { y: 60, opacity: 0 })
-        triggers.push(ScrollTrigger.create({
+        ScrollTrigger.create({
           trigger: section,
           start: 'top 82%',
           onEnter: enter, onEnterBack: enter, onLeaveBack: reset,
-        }))
+        })
       } else {
         // Wide-screen "open the curtain": each box starts fully off-screen
         // (xPercent: ±120 puts the wrapper one viewport-width past its
@@ -452,11 +449,11 @@ function buildScrollChoreography() {
           gsap.set(leftBox,  { xPercent: lead, opacity: 0 })
           gsap.set(rightBox, { xPercent: trail, opacity: 0 })
         }
-        triggers.push(ScrollTrigger.create({
+        ScrollTrigger.create({
           trigger: section,
           start: 'top 78%',
           onEnter: enter, onEnterBack: enter, onLeaveBack: reset,
-        }))
+        })
       }
     }
 
@@ -499,7 +496,7 @@ function buildScrollChoreography() {
         animated = { y: 0, duration: 0.6, ease: 'power3.out' }
       }
 
-      const lineTrig = ScrollTrigger.create({
+      ScrollTrigger.create({
         trigger: el,
         // top 88% (not 75%): on short viewports a hero paragraph can sit
         // at ~83 % of viewport height even when it's clearly visible, so
@@ -519,7 +516,6 @@ function buildScrollChoreography() {
           else gsap.set(initial, { y: 18 })
         },
       })
-      triggers.push(lineTrig)
     })
 
     if (art) {
@@ -544,7 +540,6 @@ function buildScrollChoreography() {
           duration: 1,
           ease: 'power3.out',
         })
-        triggers.push(artTl.scrollTrigger)
       }
 
       // Animated SVGs ship with their entrance gated by `.animated` on the
@@ -558,7 +553,7 @@ function buildScrollChoreography() {
       const innerSvg = art.querySelector('svg[id^="freepik_stories"]')
       if (innerSvg) {
         const startSvg = isHero ? 'top 70%' : 'top 35%'
-        const replayTrig = ScrollTrigger.create({
+        ScrollTrigger.create({
           trigger: section,
           start: startSvg,
           end: 'bottom 30%',
@@ -567,7 +562,6 @@ function buildScrollChoreography() {
           onLeave: () => innerSvg.classList.remove('animated'),
           onLeaveBack: () => innerSvg.classList.remove('animated'),
         })
-        triggers.push(replayTrig)
       }
     }
   })
@@ -597,13 +591,12 @@ function buildScrollChoreography() {
       if (canvasEl) gsap.set(canvasEl, { opacity })
     }
 
-    const fadeTrig = ScrollTrigger.create({
+    ScrollTrigger.create({
       start: 0,
       end: 'max',
       onUpdate: updateFooterFade,
       onRefresh: updateFooterFade,
     })
-    triggers.push(fadeTrig)
     updateFooterFade()
   }
 
@@ -611,14 +604,19 @@ function buildScrollChoreography() {
 
 onMounted(async () => {
   await nextTick()
-  buildScrollChoreography()
-  // Refresh once after fonts/images settle so trigger positions are accurate.
-  window.addEventListener('load', () => ScrollTrigger.refresh())
+  // Wrap the entire choreography in a gsap.context() scoped to the page
+  // root. Every tween and ScrollTrigger created inside buildScrollChoreography
+  // is tracked here and reverted in one call on unmount — no manual
+  // triggers[] array, no risk of orphan ScrollTriggers when the user
+  // navigates away from this view.
+  choreographyCtx = gsap.context(() => buildScrollChoreography(), pageRef.value)
+  // Global font/load/idle refresh is owned by armScrollTriggers() in
+  // motion/scrollManager.js; no need for a separate load listener here.
 })
 
 onBeforeUnmount(() => {
-  triggers.forEach((t) => t?.kill?.())
-  triggers.length = 0
+  choreographyCtx?.revert()
+  choreographyCtx = null
 })
 </script>
 

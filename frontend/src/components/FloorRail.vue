@@ -61,8 +61,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { gsap } from 'gsap'
+import { isReduced } from '../motion'
 // Shared floor icons — one fixed set used across pages that mount this rail.
 import floorClothing from '../assets/illustrations/floor-clothing.svg'
 import floorHandbag from '../assets/illustrations/floor-handbag.svg'
@@ -112,13 +113,24 @@ const gradBackId = `river-back-${uid}`
 // Stroke-draw the lime surface line once on mount, so the rail "draws itself in"
 // instead of just appearing.
 const wavePathRef = ref(null)
+let strokeCtx = null
+
 onMounted(() => {
   const path = wavePathRef.value
-  if (!path) return
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  const length = path.getTotalLength?.() || 1500
-  gsap.set(path, { strokeDasharray: length, strokeDashoffset: length })
-  gsap.to(path, { strokeDashoffset: 0, duration: 0.9, ease: 'power3.out', delay: 0.2 })
+  if (!path || isReduced()) return
+  // gsap.context() so the stroke-draw tween is reverted on unmount; the
+  // previous implementation left an untracked tween that kept running on
+  // detached nodes after route changes.
+  strokeCtx = gsap.context(() => {
+    const length = path.getTotalLength?.() || 1500
+    gsap.set(path, { strokeDasharray: length, strokeDashoffset: length })
+    gsap.to(path, { strokeDashoffset: 0, duration: 0.9, ease: 'power3.out', delay: 0.2 })
+  }, path)
+})
+
+onBeforeUnmount(() => {
+  strokeCtx?.revert()
+  strokeCtx = null
 })
 </script>
 
