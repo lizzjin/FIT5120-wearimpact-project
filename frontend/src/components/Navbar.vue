@@ -51,10 +51,16 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useNavbarScroll } from '../motion'
 
 const mobileOpen = ref(false)
 const route = useRoute()
 const navRef = ref(null)
+
+// Toggle .is-scrolled on the navbar once scroll passes 40 px, so CSS can
+// fade in a heavier shadow / opaquer background. ScrollTrigger handles
+// the listener so it integrates with Lenis's smoothed scroll position.
+useNavbarScroll(navRef, { threshold: 40 })
 
 // Knowledge Hub no longer uses the dark glass theme — it now shares the
 // unified cream canvas with the rest of the site, so the navbar stays light.
@@ -82,11 +88,23 @@ const navLinks = [
   justify-content: space-between;
   align-items: center;
   padding: 14px 32px;
-  background: rgba(250, 247, 242, 0.88);
+  background: rgba(250, 247, 242, 0.78);
   backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
-  border-bottom: 1px solid var(--color-border);
-  transition: box-shadow var(--transition-base);
+  border-bottom: 1px solid transparent;
+  box-shadow: 0 0 0 rgba(14, 15, 12, 0);
+  transition: box-shadow 240ms var(--motion-entrance),
+              background 240ms var(--motion-entrance),
+              border-color 240ms var(--motion-entrance);
+}
+
+/* Scrolled state — added by useNavbarScroll once the page scrolls past
+   ~40 px. The bg gets more opaque and a soft shadow lifts the nav off
+   the canvas, signalling stickiness without a heavy line. */
+.navbar.is-scrolled {
+  background: rgba(250, 247, 242, 0.96);
+  border-bottom-color: var(--color-border);
+  box-shadow: 0 4px 16px rgba(14, 15, 12, 0.06);
 }
 
 /* ── Logo ──────────────────────────────────────────────────────────────── */
