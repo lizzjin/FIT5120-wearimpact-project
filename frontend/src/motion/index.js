@@ -41,6 +41,12 @@ export { useGsapContext } from './composables/useGsapContext'
 export { splitElement, useTextSplit } from './composables/useTextSplit'
 export { useReveal } from './useReveal'
 export { useStagger } from './useStagger'
+// Phase 6 — interaction primitives
+export { useHover } from './composables/useHover'
+export { useFocusRing } from './composables/useFocusRing'
+export { useRipple } from './composables/useRipple'
+export { useShake } from './composables/useShake'
+export { useToast, provideToast } from './composables/useToast'
 export {
   startLenis,
   stopLenis,

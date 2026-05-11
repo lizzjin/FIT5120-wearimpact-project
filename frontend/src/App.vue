@@ -6,6 +6,7 @@
         <component :is="Component" />
       </Transition>
     </router-view>
+    <ToastHost />
   </div>
 </template>
 
@@ -19,6 +20,7 @@ import {
   scrollToTopImmediate,
 } from './motion'
 import PasswordGate from './components/PasswordGate.vue'
+import ToastHost from './components/ToastHost.vue'
 import { isUnlocked } from './services/siteGate'
 
 const unlocked = ref(isUnlocked())

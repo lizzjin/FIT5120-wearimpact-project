@@ -6,6 +6,7 @@
     class="cta-button is-burst-host"
     :class="[`variant-${variant}`]"
     :style="cssVars"
+    ref="rootRef"
   >
     <span class="cta-button__background" aria-hidden="true" />
 
@@ -16,9 +17,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import CtaBurst from './CtaBurst.vue'
 import CtaFlip from './CtaFlip.vue'
+import { useRipple } from '../motion'
+
+const rootRef = ref(null)
+// Ripple from the click coordinate. The CSS hover state already handles
+// the scale/colour/background-slide transitions; useHover would fight
+// the `transform: translateY(-1px)` rule on :hover, so it is deliberately
+// not applied here. The bubble-burst overlay sits on top of the ripple
+// and continues to fire on hover.
+useRipple(rootRef, { color: 'rgba(22, 51, 0, 0.18)', duration: 0.6 })
 
 const props = defineProps({
   href: { type: String, default: null },
