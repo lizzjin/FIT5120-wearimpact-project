@@ -61,6 +61,7 @@
       type="button"
       class="wd-compact__cta"
       :disabled="files.length === 0 || isBusy"
+      ref="ctaRef"
       @click="classify"
     >
       <Sparkles :size="14" :stroke-width="2" />
@@ -76,8 +77,16 @@ import {
 } from 'lucide-vue-next'
 import { extractItems, pollPreview } from '../../services/wardrobeApi.js'
 import { addGarment, updateGarmentImage } from '../../services/wardrobeDb.js'
+import { useRipple, useToast } from '../../motion'
 
 const emit = defineEmits(['saved'])
+
+const ctaRef = ref(null)
+const toast = useToast()
+// Click ripple on the Classify & save button — a tactile beat that
+// confirms the press before the ~1 min model spin-up. Dark green tint
+// to read against the lime CTA background.
+useRipple(ctaRef, { color: 'rgba(22, 51, 0, 0.18)' })
 
 const fileInput = ref(null)
 const files = ref([])
@@ -170,11 +179,18 @@ async function classify() {
 
     const failed = (data.results || []).filter((r) => !r.ok).length
     lastSummary.value = `Added ${savedCount}${failed ? ` · ${failed} failed` : ''}.`
+    if (savedCount > 0) {
+      toast.push(`Added ${savedCount} item${savedCount === 1 ? '' : 's'} to your wardrobe.`, { type: 'success' })
+    }
+    if (failed > 0) {
+      toast.push(`${failed} photo${failed === 1 ? '' : 's'} could not be classified.`, { type: 'warning' })
+    }
     files.value = []
     emit('saved')
     Promise.all(pollJobs).then(() => emit('saved'))
   } catch (err) {
     errorMessage.value = err?.message || 'Failed. Please retry.'
+    toast.push(errorMessage.value, { type: 'error' })
   } finally {
     isBusy.value = false
     statusMessage.value = ''
