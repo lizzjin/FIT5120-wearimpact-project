@@ -23,8 +23,12 @@ export function useRipple(elRef, options = {}) {
   let cleanup = null
 
   onMounted(() => {
-    const el = elRef?.value
-    if (!el || isReduced()) return
+    // `elRef.value` may be a Vue component instance when the parent uses
+    // <component :is="..."> (e.g. CtaButton wrapping router-link). Unwrap
+    // to the underlying DOM node via $el if present.
+    const raw = elRef?.value
+    const el = raw?.$el ?? raw
+    if (!el || !(el instanceof Element) || isReduced()) return
 
     // Ensure the element clips the ripple.
     const cs = getComputedStyle(el)
