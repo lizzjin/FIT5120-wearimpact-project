@@ -15,7 +15,15 @@
  * useFlipReorder, useDragInteract, useCarouselSlide, useMapMarker,
  * useNavbarScroll, useImageReveal, useSkeletonShimmer.
  */
-export { ensurePlugins, gsap, ScrollTrigger } from './registry'
+export {
+  ensurePlugins,
+  gsap,
+  ScrollTrigger,
+  SplitText,
+  Flip,
+  Draggable,
+  InertiaPlugin,
+} from './registry'
 export {
   DUR,
   EASE,
@@ -47,6 +55,21 @@ export { useFocusRing } from './composables/useFocusRing'
 export { useRipple } from './composables/useRipple'
 export { useShake } from './composables/useShake'
 export { useToast, provideToast } from './composables/useToast'
+// Phase 7 — composite interaction primitives
+export { useModal } from './composables/useModal'
+export { useDrawer } from './composables/useDrawer'
+export { useTabIndicator } from './composables/useTabIndicator'
+export { useDropdown } from './composables/useDropdown'
+export { useTooltip } from './composables/useTooltip'
+export { useChip } from './composables/useChip'
+export { useAccordion } from './composables/useAccordion'
+export { useFlipReorder } from './composables/useFlipReorder'
+export { useDragInteract } from './composables/useDragInteract'
+export { useCarouselSlide } from './composables/useCarouselSlide'
+export { useMapMarker } from './composables/useMapMarker'
+export { useNavbarScroll } from './composables/useNavbarScroll'
+export { useImageReveal } from './composables/useImageReveal'
+export { useSkeletonShimmer } from './composables/useSkeletonShimmer'
 export {
   startLenis,
   stopLenis,
