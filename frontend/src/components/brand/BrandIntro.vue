@@ -77,13 +77,8 @@
         </div>
       </div>
 
-      <div class="pillar-grid">
-        <article
-          class="pillar-card pillar-card--gov"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
+      <div class="pillar-grid" ref="pillarGridRef">
+        <article class="pillar-card pillar-card--gov">
           <div class="pillar-card__icon-wrap">
             <Scale :size="28" :stroke-width="1.8" />
           </div>
@@ -96,12 +91,7 @@
           </p>
         </article>
 
-        <article
-          class="pillar-card pillar-card--trace"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 120 } }"
-        >
+        <article class="pillar-card pillar-card--trace">
           <div class="pillar-card__icon-wrap">
             <Workflow :size="28" :stroke-width="1.8" />
           </div>
@@ -114,12 +104,7 @@
           </p>
         </article>
 
-        <article
-          class="pillar-card pillar-card--env"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 240 } }"
-        >
+        <article class="pillar-card pillar-card--env">
           <div class="pillar-card__icon-wrap">
             <Leaf :size="28" :stroke-width="1.8" />
           </div>
@@ -145,15 +130,12 @@
         </p>
       </div>
 
-      <div class="scale-grid">
+      <div class="scale-grid" ref="scaleGridRef">
         <article
-          v-for="(t, i) in scaleTiers"
+          v-for="t in scaleTiers"
           :key="t.label"
           class="scale-card"
           :data-tone="t.tone"
-          v-motion
-          :initial="{ opacity: 0, y: 16 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 400, delay: i * 90 } }"
         >
           <span class="scale-card__chip">{{ t.label }}</span>
           <span class="scale-card__range">{{ t.range }}</span>
@@ -173,14 +155,11 @@
         </p>
       </div>
 
-      <div class="tips-grid">
+      <div class="tips-grid" ref="tipsGridRef">
         <article
-          v-for="(t, i) in tips"
+          v-for="t in tips"
           :key="t.title"
           class="tip-card"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 450, delay: i * 110 } }"
         >
           <div class="tip-card__icon-wrap">
             <component :is="t.icon" :size="24" :stroke-width="1.8" />
@@ -213,6 +192,7 @@ import AnimatedHeading from '../AnimatedHeading.vue'
 import CtaBurst from '../CtaBurst.vue'
 import CtaFlip from '../CtaFlip.vue'
 import { useReveal } from '../../motion/useReveal'
+import { useStagger } from '../../motion/useStagger'
 import heroAnim from '../../assets/lottie/brand-hero.json'
 
 defineEmits(['start'])
@@ -223,6 +203,16 @@ const ctaRef = ref(null)
 useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
 useReveal(subtitleRef, { mode: 'fade-blur', y: 60, delay: 0.25 })
 useReveal(ctaRef, { mode: 'fade-up', y: 18, delay: 0.5 })
+
+// Three grids — pillar (3 cards), scale (5 cards), tips (variable) — each
+// stagger-reveal when its container enters the viewport. Replaces five
+// per-element v-motion directives that previously hardcoded delays.
+const pillarGridRef = ref(null)
+const scaleGridRef = ref(null)
+const tipsGridRef = ref(null)
+useStagger(pillarGridRef, { selector: '.pillar-card', stagger: 0.12, duration: 0.5, y: 24 })
+useStagger(scaleGridRef, { selector: '.scale-card', stagger: 0.09, duration: 0.4, y: 16 })
+useStagger(tipsGridRef, { selector: '.tip-card', stagger: 0.11, duration: 0.45, y: 18 })
 
 // Tonal scale: from full lime ("top") fading to dim cream ("bottom").
 // Single colour family keeps the explainer aligned with the cream + lime

@@ -65,9 +65,7 @@
       <!-- Right: Lottie hero -->
       <div
         class="wd-intro__art"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.94 }"
-        :enter="{ opacity: 1, scale: 1, transition: { duration: 800, delay: 200 } }"
+        ref="artRef"
         aria-hidden="true"
       >
         <Vue3Lottie
@@ -103,10 +101,12 @@ const eyebrowRef = ref(null)
 const subtitleRef = ref(null)
 const bulletsRef = ref(null)
 const actionsRef = ref(null)
+const artRef = ref(null)
 useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
 useReveal(subtitleRef, { mode: 'fade-blur', y: 60, delay: 0.25 })
 useStagger(bulletsRef, { selector: 'li', stagger: 0.08, y: 24, delay: 0.4 })
 useReveal(actionsRef, { mode: 'fade-up', y: 18, delay: 0.55 })
+useReveal(artRef, { mode: 'scale-fade', duration: 0.8, delay: 0.2 })
 
 const emptyHint = ref(false)
 const shake = ref(false)

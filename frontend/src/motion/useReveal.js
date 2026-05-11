@@ -8,6 +8,7 @@
  *                      SplitText preserves inline markup natively.
  *   mode='fade-up'   — generic block: y:28 + opacity 0 → 1.
  *   mode='fade-blur' — paragraph: y:60 + filter blur(8px) → 0.
+ *   mode='scale-fade' — illustration/Lottie block: scale:0.94 + opacity 0 → 1.
  *
  * Set `replay: true` to reset on leave-back and re-play each time the
  * user scrolls into the element again.
@@ -105,6 +106,16 @@ export function useReveal(elRef, options = {}) {
         y: 0,
         filter: 'blur(0px)',
         duration: duration ?? DUR.entrance,
+        delay,
+        ease,
+      }
+    } else if (mode === 'scale-fade') {
+      targets = [el]
+      initialState = { opacity: 0, scale: 0.94 }
+      animatedState = {
+        opacity: 1,
+        scale: 1,
+        duration: duration ?? DUR.entranceLg,
         delay,
         ease,
       }

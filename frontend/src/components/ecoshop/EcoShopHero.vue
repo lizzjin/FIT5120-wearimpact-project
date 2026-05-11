@@ -6,12 +6,7 @@
     <div class="es-hero__inner">
       <!-- Left column: text + CTA -->
       <div class="es-hero__text">
-        <p
-          class="es-hero__eyebrow"
-          v-motion
-          :initial="{ opacity: 0, y: 12 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
+        <p class="es-hero__eyebrow" ref="eyebrowRef">
           STEP 01 · FIND ECO-SHOPS NEAR YOU
         </p>
         <AnimatedHeading
@@ -25,22 +20,12 @@
           :paint-stagger="0.07"
           :paint-duration="0.5"
         />
-        <p
-          class="es-hero__subtitle"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 250 } }"
-        >
+        <p class="es-hero__subtitle" ref="subtitleRef">
           We pull every nearby second-hand shop, donation point and textile recycler within
           your radius — so the kindest move for that old jacket is also the closest one.
         </p>
 
-        <div
-          class="es-hero__actions"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 450 } }"
-        >
+        <div class="es-hero__actions" ref="actionsRef">
           <button
             type="button"
             class="es-hero__cta is-burst-host"
@@ -61,13 +46,7 @@
       </div>
 
       <!-- Right column: Lottie focal art -->
-      <div
-        class="es-hero__art"
-        aria-hidden="true"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.96 }"
-        :enter="{ opacity: 1, scale: 1, transition: { duration: 700, delay: 200 } }"
-      >
+      <div class="es-hero__art" aria-hidden="true" ref="artRef">
         <Vue3Lottie
           :animation-data="heroAnim"
           :loop="true"
@@ -82,11 +61,13 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Vue3Lottie } from 'vue3-lottie'
 import { Navigation2 } from 'lucide-vue-next'
 import AnimatedHeading from '../AnimatedHeading.vue'
 import CtaBurst from '../CtaBurst.vue'
 import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
 import heroAnim from '../../assets/lottie/eco-shop-hero.json'
 
 defineProps({
@@ -94,6 +75,18 @@ defineProps({
   isFallback: { type: Boolean, default: false },
 })
 defineEmits(['use-location'])
+
+const eyebrowRef = ref(null)
+const subtitleRef = ref(null)
+const actionsRef = ref(null)
+const artRef = ref(null)
+// Eyebrow / subtitle / actions cascade in over ~0.5s, matching the previous
+// v-motion delays (0, 250, 450 ms). Art block uses scale-fade per the
+// motion plan's "illustration entrance" recipe.
+useReveal(eyebrowRef, { mode: 'fade-up', y: 12, duration: 0.5 })
+useReveal(subtitleRef, { mode: 'fade-up', y: 18, duration: 0.6, delay: 0.25 })
+useReveal(actionsRef, { mode: 'fade-up', y: 20, duration: 0.6, delay: 0.45 })
+useReveal(artRef, { mode: 'scale-fade', duration: 0.7, delay: 0.2 })
 </script>
 
 <style scoped>

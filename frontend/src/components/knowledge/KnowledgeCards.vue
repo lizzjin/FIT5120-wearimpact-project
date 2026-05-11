@@ -46,14 +46,11 @@
     </div>
 
     <!-- Masonry wall -->
-    <div class="kh-cards__wall">
+    <div class="kh-cards__wall" ref="wallRef">
       <article
-        v-for="(card, idx) in visibleCards"
+        v-for="card in visibleCards"
         :key="card.id"
         class="kh-card-tile"
-        v-motion
-        :initial="{ opacity: 0, y: 24 }"
-        :visible="{ opacity: 1, y: 0, transition: { duration: 500, delay: (idx % 6) * 60 } }"
         tabindex="0"
         role="button"
         :aria-label="`Open: ${card.title}`"
@@ -135,15 +132,18 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
+import { gsap } from 'gsap'
 import { ArrowLeft, ArrowRight, BookOpen, X } from 'lucide-vue-next'
 import data from '../../data/knowledge-cards.json'
 import AnimatedHeading from '../AnimatedHeading.vue'
 import { useReveal } from '../../motion/useReveal'
+import { isReduced } from '../../motion'
 
 defineEmits(['back'])
 
 const eyebrowRef = ref(null)
 const subtitleRef = ref(null)
+const wallRef = ref(null)
 useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
 useReveal(subtitleRef, { mode: 'fade-blur', y: 40, delay: 0.25 })
 
@@ -161,6 +161,34 @@ const visibleCards = computed(() => {
   if (activeTheme.value === 'all') return cards
   return cards.filter((c) => c.theme === activeTheme.value)
 })
+
+// Stagger-reveal the visible tiles whenever the filtered list changes
+// (initial mount + every theme switch). Mirrors the EcoShopList pattern:
+// new gsap.context() per invocation, old one reverted, onBeforeUnmount
+// reverts the last. Replaces a v-motion directive that previously baked
+// per-tile delays into the template.
+let wallCtx = null
+watch(
+  () => visibleCards.value.map((c) => c.id).join('|'),
+  async () => {
+    if (isReduced()) return
+    await nextTick()
+    wallCtx?.revert()
+    const tiles = wallRef.value?.querySelectorAll('.kh-card-tile')
+    if (!tiles || !tiles.length) {
+      wallCtx = null
+      return
+    }
+    wallCtx = gsap.context(() => {
+      gsap.fromTo(
+        tiles,
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.5, stagger: 0.06, ease: 'power3.out' },
+      )
+    }, wallRef.value)
+  },
+  { immediate: true },
+)
 
 function lockScroll() {
   document.documentElement.style.overflow = 'hidden'
@@ -195,6 +223,8 @@ watch(activeCard, (v) => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKey)
   unlockScroll()
+  wallCtx?.revert()
+  wallCtx = null
 })
 </script>
 
