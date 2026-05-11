@@ -55,6 +55,7 @@ export { useFocusRing } from './composables/useFocusRing'
 export { useRipple } from './composables/useRipple'
 export { useShake } from './composables/useShake'
 export { useToast, provideToast } from './composables/useToast'
+export { useConfirm, getConfirmStore } from './composables/useConfirm'
 // Phase 7 — composite interaction primitives
 export { useModal } from './composables/useModal'
 export { useDrawer } from './composables/useDrawer'

@@ -60,6 +60,9 @@ import {
   deleteGarment,
   clearWardrobe
 } from '../services/wardrobeDb.js'
+import { useConfirm } from '../motion'
+
+const confirm = useConfirm()
 
 // View state machine: intro → onboarding → wardrobe.
 const view = ref('intro')
@@ -89,7 +92,14 @@ async function onDelete(id) {
 }
 
 async function onClearAll() {
-  if (!confirm('Delete every item from your wardrobe? This cannot be undone.')) return
+  const ok = await confirm({
+    title: 'Clear your wardrobe?',
+    message: 'This removes every item from your closet. It cannot be undone.',
+    confirmText: 'Delete all',
+    cancelText: 'Keep my closet',
+    danger: true,
+  })
+  if (!ok) return
   await clearWardrobe()
   await refresh()
 }

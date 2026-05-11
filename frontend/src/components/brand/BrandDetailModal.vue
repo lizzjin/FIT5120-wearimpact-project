@@ -12,7 +12,7 @@
           <X :size="18" :stroke-width="2" />
         </DialogClose>
 
-        <div class="modal-scroll">
+        <div class="modal-scroll" data-lenis-prevent>
           <div v-if="isLoading" class="detail-skeleton">
             <div class="sk sk-detail-header"></div>
             <div class="sk sk-detail-body"></div>
@@ -240,8 +240,32 @@ const detailLogoSrc = computed(() => {
 
 watch(() => props.detail, () => { detailLogoOk.value = true })
 
+// Lock background scroll while the modal is open. Setting overflow:hidden
+// on BOTH <html> and <body> (and compensating for scrollbar width so the
+// page doesn't jump) is the standard Radix/MUI pattern. An earlier
+// position:fixed-on-body approach also locked the background but broke
+// wheel scrolling inside the modal in some browsers.
+let savedHtmlOverflow = ''
+let savedBodyOverflow = ''
+let savedBodyPadRight = ''
 watch(() => props.open, (v) => {
-  document.body.style.overflow = v ? 'hidden' : ''
+  const html = document.documentElement
+  const body = document.body
+  if (v) {
+    savedHtmlOverflow = html.style.overflow
+    savedBodyOverflow = body.style.overflow
+    savedBodyPadRight = body.style.paddingRight
+    const scrollbarWidth = window.innerWidth - html.clientWidth
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`
+    }
+  } else {
+    html.style.overflow = savedHtmlOverflow
+    body.style.overflow = savedBodyOverflow
+    body.style.paddingRight = savedBodyPadRight
+  }
 })
 
 function guessDomain(name) {
@@ -313,8 +337,14 @@ function guessDomain(name) {
 }
 
 .modal-scroll {
-  flex: 1;
+  flex: 1 1 auto;
+  /* `min-height: 0` is the bit that actually makes a flex child overflow:
+     without it the child can't shrink below its content size and the
+     `overflow-y: auto` never has anything to scroll. */
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 56px 24px 28px;
   display: flex; flex-direction: column; gap: 16px;
 }

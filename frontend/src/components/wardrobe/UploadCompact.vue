@@ -47,15 +47,26 @@
       </li>
     </ul>
 
-    <div v-if="errorMessage" class="wd-compact__status wd-compact__status--err">
-      <CircleAlert :size="13" :stroke-width="2" /> {{ errorMessage }}
-    </div>
-    <div v-else-if="isBusy" class="wd-compact__status wd-compact__status--info">
-      <Loader2 :size="13" :stroke-width="2" class="wd-spin" /> {{ statusMessage }}
-    </div>
-    <div v-else-if="lastSummary" class="wd-compact__status wd-compact__status--ok">
-      <CheckCircle2 :size="13" :stroke-width="2" /> {{ lastSummary }}
-    </div>
+    <!-- Status row collapses to nothing once setSummary / setError
+         timers fire, so the panel doesn't keep a permanent "Added 3."
+         flag after the toast has already done its job. Transition
+         fades the row out instead of yanking it. -->
+    <Transition name="wd-status" mode="out-in">
+      <div
+        v-if="statusBar"
+        :key="statusBar.type"
+        class="wd-compact__status"
+        :class="`wd-compact__status--${statusBar.type}`"
+      >
+        <component
+          :is="statusBar.icon"
+          :size="13"
+          :stroke-width="2"
+          :class="statusBar.iconClass"
+        />
+        {{ statusBar.text }}
+      </div>
+    </Transition>
 
     <button
       type="button"
@@ -71,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import {
   UploadCloud, X, CircleAlert, Loader2, CheckCircle2, Sparkles
 } from 'lucide-vue-next'
@@ -101,6 +112,46 @@ const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp']
 const MAX_FILES = 8
 const MAX_TOTAL_MB = 10
 
+// In-panel status banners auto-dismiss so the panel does not stay
+// permanently flagged after a single upload. Success / warning info is
+// already mirrored in a global toast (see classify() below), so the
+// in-panel copy is a short visual receipt rather than a sticky badge.
+const SUMMARY_TIMEOUT_MS = 4000
+const ERROR_TIMEOUT_MS = 6000
+let summaryTimer = null
+let errorTimer = null
+
+function setSummary(text) {
+  lastSummary.value = text
+  if (summaryTimer) clearTimeout(summaryTimer)
+  if (text) {
+    summaryTimer = setTimeout(() => { lastSummary.value = ''; summaryTimer = null }, SUMMARY_TIMEOUT_MS)
+  }
+}
+
+function setError(text) {
+  errorMessage.value = text
+  if (errorTimer) clearTimeout(errorTimer)
+  if (text) {
+    errorTimer = setTimeout(() => { errorMessage.value = ''; errorTimer = null }, ERROR_TIMEOUT_MS)
+  }
+}
+
+onBeforeUnmount(() => {
+  if (summaryTimer) clearTimeout(summaryTimer)
+  if (errorTimer) clearTimeout(errorTimer)
+})
+
+// Status row is a single slot: errors win, then in-flight progress,
+// then success summary. Returning null tells the <Transition> to fade
+// the row out entirely.
+const statusBar = computed(() => {
+  if (errorMessage.value) return { type: 'err',  icon: CircleAlert,  text: errorMessage.value }
+  if (isBusy.value)       return { type: 'info', icon: Loader2,      text: statusMessage.value, iconClass: 'wd-spin' }
+  if (lastSummary.value)  return { type: 'ok',   icon: CheckCircle2, text: lastSummary.value }
+  return null
+})
+
 function onPick(e) {
   ingest(e.target.files)
   if (fileInput.value) fileInput.value.value = ''
@@ -111,23 +162,23 @@ function onDrop(e) {
 }
 
 function ingest(fileList) {
-  errorMessage.value = ''
+  setError('')
   if (!fileList) return
   const next = [...files.value]
   for (const f of Array.from(fileList)) {
     if (!ACCEPTED.includes(f.type)) {
-      errorMessage.value = `Unsupported file: ${f.name}`
+      setError(`Unsupported file: ${f.name}`)
       continue
     }
     if (next.length >= MAX_FILES) {
-      errorMessage.value = `Max ${MAX_FILES} photos at a time.`
+      setError(`Max ${MAX_FILES} photos at a time.`)
       break
     }
     next.push(f)
   }
   const totalMb = next.reduce((s, f) => s + f.size, 0) / (1024 * 1024)
   if (totalMb > MAX_TOTAL_MB) {
-    errorMessage.value = `Total size > ${MAX_TOTAL_MB} MB.`
+    setError(`Total size > ${MAX_TOTAL_MB} MB.`)
     return
   }
   files.value = next
@@ -144,8 +195,8 @@ watch(files, (val) => {
 
 async function classify() {
   if (files.value.length === 0 || isBusy.value) return
-  errorMessage.value = ''
-  lastSummary.value = ''
+  setError('')
+  setSummary('')
   isBusy.value = true
   statusMessage.value = 'Classifying — first run may take ~1 min…'
 
@@ -178,7 +229,7 @@ async function classify() {
     }
 
     const failed = (data.results || []).filter((r) => !r.ok).length
-    lastSummary.value = `Added ${savedCount}${failed ? ` · ${failed} failed` : ''}.`
+    setSummary(`Added ${savedCount}${failed ? ` · ${failed} failed` : ''}.`)
     if (savedCount > 0) {
       toast.push(`Added ${savedCount} item${savedCount === 1 ? '' : 's'} to your wardrobe.`, { type: 'success' })
     }
@@ -189,8 +240,9 @@ async function classify() {
     emit('saved')
     Promise.all(pollJobs).then(() => emit('saved'))
   } catch (err) {
-    errorMessage.value = err?.message || 'Failed. Please retry.'
-    toast.push(errorMessage.value, { type: 'error' })
+    const msg = err?.message || 'Failed. Please retry.'
+    setError(msg)
+    toast.push(msg, { type: 'error' })
   } finally {
     isBusy.value = false
     statusMessage.value = ''
@@ -278,6 +330,16 @@ async function classify() {
 .wd-compact__status--info { background: var(--color-primary-light); color: var(--color-primary-text); }
 .wd-compact__status--ok   { background: var(--color-primary-light); color: var(--color-positive); }
 .wd-compact__status--err  { background: rgba(208,50,56,0.08); color: var(--color-danger); }
+
+/* Status pill fades in/out instead of pop. Triggered by computed
+   `statusBar` flipping to null after the auto-dismiss timer fires. */
+.wd-status-enter-active,
+.wd-status-leave-active {
+  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wd-status-enter-from { opacity: 0; transform: translateY(4px); }
+.wd-status-leave-to   { opacity: 0; transform: translateY(-4px); }
 
 .wd-spin { animation: wd-spin 0.9s linear infinite; }
 @keyframes wd-spin { to { transform: rotate(360deg); } }

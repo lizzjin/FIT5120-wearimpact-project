@@ -7,6 +7,7 @@
       </Transition>
     </router-view>
     <ToastHost />
+    <ConfirmHost />
   </div>
 </template>
 
@@ -21,6 +22,7 @@ import {
 } from './motion'
 import PasswordGate from './components/PasswordGate.vue'
 import ToastHost from './components/ToastHost.vue'
+import ConfirmHost from './components/ConfirmHost.vue'
 import { isUnlocked } from './services/siteGate'
 
 const unlocked = ref(isUnlocked())

@@ -30,7 +30,15 @@
 <script setup>
 import { provideToast } from '../motion'
 
-const { toasts, dismiss } = provideToast()
+const { toasts, dismiss, push } = provideToast()
+
+// Dev helper: expose push to window so designers / engineers can fire a
+// toast from the console to inspect colours, durations, or stacking
+// without wiring up a producer component. Stripped by Vite in production
+// because the `if (import.meta.env.DEV)` branch is dead code there.
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  window.__toast = { push, dismiss }
+}
 </script>
 
 <style scoped>
@@ -87,14 +95,42 @@ const { toasts, dismiss } = provideToast()
   color: var(--color-text);
 }
 
-/* TransitionGroup choreography — y + opacity, spring-in. */
+@media (max-width: 768px) {
+  .toast-host {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+  }
+  .toast {
+    max-width: none;
+    width: 100%;
+  }
+}
+</style>
+
+<!-- TransitionGroup classes MUST live outside `scoped` so the rules
+     selector matches the element regardless of whether Vue applies the
+     transition classes before or after the data-v hash is on the node.
+     This is the canonical Vue 3 escape for `scoped` + `<Transition>`
+     interop; without it the enter/leave classes are added but their
+     selectors look like `.toast-enter-from[data-v-xxx]` and skip the
+     first paint cycle, so the toast appears at its final position with
+     no motion. -->
+<style>
 .toast-enter-active {
   transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
               opacity 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
 }
 .toast-leave-active {
   transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
               opacity 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Position: absolute on leave so the move-transition can shift later
+     toasts up smoothly without the leaving one still occupying flex
+     space. */
+  position: absolute;
+  right: 0;
+  will-change: transform, opacity;
 }
 .toast-enter-from {
   transform: translateY(24px);
@@ -106,17 +142,5 @@ const { toasts, dismiss } = provideToast()
 }
 .toast-move {
   transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@media (max-width: 768px) {
-  .toast-host {
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
-  }
-  .toast {
-    max-width: none;
-    width: 100%;
-  }
 }
 </style>
