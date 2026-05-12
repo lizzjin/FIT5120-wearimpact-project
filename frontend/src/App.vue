@@ -2,7 +2,12 @@
   <div class="app-container">
     <PasswordGate v-if="!unlocked" @unlocked="onUnlocked" />
     <router-view v-else v-slot="{ Component }">
-      <Transition name="page" mode="out-in" @after-enter="onAfterEnter">
+      <Transition
+        name="page"
+        mode="out-in"
+        @before-enter="onBeforeEnter"
+        @after-enter="onAfterEnter"
+      >
         <component :is="Component" />
       </Transition>
     </router-view>
@@ -50,6 +55,15 @@ function onUnlocked() {
   })
 }
 
+// Snap scroll to top the instant the new route's DOM is inserted but before
+// it fades in. Doing this in @after-enter (post fade-in) is too late — the
+// user can briefly see the new page rendered at the previous scroll Y
+// (e.g. clicking a deep "next step" card from the bottom of /knowledge made
+// /brand-search appear scrolled, then jump back up). Keeping the call here
+// too acts as a safety net if @before-enter is ever skipped.
+function onBeforeEnter() {
+  scrollToTopImmediate()
+}
 function onAfterEnter() {
   scrollToTopImmediate()
   onRouteSettled()
