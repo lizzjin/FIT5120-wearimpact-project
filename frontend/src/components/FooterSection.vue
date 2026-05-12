@@ -13,9 +13,10 @@
       <div>
         <h4>Tools</h4>
         <ul>
-          <li><router-link to="/eco-shop">Eco-Shop Navigator</router-link></li>
-          <li><router-link to="/brand-search">Brand Search</router-link></li>
+          <li><router-link to="/wardrobe">My Wardrobe</router-link></li>
           <li><router-link to="/knowledge">Knowledge Hub</router-link></li>
+          <li><router-link to="/brand-search">Brand Search</router-link></li>
+          <li><router-link to="/eco-shop">Eco-Shop Navigator</router-link></li>
         </ul>
       </div>
 

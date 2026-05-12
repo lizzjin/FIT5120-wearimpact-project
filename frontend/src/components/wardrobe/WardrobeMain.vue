@@ -1,10 +1,6 @@
 <template>
   <section class="wd-main">
     <header class="wd-main__head">
-      <button type="button" class="wd-main__back" @click="emit('back')">
-        <ArrowLeft :size="16" :stroke-width="2" />
-        Back
-      </button>
       <div class="wd-main__heading">
         <p ref="eyebrowRef" class="wd-main__eyebrow">MY WARDROBE</p>
         <AnimatedHeading
@@ -77,16 +73,19 @@
         </aside>
       </div>
     </div>
+
+    <WardrobeNextDecision v-if="total > 0" />
   </section>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { ArrowLeft, ArrowRight, Sparkles, Trash2 } from 'lucide-vue-next'
+import { ArrowRight, Sparkles, Trash2 } from 'lucide-vue-next'
 import GarmentDetailPanel from './GarmentDetailPanel.vue'
 import CategoryRow from './CategoryRow.vue'
 import MannequinSlot from './MannequinSlot.vue'
 import UploadCompact from './UploadCompact.vue'
+import WardrobeNextDecision from './WardrobeNextDecision.vue'
 import AnimatedHeading from '../AnimatedHeading.vue'
 import { MAIN_CATEGORIES } from '../../services/wardrobeDb.js'
 import { useReveal } from '../../motion/useReveal'
@@ -106,7 +105,7 @@ const props = defineProps({
   total: { type: Number, default: 0 },
   recent: { type: Number, default: 0 }
 })
-const emit = defineEmits(['back', 'saved', 'delete', 'clear', 'open-advisor'])
+const emit = defineEmits(['saved', 'delete', 'clear', 'open-advisor'])
 
 const selectedId = ref(null)
 
@@ -154,19 +153,6 @@ function onDelete(id) {
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
-
-.wd-main__back {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-muted);
-  font-size: 13px; font-weight: 600;
-  cursor: pointer;
-  transition: color var(--transition-base), background var(--transition-base);
-}
-.wd-main__back:hover { color: var(--color-text); background: var(--color-surface-alt); }
 
 .wd-main__heading {
   flex: 1; min-width: 200px;

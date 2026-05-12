@@ -46,13 +46,23 @@
             more of what you already own.
           </p>
           <p class="hero-sub hero-sub--solution" data-line>
-            <strong>That's why WearImpact exists:</strong> to make sustainable
-            fashion easier to understand, easier to find, and easier to act on.
+            <strong>Start with what you already have.</strong>
+            Catalogue your closet first — then we'll help you decide what's next.
           </p>
-          <span class="scroll-hint" data-line>
-            Still curious?
-            <span class="scroll-hint__arrow" aria-hidden="true">↓</span>
-          </span>
+          <div class="hero-cta-row" data-line>
+            <CtaButton to="/wardrobe" class="hero-cta-primary">
+              Start with my wardrobe
+              <ArrowRight :size="17" :stroke-width="2.5" class="cta-arrow" />
+            </CtaButton>
+            <button
+              type="button"
+              class="hero-cta-secondary"
+              @click="jumpToSection('sol-2')"
+            >
+              Or see how the journey works
+              <span class="hero-cta-secondary__arrow" aria-hidden="true">↓</span>
+            </button>
+          </div>
         </div>
         <div class="story-art story-art--hero" data-art v-html="artHero" aria-hidden="true" />
       </div>
@@ -266,52 +276,52 @@ const solutions = [
     problem: 'Most of your impact lives in clothes you already own.',
     title: 'See what\'s really in your wardrobe.',
     description:
-      'Snap your clothes — we sort, tag, and store them in your browser. No login, no cloud. Then ask the AI advisor for outfit ideas built only from what you actually own.',
-    cta: 'Open My Wardrobe',
+      'Snap your clothes — we sort, tag, and store them in your browser. No login, no cloud. Once you can see what you already own, the next step gets a lot clearer.',
+    cta: 'Start with my wardrobe',
     link: '/wardrobe',
     art: artBridge,
-    labelTag: 'YOUR CLOSET',
+    labelTag: 'STEP 1 · KNOW',
     sprinkleA: Shirt,
     sprinkleB: Sparkles,
   },
   {
     id: 3,
-    problem: "You want to shop sustainably — but you don't know where to start.",
-    title: 'Find second-hand stores near you.',
+    problem: "Don't shop blind — most 'sustainable' marketing isn't.",
+    title: 'Learn what actually matters.',
     description:
-      'WearImpact maps every op-shop, donation point and textile recycling centre within your chosen radius — with directions and opening hours.',
-    cta: 'Find Eco-Shops Near Me',
-    link: '/eco-shop',
-    art: artThrift,
-    labelTag: 'ACT',
-    sprinkleA: MapPin,
-    sprinkleB: Compass,
+      'WearImpact breaks down the real issues — materials, supply chains, waste — in plain language. Five minutes here saves a hundred bad purchases later.',
+    cta: 'Learn what actually matters',
+    link: '/knowledge',
+    art: artKnowledge,
+    labelTag: 'STEP 2 · LEARN',
+    sprinkleA: BookOpen,
+    sprinkleB: Lightbulb,
   },
   {
     id: 4,
     problem: 'A brand says "sustainable." But is it really?',
     title: 'See how transparent your brands are.',
     description:
-      'Search any clothing brand and see its real score — across policy, environment, and supply chain — based on the Fashion Transparency Index.',
-    cta: 'Search a Brand',
+      'Search any clothing brand and see its real score — across policy, environment, and supply chain — based on the Fashion Transparency Index. No greenwashing survives a side-by-side.',
+    cta: 'Evaluate a brand',
     link: '/brand-search',
     art: artWindowShop,
-    labelTag: 'EVALUATE',
+    labelTag: 'STEP 3 · EVALUATE',
     sprinkleA: Search,
     sprinkleB: ShieldCheck,
   },
   {
     id: 5,
-    problem: "It's hard to choose better when you don't know what to look for.",
-    title: 'Learn what actually matters.',
+    problem: "Whether you're donating or buying second-hand, do it locally.",
+    title: 'Find shops near you — donate or buy second-hand.',
     description:
-      'WearImpact breaks down the real issues — materials, supply chains, waste — in plain language so you can make more informed choices.',
-    cta: 'Start Learning',
-    link: '/knowledge',
-    art: artKnowledge,
-    labelTag: 'DISCOVER',
-    sprinkleA: BookOpen,
-    sprinkleB: Lightbulb,
+      'WearImpact maps every op-shop, donation point and textile recycling centre within your chosen radius — with directions and opening hours. End the journey where the action is.',
+    cta: 'Find shops near you',
+    link: '/eco-shop',
+    art: artThrift,
+    labelTag: 'STEP 4 · ACT',
+    sprinkleA: MapPin,
+    sprinkleB: Compass,
   },
 ]
 
@@ -919,6 +929,76 @@ onBeforeUnmount(() => {
 .scroll-hint__arrow {
   display: inline-block;
   font-size: 16px;
+  color: var(--color-primary-text);
+  animation: scroll-hint-rock 1.8s var(--motion-entrance) infinite;
+}
+
+/* Journey entry CTA row — primary action goes straight to /wardrobe so the
+   user lands on Step 1 (KNOW). Secondary scrolls into the story for the
+   "want context first" reader. */
+.hero-cta-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.hero-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 26px;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--color-primary-text);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform 200ms var(--motion-entrance),
+    box-shadow 200ms var(--motion-entrance),
+    background 200ms var(--motion-entrance);
+}
+
+.hero-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.22);
+}
+
+.hero-cta-primary .cta-arrow {
+  transition: transform 280ms var(--motion-entrance);
+}
+
+.hero-cta-primary:hover .cta-arrow {
+  transform: translateX(3px);
+}
+
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transition: color 200ms var(--motion-entrance);
+}
+
+.hero-cta-secondary:hover {
+  color: var(--color-primary-text);
+}
+
+.hero-cta-secondary__arrow {
+  display: inline-block;
+  font-size: 14px;
   color: var(--color-primary-text);
   animation: scroll-hint-rock 1.8s var(--motion-entrance) infinite;
 }

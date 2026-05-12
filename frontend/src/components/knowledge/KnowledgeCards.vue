@@ -89,6 +89,14 @@
       </article>
     </div>
 
+    <JourneyNextCard
+      to="/brand-search"
+      eyebrow="STEP 3 · EVALUATE"
+      title="Now apply it — which brands actually do this?"
+      body="See the transparency score of any brand against what you just learned."
+      cta="Search a brand"
+    />
+
     <!-- Modal with GSAP-driven open choreography -->
     <Transition
       name="kh-modal"
@@ -152,6 +160,7 @@ import { gsap } from 'gsap'
 import { ArrowLeft, ArrowRight, BookOpen, X } from 'lucide-vue-next'
 import data from '../../data/knowledge-cards.json'
 import AnimatedHeading from '../AnimatedHeading.vue'
+import JourneyNextCard from '../journey/JourneyNextCard.vue'
 import { useReveal } from '../../motion/useReveal'
 import { isReduced } from '../../motion'
 

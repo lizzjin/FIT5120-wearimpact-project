@@ -7,7 +7,7 @@
       <!-- Left column: text + CTA -->
       <div class="es-hero__text">
         <p class="es-hero__eyebrow" ref="eyebrowRef">
-          STEP 01 · FIND ECO-SHOPS NEAR YOU
+          {{ heroCopy.eyebrow }}
         </p>
         <AnimatedHeading
           as="h1"
@@ -21,8 +21,7 @@
           :paint-duration="0.5"
         />
         <p class="es-hero__subtitle" ref="subtitleRef">
-          We pull every nearby second-hand shop, donation point and textile recycler within
-          your radius — so the kindest move for that old jacket is also the closest one.
+          {{ heroCopy.subtitle }}
         </p>
 
         <div class="es-hero__actions" ref="actionsRef">
@@ -61,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Vue3Lottie } from 'vue3-lottie'
 import { Navigation2 } from 'lucide-vue-next'
 import AnimatedHeading from '../AnimatedHeading.vue'
@@ -70,11 +69,36 @@ import CtaFlip from '../CtaFlip.vue'
 import { useReveal } from '../../motion/useReveal'
 import heroAnim from '../../assets/lottie/eco-shop-hero.json'
 
-defineProps({
+const props = defineProps({
   isLocating: { type: Boolean, default: false },
   isFallback: { type: Boolean, default: false },
+  // null | 'donate' | 'buy' — drives journey-aware hero copy when the user
+  // arrives from Wardrobe's decision card or Brand Search's next-step card.
+  intent: { type: String, default: null },
 })
 defineEmits(['use-location'])
+
+const heroCopy = computed(() => {
+  if (props.intent === 'donate') {
+    return {
+      eyebrow: 'STEP 4 · LET GO — FIND DONATION POINTS',
+      subtitle:
+        'Showing donation centres and textile recyclers near you. Widen the type filter if you also want to see op-shops or general second-hand stores.',
+    }
+  }
+  if (props.intent === 'buy') {
+    return {
+      eyebrow: 'STEP 4 · ACT — SHOP SECOND-HAND',
+      subtitle:
+        'Showing op-shops by default. The kindest piece you can buy is one that already exists — and a great brand bought new still loses to a fine one bought used.',
+    }
+  }
+  return {
+    eyebrow: 'STEP 01 · FIND ECO-SHOPS NEAR YOU',
+    subtitle:
+      'We pull every nearby second-hand shop, donation point and textile recycler within your radius — so the kindest move for that old jacket is also the closest one.',
+  }
+})
 
 const eyebrowRef = ref(null)
 const subtitleRef = ref(null)

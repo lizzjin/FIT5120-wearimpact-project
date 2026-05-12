@@ -27,7 +27,6 @@
           :garments="garments"
           :total="total"
           :recent="recent"
-          @back="goIntro"
           @saved="refresh"
           @delete="onDelete"
           @clear="onClearAll"

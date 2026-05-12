@@ -63,6 +63,14 @@
       :is-loading="true"
       @open="() => {}"
     />
+
+    <JourneyNextCard
+      to="/eco-shop?intent=buy"
+      eyebrow="STEP 4 · ACT"
+      title="Skip the new — find better options second-hand."
+      body="The best brand is still beaten by buying second-hand. Op-shops near you."
+      cta="Find op-shops"
+    />
   </section>
 </template>
 
@@ -72,6 +80,7 @@ import { ArrowLeft } from 'lucide-vue-next'
 import BrandRankCard from './BrandRankCard.vue'
 import BrandLeaderboard from './BrandLeaderboard.vue'
 import AnimatedHeading from '../AnimatedHeading.vue'
+import JourneyNextCard from '../journey/JourneyNextCard.vue'
 import { useReveal } from '../../motion/useReveal'
 
 const eyebrowRef = ref(null)

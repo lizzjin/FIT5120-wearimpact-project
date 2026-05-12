@@ -8,6 +8,7 @@
       <EcoShopHero
         :is-locating="isLocating"
         :is-fallback="isFallback"
+        :intent="intent"
         @use-location="useMyLocation"
       />
 
@@ -81,12 +82,38 @@
       <p v-if="errorMessage" class="eco-page__status eco-page__status--error">
         {{ errorMessage }}
       </p>
+
+      <JourneyNextCard
+        v-if="intent === 'donate'"
+        to="/wardrobe"
+        eyebrow="JOURNEY COMPLETE"
+        title="Donated something? Remove it from your wardrobe."
+        body="Keep your wardrobe an honest mirror of what you actually own."
+        cta="Back to my wardrobe"
+      />
+      <JourneyNextCard
+        v-else-if="intent === 'buy'"
+        to="/wardrobe"
+        eyebrow="JOURNEY COMPLETE"
+        title="Bought something? Catalogue it."
+        body="Snap your new piece so your wardrobe stays accurate — and your future decisions stay honest."
+        cta="Add to my wardrobe"
+      />
+      <JourneyNextCard
+        v-else
+        to="/wardrobe"
+        eyebrow="START THE JOURNEY"
+        title="New here? Start by knowing what you already own."
+        body="WearImpact's journey begins in your wardrobe — not in the shops."
+        cta="Open my wardrobe"
+      />
     </main>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { List, Map as MapIcon } from 'lucide-vue-next'
 import Navbar from '../components/Navbar.vue'
 import QuizBackground from '../components/knowledge/QuizBackground.vue'
@@ -94,7 +121,25 @@ import EcoShopHero from '../components/ecoshop/EcoShopHero.vue'
 import EcoShopFilterBar from '../components/ecoshop/EcoShopFilterBar.vue'
 import EcoShopMap from '../components/ecoshop/EcoShopMap.vue'
 import EcoShopList from '../components/ecoshop/EcoShopList.vue'
+import JourneyNextCard from '../components/journey/JourneyNextCard.vue'
 import { fetchNearbyPlaces, fetchPlaceDetails, getUserCoordinates } from '../services/locationService'
+
+// Journey-aware intent — driven by ?intent=donate|buy in the URL when the
+// user arrives from Wardrobe's decision card or Brand Search's next-step
+// card. Maps to the type filter and the hero's eyebrow / subtitle copy.
+const route = useRoute()
+const intent = computed(() => {
+  const v = route.query.intent
+  return v === 'donate' || v === 'buy' ? v : null
+})
+// Mapping intent → type value used by EcoShopFilterBar's TYPE_OPTIONS.
+// Donation maps to donation_point; buy maps to second_hand_shop. Keep this in
+// sync with the chip values defined in EcoShopFilterBar.vue.
+function filterForIntent(i) {
+  if (i === 'donate') return 'donation_point'
+  if (i === 'buy') return 'second_hand_shop'
+  return 'all'
+}
 
 // ── State ────────────────────────────────────────────────────────────────
 const userLat = ref(null)
@@ -107,7 +152,13 @@ const allPlaces = ref([])
 const isLoading = ref(true)
 const errorMessage = ref('')
 
-const activeFilter = ref('all')
+const activeFilter = ref(filterForIntent(intent.value))
+
+// If the user navigates between intents inside the SPA (e.g. donate → buy),
+// resync the filter chip so the list matches the new hero context.
+watch(intent, (next) => {
+  activeFilter.value = filterForIntent(next)
+})
 
 // Selection + inline detail panel.
 const activePlaceId = ref(null)
