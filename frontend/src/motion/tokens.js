@@ -35,7 +35,14 @@ function readCssMs(name, fallback) {
     .trim()
   if (!raw) return fallback
   const num = parseFloat(raw)
-  return Number.isFinite(num) ? num : fallback
+  if (!Number.isFinite(num)) return fallback
+  // Source CSS authors these as `<n>ms`, but Vite/Lightning CSS minifies
+  // values like `600ms` to the equivalent `.6s` because the latter is
+  // shorter — and `parseFloat('.6s')` returns 0.6, not 600. Detect the
+  // suffix and normalise to milliseconds so downstream toSec() math stays
+  // correct in both dev (unminified) and prod (minified) builds.
+  const isSeconds = /[^m]s\s*$/.test(raw)
+  return isSeconds ? num * 1000 : num
 }
 
 function readCssString(name, fallback) {
