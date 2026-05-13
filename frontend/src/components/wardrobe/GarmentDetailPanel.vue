@@ -10,7 +10,7 @@
       </div>
       <p class="wd-detail__placeholder-title">Pick a piece</p>
       <p class="wd-detail__placeholder-hint">
-        Tap any item on the right to inspect its photo, washing notes and subcategory.
+        Tap any item on the right to inspect its photo, washing label and subcategory.
       </p>
     </div>
 
@@ -31,22 +31,40 @@
         <img v-if="garment.image_base64" :src="garment.image_base64" :alt="garment.filename" />
       </div>
 
-      <!-- Washing label info — placeholder block until OCR/laundry data is wired up. -->
+      <!-- Washing label section — real OCR-derived materials when the user
+           has scanned a label, otherwise a prompt to scan one. -->
       <section class="wd-detail__section">
         <h4 class="wd-detail__section-title">
           <Droplets :size="13" :stroke-width="2" />
           Washing label
         </h4>
-        <div class="wd-detail__care-grid">
-          <span v-for="c in careGuesses" :key="c.label" class="wd-care-chip">
-            <component :is="c.icon" :size="13" :stroke-width="1.8" />
-            {{ c.label }}
-          </span>
+
+        <div v-if="hasMaterials" class="wd-detail__materials">
+          <MaterialPills :materials="garment.materials" />
+          <button
+            type="button"
+            class="wd-detail__relabel"
+            @click="reuploadOpen = !reuploadOpen"
+          >
+            <RefreshCw :size="11" :stroke-width="2" />
+            {{ reuploadOpen ? 'Cancel re-scan' : 'Re-upload label' }}
+          </button>
+          <WashLabelUploader
+            v-if="reuploadOpen"
+            reupload
+            @recognized="onLabelRecognized"
+            @error="onLabelError"
+          />
         </div>
-        <p class="wd-detail__care-hint">
-          Auto-detected from the photo where possible. Always check the physical label
-          before washing.
-        </p>
+        <div v-else>
+          <WashLabelUploader
+            @recognized="onLabelRecognized"
+            @error="onLabelError"
+          />
+          <p class="wd-detail__care-hint">
+            Photograph the composition line of the label (e.g. "60% Cotton 40% Polyester").
+          </p>
+        </div>
       </section>
 
       <section class="wd-detail__section">
@@ -65,32 +83,72 @@
         <p class="wd-detail__meta">{{ formatDate(garment.uploaded_at) }}</p>
       </section>
 
-      <button type="button" class="wd-detail__delete" @click="$emit('delete', garment.id)">
-        <Trash2 :size="14" :stroke-width="2" />
-        Remove from wardrobe
-      </button>
+      <div class="wd-detail__actions">
+        <button
+          v-if="canTryOn"
+          type="button"
+          class="wd-detail__tryon"
+          @click="$emit('try-on', garment)"
+        >
+          <Shirt :size="14" :stroke-width="2" />
+          Try on mannequin
+        </button>
+        <button
+          v-else
+          type="button"
+          class="wd-detail__tryon wd-detail__tryon--disabled"
+          disabled
+          title="FASHN VTON does not support footwear try-on yet."
+        >
+          <Shirt :size="14" :stroke-width="2" />
+          Footwear try-on unavailable
+        </button>
+
+        <button type="button" class="wd-detail__delete" @click="$emit('delete', garment.id)">
+          <Trash2 :size="14" :stroke-width="2" />
+          Remove from wardrobe
+        </button>
+      </div>
     </template>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
-  Hand, X, Droplets, Tag, Calendar, Trash2,
-  Wind, Flame, Snowflake
+  Hand, X, Droplets, Tag, Calendar, Trash2, RefreshCw, Shirt
 } from 'lucide-vue-next'
+import MaterialPills from './MaterialPills.vue'
+import WashLabelUploader from './WashLabelUploader.vue'
+import { updateGarmentMaterials } from '../../services/wardrobeDb.js'
+import { useToast } from '../../motion'
 
 const props = defineProps({
   garment: { type: Object, default: null }
 })
-defineEmits(['close', 'delete'])
+const emit = defineEmits(['close', 'delete', 'refresh', 'try-on'])
+
+const toast = useToast()
+const reuploadOpen = ref(false)
+
+// Collapse the re-upload form whenever the user switches to a different
+// garment — keeps the UI clean and avoids stale state across selections.
+watch(() => props.garment?.id, () => {
+  reuploadOpen.value = false
+})
 
 const MAIN_LABEL = {
   upper_body: 'Tops',
   lower_body: 'Bottoms',
   footwear: 'Shoes'
 }
+
+const hasMaterials = computed(
+  () => Array.isArray(props.garment?.materials) && props.garment.materials.length > 0
+)
+
+const canTryOn = computed(() => props.garment?.main_category !== 'footwear')
 
 function formatMain(v) { return MAIN_LABEL[v] || v || 'Unknown' }
 function formatSub(v) {
@@ -102,14 +160,32 @@ function formatDate(ts) {
   return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-// Placeholder care chips — until real OCR-from-label data is wired in, we
-// surface a generic safe set so the section never looks broken.
-const careGuesses = computed(() => [
-  { label: 'Machine wash 30°', icon: Droplets },
-  { label: 'Tumble dry low', icon: Wind },
-  { label: 'Iron medium', icon: Flame },
-  { label: 'Do not bleach', icon: Snowflake }
-])
+async function onLabelRecognized(payload) {
+  const id = props.garment?.id
+  if (!id) return
+  try {
+    await updateGarmentMaterials(id, {
+      materials: payload.materials,
+      raw_label_text: payload.raw_label_text,
+      label_image_base64: payload.label_image_base64,
+      label_uploaded_at: payload.label_uploaded_at
+    })
+    reuploadOpen.value = false
+    toast.push(
+      `Recognised ${payload.materials.length} material${payload.materials.length === 1 ? '' : 's'}.`,
+      { type: 'success' }
+    )
+    emit('refresh')
+  } catch (err) {
+    toast.push(err?.message || 'Could not save materials.', { type: 'error' })
+  }
+}
+
+function onLabelError(message) {
+  if (typeof message === 'string' && message !== 'no_materials') {
+    toast.push(message, { type: 'warning' })
+  }
+}
 </script>
 
 <style scoped>
@@ -243,18 +319,27 @@ const careGuesses = computed(() => [
   color: var(--color-text-subtle);
 }
 
-.wd-detail__care-grid {
-  display: flex; flex-wrap: wrap; gap: 6px;
+.wd-detail__materials {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.wd-care-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--color-primary-lighter);
-  color: var(--color-primary-text);
-  padding: 5px 10px;
-  border-radius: var(--radius-pill);
-  font-size: 12px; font-weight: 600;
-  border: 1px solid var(--color-border-light);
+
+.wd-detail__relabel {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
+.wd-detail__relabel:hover { color: var(--color-primary-text); }
+
 .wd-detail__care-hint {
   font-size: 11px; color: var(--color-text-faint);
   line-height: 1.5;
@@ -274,9 +359,39 @@ const careGuesses = computed(() => [
   font-size: 13px; color: var(--color-text-muted);
 }
 
-.wd-detail__delete {
+.wd-detail__actions {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+.wd-detail__tryon {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 14px;
+  border-radius: var(--radius-btn);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  border: none;
+  font-size: 13px; font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-base), background var(--transition-base);
+}
+.wd-detail__tryon:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: var(--color-primary-dark);
+}
+.wd-detail__tryon--disabled {
+  background: var(--color-surface-alt);
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+  box-shadow: none;
+  border: 1px solid var(--color-border-light);
+}
+
+.wd-detail__delete {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   padding: 10px 14px;
   border-radius: var(--radius-pill);

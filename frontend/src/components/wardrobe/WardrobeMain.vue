@@ -36,6 +36,8 @@
           :garment="selectedGarment"
           @close="selectedId = null"
           @delete="onDelete"
+          @refresh="emit('saved')"
+          @try-on="onTryOn"
         />
         <button
           v-if="total > 0"
@@ -68,7 +70,10 @@
         </div>
 
         <aside class="wd-main__rail">
-          <MannequinSlot />
+          <TryOnPreview
+            ref="tryOnRef"
+            @mannequin-change="onMannequinChange"
+          />
           <UploadCompact @saved="emit('saved')" />
         </aside>
       </div>
@@ -83,8 +88,12 @@ import { computed, ref, watch } from 'vue'
 import { ArrowRight, Sparkles, Trash2 } from 'lucide-vue-next'
 import GarmentDetailPanel from './GarmentDetailPanel.vue'
 import CategoryRow from './CategoryRow.vue'
-import MannequinSlot from './MannequinSlot.vue'
+import TryOnPreview from './TryOnPreview.vue'
 import UploadCompact from './UploadCompact.vue'
+import { tryOnSingle, tryOnCacheKey } from '../../services/tryOnApi.js'
+import { mannequinStore } from '../../stores/mannequinStore.js'
+import { putTryOnCache, getTryOnCache } from '../../services/wardrobeDb.js'
+import { useToast } from '../../motion'
 import WardrobeNextDecision from './WardrobeNextDecision.vue'
 import AnimatedHeading from '../AnimatedHeading.vue'
 import { MAIN_CATEGORIES } from '../../services/wardrobeDb.js'
@@ -105,9 +114,11 @@ const props = defineProps({
   total: { type: Number, default: 0 },
   recent: { type: Number, default: 0 }
 })
-const emit = defineEmits(['saved', 'delete', 'clear', 'open-advisor'])
+const emit = defineEmits(['saved', 'delete', 'clear', 'open-advisor', 'try-on'])
 
 const selectedId = ref(null)
+const tryOnRef = ref(null)
+const toast = useToast()
 
 const grouped = computed(() => {
   const out = {}
@@ -136,6 +147,58 @@ watch(
 function onDelete(id) {
   selectedId.value = null
   emit('delete', id)
+}
+
+// Try-on lives on the rail next to the wardrobe canvas: the detail
+// panel only signals "I want to try on this garment" — the rail (and
+// the cache it speaks to) owns the pipeline call and the result image.
+async function onTryOn(garment) {
+  if (!garment || !tryOnRef.value) return
+  if (garment.main_category === 'footwear') {
+    toast.push('Footwear try-on is not supported by FASHN VTON yet.', { type: 'warning' })
+    return
+  }
+
+  const cacheKey = tryOnCacheKey(garment.id, mannequinStore.selected)
+  if (cacheKey) {
+    const cached = await getTryOnCache(cacheKey).catch(() => null)
+    if (cached?.result_image) {
+      tryOnRef.value.showResult(cached.result_image)
+      // Always bubble up so the wardrobe view can react to selection.
+      emit('try-on', garment)
+      return
+    }
+  }
+
+  tryOnRef.value.startLoading()
+  emit('try-on', garment)
+  try {
+    const payload = await tryOnSingle({
+      mannequin: mannequinStore.selected,
+      garment
+    })
+    tryOnRef.value.showResult(payload.result_image)
+    if (cacheKey) {
+      await putTryOnCache({
+        garment_key: cacheKey,
+        garment_id: garment.id,
+        mannequin: { ...mannequinStore.selected },
+        result_image: payload.result_image,
+        generated_at: Date.now()
+      }).catch(() => {})
+    }
+  } catch (err) {
+    const msg = err?.message || 'Try-on failed. Please retry.'
+    tryOnRef.value.showError(msg)
+    toast.push(msg, { type: 'error' })
+  }
+}
+
+// When the mannequin changes the previously shown result is no longer
+// for the active selection — reset the preview so the user knows to
+// re-run try-on against the new mannequin.
+function onMannequinChange() {
+  tryOnRef.value?.reset?.()
 }
 </script>
 

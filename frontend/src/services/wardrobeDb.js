@@ -14,6 +14,15 @@ db.version(1).stores({
   garments: '++id, main_category, uploaded_at'
 })
 
+// v2 — Epic 3.6: wash-label OCR materials + try-on cache. New fields
+// (materials, raw_label_text, label_image_base64, label_uploaded_at) are
+// not indexed so the schema stores stay the same; Dexie auto-migrates and
+// records that don't have them just read back as `undefined`.
+db.version(2).stores({
+  garments: '++id, main_category, uploaded_at',
+  tryon_cache: '++id, &garment_key, generated_at'
+})
+
 export const MAIN_CATEGORIES = ['upper_body', 'lower_body', 'footwear']
 
 export async function addGarment(record) {
@@ -46,11 +55,31 @@ export async function deleteGarment(id) {
 }
 
 export async function clearWardrobe() {
+  await db.tryon_cache.clear()
   return db.garments.clear()
 }
 
 export async function updateGarmentImage(id, image_base64) {
   return db.garments.update(id, { image_base64 })
+}
+
+/**
+ * Replace the OCR-derived material composition + raw label record for one
+ * garment. Pass `{ materials, raw_label_text, label_image_base64,
+ * label_uploaded_at }` — fields not provided are left untouched.
+ */
+export async function updateGarmentMaterials(id, payload) {
+  return db.garments.update(id, payload)
+}
+
+export async function putTryOnCache(entry) {
+  // Upsert keyed by `garment_key` (garment id + mannequin signature) so a
+  // repeat try-on overwrites the previous result instead of stacking.
+  return db.tryon_cache.put(entry)
+}
+
+export async function getTryOnCache(garmentKey) {
+  return db.tryon_cache.where('garment_key').equals(garmentKey).first()
 }
 
 export default db

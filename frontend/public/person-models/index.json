@@ -1,0 +1,5 @@
+{
+  "Male": ["model-01.png", "model-02.png", "model-03.png", "model-04.png", "model-05.png", "model-06.png"],
+  "Female": ["model-01.png", "model-02.png", "model-03.png", "model-04.png", "model-05.png", "model-06.png"],
+  "Non-Binary": ["model-01.png", "model-02.png", "model-03.png", "model-04.png", "model-05.png", "model-06.png"]
+}
