@@ -7,13 +7,10 @@
 
     <header class="wd-onboard__head">
       <p ref="eyebrowRef" class="wd-onboard__eyebrow">FIRST TIME USING THIS</p>
-      <AnimatedHeading
-        as="h2"
-        class="wd-onboard__title"
-        text="Three steps to a smarter closet."
-        :stagger="0.07"
-        :delay="0.1"
-      />
+      <h2 class="wd-onboard__title" ref="titleRef">
+        <span class="wd-onboard__title-line">Three steps to a</span>
+        <span class="wd-onboard__title-line"><em class="wd-onboard__title-accent">smarter</em> closet.</span>
+      </h2>
       <p ref="subRef" class="wd-onboard__sub">
         Snap, sort, browse. Each piece you upload is processed locally and stays on your
         device. Here's what happens at each step.
@@ -25,11 +22,12 @@
         v-for="(step, i) in steps"
         :key="step.title"
         class="wd-step"
+        :class="`wd-step--${stepThemes[i]}`"
       >
         <span class="wd-step__num">{{ String(i + 1).padStart(2, '0') }}</span>
         <div class="wd-step__media">
           <div class="wd-anim-placeholder">
-            <component :is="step.icon" :size="22" :stroke-width="1.6" />
+            <component :is="step.icon" :size="28" :stroke-width="2.4" />
             <p class="wd-anim-placeholder__title">{{ step.placeholder }}</p>
           </div>
         </div>
@@ -53,7 +51,6 @@
 <script setup>
 import { ref } from 'vue'
 import { ArrowLeft, ArrowRight, Camera, Brain, LayoutGrid } from 'lucide-vue-next'
-import AnimatedHeading from '../AnimatedHeading.vue'
 import CtaBurst from '../CtaBurst.vue'
 import CtaFlip from '../CtaFlip.vue'
 import { useReveal } from '../../motion/useReveal'
@@ -64,9 +61,14 @@ defineEmits(['back', 'enter'])
 const eyebrowRef = ref(null)
 const subRef = ref(null)
 const stepsRef = ref(null)
+const titleRef = ref(null)
 useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
-useReveal(subRef, { mode: 'fade-blur', y: 40, delay: 0.25 })
-useStagger(stepsRef, { selector: '.wd-step', stagger: 0.12, y: 32, delay: 0.4 })
+useReveal(subRef, { mode: 'fade-blur', y: 40, delay: 0.4 })
+useStagger(titleRef, { selector: '.wd-onboard__title-line', stagger: 0.1, y: 36, delay: 0.1, duration: 0.6 })
+useStagger(stepsRef, { selector: '.wd-step', stagger: 0.12, y: 32, delay: 0.55 })
+
+// Theme per step — soft morandi palette echoing the wardrobe tiles.
+const stepThemes = ['sage', 'dusty', 'oat']
 
 const steps = [
   {
@@ -93,128 +95,169 @@ const steps = [
 <style scoped>
 .wd-onboard {
   position: relative;
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 64px 32px 40px;
+  padding: 64px 32px 48px;
 }
 
 .wd-onboard__back {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-muted);
-  font-size: 13px; font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-soft-pill);
+  background: var(--color-soft-cream);
+  border: none;
+  color: var(--color-soft-ink-soft);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: color var(--transition-base), background var(--transition-base);
+  box-shadow: var(--shadow-soft-sm);
+  transition: background 220ms ease, color 220ms ease, transform 220ms ease;
 }
-.wd-onboard__back:hover { color: var(--color-text); background: var(--color-surface-alt); }
+.wd-onboard__back:hover {
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink);
+  transform: translateY(-1px);
+}
 
 .wd-onboard__head {
-  margin-top: 24px;
-  margin-bottom: 36px;
-  max-width: 720px;
+  margin-top: 30px;
+  margin-bottom: 40px;
+  max-width: 880px;
 }
 .wd-onboard__eyebrow {
-  font-size: 12px; font-weight: 700; letter-spacing: 2px;
-  color: var(--color-primary-text);
-  margin-bottom: 10px;
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  background: var(--color-soft-sage-mist);
+  color: var(--color-soft-sage-deep);
+  padding: 6px 14px;
+  border-radius: var(--radius-soft-pill);
+  margin-bottom: 18px;
+  text-transform: uppercase;
 }
 .wd-onboard__title {
-  font-size: clamp(32px, 4vw, 48px);
-  font-weight: 800; letter-spacing: -1px;
-  color: var(--color-text);
-  margin-bottom: 14px;
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.8vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--color-soft-ink);
+  margin-bottom: 18px;
+}
+.wd-onboard__title-line { display: block; }
+.wd-onboard__title-accent {
+  color: var(--color-soft-sage);
+  font-style: italic;
+  font-weight: 800;
 }
 .wd-onboard__sub {
   font-size: 16px; line-height: 1.6;
-  color: var(--color-text-muted);
+  color: var(--color-soft-ink-soft);
 }
 
 .wd-steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 22px;
 }
 
 .wd-step {
   position: relative;
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-  padding: 24px;
-  box-shadow: var(--shadow-card);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  background: var(--color-soft-cream);
+  border-radius: var(--radius-soft);
+  border: 1.5px solid var(--color-soft-line-strong);
+  padding: 28px 26px 26px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 240ms ease;
 }
 .wd-step:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft-lg);
 }
+.wd-step--sage  { background: var(--color-soft-sage-mist); }
+.wd-step--dusty { background: var(--color-soft-dusty-wash); }
+.wd-step--oat   { background: var(--color-soft-oat); }
 
 .wd-step__num {
   position: absolute;
   top: 18px; right: 22px;
-  font-family: 'Georgia', serif;
-  font-size: 14px; font-weight: 600;
-  color: var(--color-text-faint);
-  letter-spacing: 1.5px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-soft-ink);
+  opacity: 0.35;
 }
 
 .wd-step__media {
-  height: 160px;
+  height: 156px;
   margin-bottom: 18px;
 }
 
 .wd-anim-placeholder {
   width: 100%; height: 100%;
-  border-radius: var(--radius-card-sm);
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(159, 232, 112, 0.08) 0 12px,
-      transparent 12px 24px
-    ),
-    var(--color-primary-lighter);
-  border: 1.5px dashed rgba(22, 51, 0, 0.18);
+  border-radius: 16px;
+  background: var(--color-soft-cream);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 8px;
-  color: var(--color-primary-text);
+  gap: 10px;
+  color: var(--color-soft-sage-deep);
+  box-shadow: var(--shadow-soft-sm);
 }
 .wd-anim-placeholder__title {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-soft-ink-soft);
+  text-align: center;
 }
 
 .wd-step__title {
-  font-size: 18px; font-weight: 800;
-  color: var(--color-text);
-  margin-bottom: 8px;
-  letter-spacing: -0.3px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-soft-ink);
+  margin-bottom: 10px;
 }
 .wd-step__body {
-  font-size: 14px; line-height: 1.55;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-soft-ink);
+  opacity: 0.78;
 }
 
 .wd-onboard__cta-row {
-  margin-top: 36px;
+  margin-top: 40px;
   display: flex; justify-content: center;
 }
 
 .wd-cta {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 26px;
-  border-radius: var(--radius-btn);
-  font-size: 15px; font-weight: 700;
-  border: 1px solid transparent;
+  padding: 13px 26px;
+  border-radius: var(--radius-soft-pill);
+  border: none;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  transition: transform var(--transition-base), background var(--transition-base);
+  transition: background 220ms ease, color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
 }
 .wd-cta--primary {
   background: var(--color-primary);
   color: var(--color-primary-text);
+  box-shadow: var(--shadow-soft-sm);
 }
-.wd-cta--primary:hover { transform: scale(1.03); background: var(--color-primary-dark); }
+.wd-cta--primary:hover {
+  background: var(--color-primary-dark);
+  transform: scale(1.03);
+  box-shadow: var(--shadow-soft);
+}
 
 @media (max-width: 900px) {
   .wd-onboard { padding: 40px 20px; }

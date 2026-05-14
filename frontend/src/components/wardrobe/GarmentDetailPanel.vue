@@ -145,7 +145,7 @@
           title="FASHN VTON does not support footwear try-on yet."
         >
           <Shirt :size="14" :stroke-width="2" />
-          Footwear try-on unavailable
+          Footwear try-on coming soon
         </button>
 
         <button type="button" class="wd-detail__delete" @click="$emit('delete', garment.id)">
@@ -326,15 +326,10 @@ function cancelRecategorize() {
 
 <style scoped>
 .wd-detail {
-  background: var(--color-surface);
-  border-radius: var(--radius-card-lg);
-  box-shadow: var(--shadow-card);
-  /* Clip the rounded corners so the inner scrollbar can never poke past them. */
+  background: transparent;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  /* Stretch to fill the left column above the AI advisor card so the panel
-     and the rest of the page top-edge / bottom-edge align cleanly. */
   flex: 1;
   min-height: 0;
 }
@@ -342,32 +337,25 @@ function cancelRecategorize() {
 .wd-detail__scroll {
   flex: 1;
   min-height: 0;
-  padding: 22px;
+  padding: 26px 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
   overflow-y: auto;
-  /* Thin scrollbar that lives entirely inside the rounded outer clip. */
+  /* Stop wheel events from chaining up to <html> when this container reaches
+     its scroll boundary (or has no scrollable content at all — short
+     garments). Without this, the modal-detail panel was a Lenis-prevented
+     scroll container that silently passed wheel events to the html element
+     (which still has overflow-y:scroll for the rest of the site), and the
+     blurred page behind the modal kept scrolling. */
+  overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-strong) transparent;
+  scrollbar-color: rgba(58, 56, 51, 0.18) transparent;
 }
-.wd-detail__scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.wd-detail__scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
+.wd-detail__scroll::-webkit-scrollbar { width: 6px; }
 .wd-detail__scroll::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
+  background: rgba(58, 56, 51, 0.18);
   border-radius: 999px;
-}
-.wd-detail__scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-faint);
-}
-.wd-detail__scroll::-webkit-scrollbar-button {
-  display: none;
-  height: 0;
-  width: 0;
 }
 
 .wd-detail--empty .wd-detail__scroll {
@@ -377,23 +365,28 @@ function cancelRecategorize() {
 }
 
 .wd-detail__placeholder-icon {
-  width: 56px; height: 56px;
-  border-radius: 999px;
-  background: var(--color-primary-light);
-  color: var(--color-primary-text);
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: var(--color-soft-sage-mist);
+  color: var(--color-soft-sage-deep);
   display: grid; place-items: center;
-  border: 1px solid var(--color-border-light);
-  margin: 0 auto 14px;
+  box-shadow: var(--shadow-soft-sm);
+  margin: 0 auto 16px;
 }
 
 .wd-detail__placeholder-title {
-  font-size: 18px; font-weight: 800;
-  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-soft-ink);
   margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 .wd-detail__placeholder-hint {
-  font-size: 13px; color: var(--color-text-subtle);
-  max-width: 240px; line-height: 1.5;
+  font-size: 13px;
+  color: var(--color-soft-ink-soft);
+  max-width: 240px;
+  line-height: 1.55;
   margin: 0 auto;
 }
 
@@ -403,135 +396,142 @@ function cancelRecategorize() {
 }
 .wd-detail__main-tag {
   display: inline-block;
-  background: var(--color-primary);
-  color: var(--color-primary-text);
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+  background: var(--color-soft-sage-mist);
+  color: var(--color-soft-sage-deep);
+  padding: 6px 14px;
+  border-radius: var(--radius-soft-pill);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 .wd-detail__close {
-  width: 28px; height: 28px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink-soft);
+  border: none;
   display: grid; place-items: center;
   cursor: pointer;
-  transition: color var(--transition-base), background var(--transition-base);
+  transition: background 200ms ease, color 200ms ease;
 }
-.wd-detail__close:hover { color: var(--color-text); background: var(--color-surface-alt); }
+.wd-detail__close:hover {
+  background: var(--color-soft-dusty-wash);
+  color: var(--color-soft-ink);
+}
 
 .wd-detail__media {
   aspect-ratio: 1;
-  border-radius: var(--radius-card);
-  background: linear-gradient(135deg, var(--color-primary-lighter), var(--color-surface-alt));
+  border-radius: 20px;
+  background: var(--color-soft-milk);
   display: grid; place-items: center;
   overflow: hidden;
-  /* Padding lives on the parent so the inner img has a clean 100%/100%
-     box to fit into — no border-box gotchas, no overflow-clipping. */
   padding: 18px;
   box-sizing: border-box;
-  /* In a fixed-height flex column the media would otherwise be the first
-     thing to shrink — pin it so the photo always shows at full square. */
   flex-shrink: 0;
+  box-shadow: var(--shadow-soft-sm);
 }
 .wd-detail__media img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  max-width: 100%; max-height: 100%;
+  width: auto; height: auto;
   object-fit: contain;
 }
 
 .wd-detail__section {
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column; gap: 10px;
   flex-shrink: 0;
 }
 
 .wd-detail__section-title {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--color-soft-ink-soft);
   text-transform: uppercase;
-  color: var(--color-text-subtle);
 }
 
 .wd-detail__materials {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .wd-detail__relabel {
   align-self: flex-start;
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: 5px;
   background: transparent;
   border: none;
-  color: var(--color-text-muted);
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.4px;
+  color: var(--color-soft-sage-deep);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.wd-detail__relabel:hover { color: var(--color-primary-text); }
+.wd-detail__relabel:hover { color: var(--color-soft-ink); }
 
 .wd-detail__care-hint {
-  font-size: 11px; color: var(--color-text-faint);
-  line-height: 1.5;
+  font-size: 11.5px;
+  color: var(--color-soft-ink-soft);
+  line-height: 1.55;
 }
 
 .wd-detail__sub-row {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 10px;
   flex-wrap: wrap;
 }
 
 .wd-detail__sub-tag {
-  background: var(--color-surface-alt);
-  color: var(--color-text);
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  font-size: 13px; font-weight: 700;
-  border: 1px solid var(--color-border-light);
+  background: var(--color-soft-dusty-wash);
+  color: var(--color-soft-ink);
+  padding: 6px 14px;
+  border-radius: var(--radius-soft-pill);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .wd-detail__recategorize {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: 5px;
   background: transparent;
   border: none;
-  color: var(--color-text-muted);
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.4px;
+  color: var(--color-soft-sage-deep);
+  font-size: 11.5px;
+  font-weight: 600;
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.wd-detail__recategorize:hover { color: var(--color-primary-text); }
+.wd-detail__recategorize:hover { color: var(--color-soft-ink); }
 
 .wd-detail__recategorize-panel {
-  display: flex; flex-direction: column; gap: 8px;
-  padding: 10px 12px;
-  background: var(--color-surface-alt);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-card-sm);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px;
+  background: var(--color-soft-milk);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft-sm);
 }
 
 .wd-detail__recategorize-select {
   width: 100%;
-  padding: 8px 10px;
+  padding: 9px 12px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-btn);
+  color: var(--color-soft-ink);
+  background: var(--color-soft-cream);
+  border: 1px solid var(--color-soft-line);
+  border-radius: 10px;
   cursor: pointer;
 }
 .wd-detail__recategorize-select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  border-color: var(--color-soft-sage);
+  box-shadow: 0 0 0 3px var(--color-soft-sage-mist);
 }
 
 .wd-detail__recategorize-actions {
@@ -541,95 +541,102 @@ function cancelRecategorize() {
 
 .wd-detail__recategorize-cancel,
 .wd-detail__recategorize-save {
-  padding: 6px 14px;
-  font-size: 12px; font-weight: 700;
-  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border-radius: var(--radius-soft-pill);
   cursor: pointer;
-  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+  border: none;
+  transition: background 200ms ease, color 200ms ease, transform 200ms ease;
 }
 
 .wd-detail__recategorize-cancel {
   background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-muted);
+  color: var(--color-soft-ink-soft);
 }
 .wd-detail__recategorize-cancel:hover {
-  color: var(--color-text);
-  border-color: var(--color-text-muted);
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink);
 }
 
 .wd-detail__recategorize-save {
   background: var(--color-primary);
-  border: 1px solid var(--color-primary);
   color: var(--color-primary-text);
 }
 .wd-detail__recategorize-save:hover:not(:disabled) {
   background: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
 }
 .wd-detail__recategorize-save:disabled {
-  background: var(--color-surface-alt);
-  border-color: var(--color-border-light);
-  color: var(--color-text-faint);
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink-soft);
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .wd-detail__recategorize-hint {
   font-size: 11px;
-  color: var(--color-text-faint);
+  color: var(--color-soft-ink-soft);
   line-height: 1.45;
 }
 
 .wd-detail__meta {
-  font-size: 13px; color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-soft-ink-soft);
 }
 
 .wd-detail__actions {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .wd-detail__tryon {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px 14px;
-  border-radius: var(--radius-btn);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 18px;
+  border-radius: var(--radius-soft-pill);
+  border: none;
   background: var(--color-primary);
   color: var(--color-primary-text);
-  border: none;
-  font-size: 13px; font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  box-shadow: var(--shadow-card);
-  transition: transform var(--transition-base), background var(--transition-base);
+  box-shadow: var(--shadow-soft-sm);
+  transition: background 220ms ease, transform 220ms ease, box-shadow 220ms ease;
 }
 .wd-detail__tryon:hover:not(:disabled) {
-  transform: translateY(-1px);
   background: var(--color-primary-dark);
+  transform: scale(1.03);
+  box-shadow: var(--shadow-soft);
 }
 .wd-detail__tryon--disabled {
-  background: var(--color-surface-alt);
-  color: var(--color-text-faint);
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink-soft);
+  opacity: 0.6;
   cursor: not-allowed;
   box-shadow: none;
-  border: 1px solid var(--color-border-light);
 }
 
 .wd-detail__delete {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px 14px;
-  border-radius: var(--radius-pill);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 18px;
+  border-radius: var(--radius-soft-pill);
+  border: 1px solid var(--color-soft-line);
   background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-muted);
-  font-size: 13px; font-weight: 600;
+  color: var(--color-soft-ink-soft);
+  font-size: 12.5px;
+  font-weight: 600;
   cursor: pointer;
-  transition: color var(--transition-base), border-color var(--transition-base), background var(--transition-base);
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 .wd-detail__delete:hover {
-  color: var(--color-danger);
-  border-color: var(--color-danger);
-  background: rgba(208, 50, 56, 0.06);
+  background: var(--color-soft-dusty-wash);
+  color: var(--color-soft-ink);
+  border-color: transparent;
 }
 </style>

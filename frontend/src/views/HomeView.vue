@@ -948,33 +948,23 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 26px;
+  padding: 14px 28px;
   border-radius: var(--radius-pill);
   font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  font-weight: 700;
   color: var(--color-primary-text);
   background: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  border: 1px solid transparent;
   cursor: pointer;
   text-decoration: none;
   transition:
     transform 200ms var(--motion-entrance),
-    box-shadow 200ms var(--motion-entrance),
     background 200ms var(--motion-entrance);
 }
 
 .hero-cta-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.22);
-}
-
-.hero-cta-primary .cta-arrow {
-  transition: transform 280ms var(--motion-entrance);
-}
-
-.hero-cta-primary:hover .cta-arrow {
-  transform: translateX(3px);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .hero-cta-secondary {
@@ -1433,23 +1423,15 @@ onBeforeUnmount(() => {
   font-weight: 700;
   font-size: 15px;
   border-radius: var(--radius-pill);
+  border: 1px solid transparent;
   text-decoration: none;
-  transition: transform 280ms var(--motion-entrance), box-shadow 280ms var(--motion-entrance);
+  transition: transform 200ms var(--motion-entrance), background 200ms var(--motion-entrance);
   align-self: flex-start;
-  box-shadow: 0 0 0 0 rgba(22, 51, 0, 0);
 }
 
 .sol-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.18);
-}
-
-.sol-cta .cta-arrow {
-  transition: transform 280ms var(--motion-entrance);
-}
-
-.sol-cta:hover .cta-arrow {
-  transform: translateX(3px);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .story-art--solution :deep(svg) {

@@ -46,18 +46,23 @@ function iconSvg(id) {
   gap: 6px;
 }
 
+/* Soft chip per material — rotating through 4 muted morandi tones so a
+   row of materials reads as a tidy garment-label palette. */
 .wd-mat-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--color-primary-lighter);
-  color: var(--color-primary-text);
+  background: var(--color-soft-sage-mist);
+  color: var(--color-soft-sage-deep);
   padding: 5px 11px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-soft-pill);
   font-size: 12px;
   font-weight: 600;
-  border: 1px solid var(--color-border-light);
+  letter-spacing: -0.01em;
 }
+.wd-mat-pill:nth-child(2n)   { background: var(--color-soft-dusty-wash); color: var(--color-soft-ink); }
+.wd-mat-pill:nth-child(3n)   { background: #eadfc7; color: #6b5b3a; }
+.wd-mat-pill:nth-child(4n)   { background: #d9e2d5; color: var(--color-soft-sage-deep); }
 
 .wd-mat-pill__icon {
   display: inline-flex;

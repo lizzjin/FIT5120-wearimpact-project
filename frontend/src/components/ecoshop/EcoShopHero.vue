@@ -222,12 +222,12 @@ useReveal(artRef, { mode: 'scale-fade', duration: 0.7, delay: 0.2 })
   cursor: pointer;
   transition:
     transform 200ms var(--motion-entrance),
-    box-shadow 200ms var(--motion-entrance);
+    background 200ms var(--motion-entrance);
 }
 
 .es-hero__cta:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.22);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .es-hero__cta:disabled {

@@ -176,9 +176,12 @@
         Data: <strong>Fashion Transparency Index 2024</strong> (Australian market) ·
         scores reflect publicly disclosed corporate policies.
       </p>
-      <button type="button" class="brand-intro__cta" @click="$emit('start')">
-        Start exploring brands
-        <ArrowRight :size="18" :stroke-width="2" />
+      <button type="button" class="brand-intro__cta is-burst-host" @click="$emit('start')">
+        <CtaBurst />
+        <CtaFlip>
+          Start exploring brands
+          <ArrowRight :size="18" :stroke-width="2" />
+        </CtaFlip>
       </button>
     </div>
   </section>
@@ -341,19 +344,19 @@ function scrollTo(id) {
   border-radius: var(--radius-pill);
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-primary-text);
   background: var(--color-primary);
+  color: var(--color-primary-text);
   border: none;
   cursor: pointer;
   transition:
     transform 200ms var(--motion-entrance),
-    box-shadow 200ms var(--motion-entrance);
+    background 200ms var(--motion-entrance);
   margin-top: 8px;
 }
 
 .brand-intro__hero-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.18);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .brand-intro__hero-art {
@@ -727,12 +730,12 @@ function scrollTo(id) {
   background: var(--color-primary);
   border: none;
   cursor: pointer;
-  transition: transform 200ms var(--motion-entrance), box-shadow 200ms var(--motion-entrance);
+  transition: transform 200ms var(--motion-entrance), background 200ms var(--motion-entrance);
 }
 
 .brand-intro__cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(22, 51, 0, 0.22);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 /* ── Responsive ────────────────────────────────────────────────── */

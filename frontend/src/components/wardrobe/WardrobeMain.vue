@@ -1,18 +1,17 @@
 <template>
-  <section class="wd-main">
-    <header class="wd-main__head">
-      <div class="wd-main__heading">
-        <p ref="eyebrowRef" class="wd-main__eyebrow">MY WARDROBE</p>
-        <AnimatedHeading
-          as="h2"
-          class="wd-main__title"
-          :text="`${total} item${total === 1 ? '' : 's'} in your closet`"
-          :stagger="0.07"
-          :delay="0.1"
-        />
+  <section class="wd-main" ref="rootRef">
+    <!-- Editorial masthead: project title left, status meta right.
+         Soft-tactile aesthetic — no harsh strokes, just a hair-line
+         underline and a warm chip indicator. -->
+    <header class="wd-main__masthead">
+      <div class="wd-main__masthead-text">
+        <p class="wd-main__issue">VOL. 01 · DIGITAL WARDROBE</p>
+        <h2 class="wd-main__masthead-title">
+          Your <span class="wd-main__masthead-accent">closet</span>, made visible.
+        </h2>
       </div>
-      <div class="wd-main__stats">
-        <span class="wd-main__stat">
+      <div class="wd-main__masthead-meta">
+        <span v-if="recent > 0" class="wd-main__recent">
           <Sparkles :size="13" :stroke-width="2" />
           {{ recent }} added this week
         </span>
@@ -22,92 +21,116 @@
           class="wd-main__clear"
           @click="emit('clear')"
         >
-          <Trash2 :size="13" :stroke-width="2" /> Clear all
+          <Trash2 :size="13" :stroke-width="2" />
+          Clear all
         </button>
       </div>
     </header>
 
+    <!-- Bento grid: left rail = cover/detail + try-on + advisor;
+         right rail = 4 category tiles + upload. Two flex columns
+         that grow independently keep the magazine-like rhythm. -->
+    <div ref="bentoRef" class="wd-main__bento">
+      <!-- ── Left rail ─────────────────────────────────────────── -->
+      <div class="wd-main__rail wd-main__rail--left">
+        <article class="wd-main__cover wd-soft-paper wd-soft-paper--cream">
+          <p class="wd-main__cover-eyebrow">
+            <span class="wd-main__cover-eyebrow-dot" />
+            LIVE COUNT
+          </p>
+          <SoftNumeral :value="total" color="sage" class="wd-main__cover-numeral" />
+          <p class="wd-main__cover-caption">
+            item<span v-if="total !== 1">s</span> in your <em>closet</em>
+          </p>
+          <div class="wd-main__cover-meta">
+            <span class="wd-main__cover-chip">
+              <Sparkles :size="13" :stroke-width="2" />
+              Local storage · zero cloud
+            </span>
+          </div>
+        </article>
 
-    <div ref="gridRef" class="wd-main__grid">
-      <!-- Left column: detail panel on top, AI advisor pinned to the
-           bottom edge so it lines up with the upload card on the right. -->
-      <div class="wd-main__left">
-        <GarmentDetailPanel
-          :garment="selectedGarment"
-          @close="selectedId = null"
-          @delete="onDelete"
-          @refresh="emit('saved')"
-          @try-on="onTryOn"
+        <TryOnPreview
+          ref="tryOnRef"
+          class="wd-main__tryon"
+          @mannequin-change="onMannequinChange"
         />
-        <button
-          v-if="total > 0"
-          type="button"
-          class="wd-main__advisor-card"
-          @click="emit('open-advisor')"
-        >
-          <span class="wd-main__advisor-icon">
-            <Sparkles :size="20" :stroke-width="2" />
-          </span>
-          <span class="wd-main__advisor-text">
-            <span class="wd-main__advisor-title">Ask the AI advisor</span>
-            <span class="wd-main__advisor-sub">Outfit ideas from your closet</span>
-          </span>
-          <ArrowRight :size="16" :stroke-width="2" class="wd-main__advisor-arrow" />
-        </button>
       </div>
 
-      <!-- Middle + right: wardrobe canvas -->
-      <div class="wd-main__canvas">
-        <div class="wd-main__rows">
-          <CategoryRow
-            v-for="cat in WARDROBE_VIEW_CATEGORIES"
-            :key="cat"
-            :category="cat"
-            :items="grouped[cat] || []"
+      <!-- ── Right rail ────────────────────────────────────────── -->
+      <div class="wd-main__rail wd-main__rail--right">
+        <CategoryTile
+          category="upper_body"
+          theme="sage"
+          :items="grouped.upper_body || []"
+          :active-id="selectedId"
+          class="wd-main__tile wd-main__tile--hero"
+          @select="onSelect"
+        />
+
+        <div class="wd-main__twins">
+          <CategoryTile
+            category="one_pieces"
+            theme="dusty"
+            :items="grouped.one_pieces || []"
             :active-id="selectedId"
-            @select="(id) => (selectedId = id)"
+            class="wd-main__tile"
+            @select="onSelect"
+          />
+          <CategoryTile
+            category="lower_body"
+            theme="oat"
+            :items="grouped.lower_body || []"
+            :active-id="selectedId"
+            class="wd-main__tile"
+            @select="onSelect"
           />
         </div>
 
-        <aside class="wd-main__rail">
-          <TryOnPreview
-            ref="tryOnRef"
-            @mannequin-change="onMannequinChange"
-          />
-          <UploadCompact @saved="emit('saved')" />
-        </aside>
+        <CategoryTile
+          category="footwear"
+          theme="fog"
+          :items="grouped.footwear || []"
+          :active-id="selectedId"
+          class="wd-main__tile"
+          @select="onSelect"
+        />
+
+        <UploadCompact class="wd-main__upload" @saved="emit('saved')" />
       </div>
     </div>
 
+    <WardrobeAiIntro v-if="total > 0" @open-advisor="emit('open-advisor')" />
+
     <WardrobeNextDecision v-if="total > 0" />
+
+    <GarmentDetailModal
+      :open="!!selectedGarment"
+      :garment="selectedGarment"
+      @close="selectedId = null"
+      @delete="onDelete"
+      @refresh="emit('saved')"
+      @try-on="onTryOn"
+    />
   </section>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { ArrowRight, Sparkles, Trash2 } from 'lucide-vue-next'
-import GarmentDetailPanel from './GarmentDetailPanel.vue'
-import CategoryRow from './CategoryRow.vue'
+import { Sparkles, Trash2 } from 'lucide-vue-next'
+import GarmentDetailModal from './GarmentDetailModal.vue'
+import CategoryTile from './CategoryTile.vue'
 import TryOnPreview from './TryOnPreview.vue'
 import UploadCompact from './UploadCompact.vue'
+import WardrobeAiIntro from './WardrobeAiIntro.vue'
+import WardrobeNextDecision from './WardrobeNextDecision.vue'
+import SoftNumeral from './SoftNumeral.vue'
 import { tryOnSingle, tryOnCacheKey } from '../../services/tryOnApi.js'
 import { mannequinStore } from '../../stores/mannequinStore.js'
 import { putTryOnCache, getTryOnCache } from '../../services/wardrobeDb.js'
 import { useToast } from '../../motion'
-import WardrobeNextDecision from './WardrobeNextDecision.vue'
-import AnimatedHeading from '../AnimatedHeading.vue'
-import { WARDROBE_VIEW_CATEGORIES, wardrobeBucketFor } from '../../services/wardrobeDb.js'
 import { useReveal } from '../../motion/useReveal'
-
-const eyebrowRef = ref(null)
-const gridRef = ref(null)
-useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
-// Soft fade-up on the grid container — earlier we staggered each direct
-// child, but grid children include interactive cards/buttons; staggering
-// them mid-mount caused timing edge-cases when the section state was
-// switched after the user already had items. A single fade keeps the
-// "wardrobe opens" feel without touching individual item interactivity.
-useReveal(gridRef, { mode: 'fade-up', y: 24, duration: 0.7, delay: 0.2 })
+import { wardrobeBucketFor } from '../../services/wardrobeDb.js'
 
 const props = defineProps({
   garments: { type: Array, default: () => [] },
@@ -116,17 +139,17 @@ const props = defineProps({
 })
 const emit = defineEmits(['saved', 'delete', 'clear', 'open-advisor', 'try-on'])
 
+const rootRef = ref(null)
+const bentoRef = ref(null)
 const selectedId = ref(null)
 const tryOnRef = ref(null)
 const toast = useToast()
 
 const grouped = computed(() => {
-  const out = {}
-  for (const cat of WARDROBE_VIEW_CATEGORIES) out[cat] = []
+  const out = { upper_body: [], one_pieces: [], lower_body: [], footwear: [] }
   for (const g of props.garments) {
     const bucket = wardrobeBucketFor(g)
     if (out[bucket]) out[bucket].push(g)
-    else (out[bucket] = [g])
   }
   return out
 })
@@ -135,7 +158,6 @@ const selectedGarment = computed(
   () => props.garments.find((g) => g.id === selectedId.value) || null
 )
 
-// Clear the panel if the selected garment disappears (deletion or refresh).
 watch(
   () => props.garments,
   (val) => {
@@ -145,15 +167,26 @@ watch(
   }
 )
 
+// Bento entrance — soft fade-up on the whole grid. `useReveal` is wired
+// to the router's settle lifecycle so tiles end up visible even if mount
+// is interrupted.
+useReveal(bentoRef, { mode: 'fade-up', y: 24, duration: 0.7, delay: 0.15 })
+
+function onSelect(id) {
+  selectedId.value = id
+}
+
 function onDelete(id) {
   selectedId.value = null
   emit('delete', id)
 }
 
-// Try-on lives on the rail next to the wardrobe canvas: the detail
-// panel only signals "I want to try on this garment" — the rail (and
-// the cache it speaks to) owns the pipeline call and the result image.
 async function onTryOn(garment) {
+  // Close the detail modal immediately so the user sees the TryOnPreview
+  // loading state in the left rail. The async try-on flow below continues
+  // in the background; the `garment` reference is already captured here so
+  // resetting selectedId doesn't lose the target.
+  selectedId.value = null
   if (!garment || !tryOnRef.value) return
   if (garment.main_category === 'footwear') {
     toast.push('Footwear try-on is not supported by FASHN VTON yet.', { type: 'warning' })
@@ -165,7 +198,6 @@ async function onTryOn(garment) {
     const cached = await getTryOnCache(cacheKey).catch(() => null)
     if (cached?.result_image) {
       tryOnRef.value.showResult(cached.result_image)
-      // Always bubble up so the wardrobe view can react to selection.
       emit('try-on', garment)
       return
     }
@@ -195,9 +227,6 @@ async function onTryOn(garment) {
   }
 }
 
-// When the mannequin changes the previously shown result is no longer
-// for the active selection — reset the preview so the user knows to
-// re-run try-on against the new mannequin.
 function onMannequinChange() {
   tryOnRef.value?.reset?.()
 }
@@ -205,164 +234,187 @@ function onMannequinChange() {
 
 <style scoped>
 .wd-main {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 32px 32px 64px;
 }
 
-.wd-main__head {
+/* ── Masthead ─────────────────────────────────────────────── */
+.wd-main__masthead {
   display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 22px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--color-soft-line);
   flex-wrap: wrap;
 }
 
-.wd-main__heading {
-  flex: 1; min-width: 200px;
+.wd-main__masthead-text { flex: 1; min-width: 280px; }
+.wd-main__issue {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--color-soft-ink-soft);
+  margin-bottom: 12px;
+  text-transform: uppercase;
 }
-.wd-main__eyebrow {
-  font-size: 11px; font-weight: 700; letter-spacing: 2px;
-  color: var(--color-primary-text);
-  margin-bottom: 4px;
+.wd-main__masthead-title {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4.4vw, 52px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--color-soft-ink);
 }
-.wd-main__title {
-  font-size: 22px; font-weight: 800;
-  letter-spacing: -0.4px;
-  color: var(--color-text);
-}
-
-.wd-main__stats {
-  display: flex; align-items: center; gap: 10px;
-}
-.wd-main__stat {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 700;
-  background: var(--color-primary-light);
-  color: var(--color-primary-text);
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--color-border-light);
-}
-.wd-main__clear {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-muted);
-  font-size: 12px; font-weight: 600;
-  cursor: pointer;
-}
-.wd-main__clear:hover {
-  color: var(--color-danger);
-  border-color: var(--color-danger);
+.wd-main__masthead-accent {
+  color: var(--color-soft-sage);
+  font-style: italic;
+  font-weight: 800;
 }
 
-/* Prominent advisor entry — lives at the top of the right rail so it's
-   always in the user's eyeline alongside the wardrobe rows. */
-.wd-main__advisor-card {
+.wd-main__masthead-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px 14px 14px 12px;
-  border-radius: var(--radius-card);
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary-text);
-  cursor: pointer;
-  text-align: left;
-  box-shadow: var(--shadow-card);
-  transition: transform var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.wd-main__advisor-card:hover {
-  transform: translateY(-2px);
-  background: var(--color-primary-dark);
-  box-shadow: var(--shadow-card-hover);
-}
-.wd-main__advisor-icon {
-  width: 36px; height: 36px;
-  border-radius: 999px;
-  background: var(--color-primary-text);
-  color: var(--color-primary);
-  display: grid; place-items: center;
-  flex-shrink: 0;
-}
-.wd-main__advisor-text {
-  display: flex; flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-.wd-main__advisor-title {
-  font-size: 13px; font-weight: 800;
-  letter-spacing: -0.2px;
-}
-.wd-main__advisor-sub {
-  font-size: 11px;
+.wd-main__recent {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px;
   font-weight: 600;
-  opacity: 0.78;
-}
-.wd-main__advisor-arrow {
-  flex-shrink: 0;
-  transition: transform var(--transition-base);
-}
-.wd-main__advisor-card:hover .wd-main__advisor-arrow {
-  transform: translateX(3px);
+  background: var(--color-soft-sage-mist);
+  color: var(--color-soft-sage-deep);
+  padding: 7px 14px;
+  border-radius: var(--radius-soft-pill);
 }
 
+.wd-main__clear {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-soft-pill);
+  background: transparent;
+  border: 1px solid var(--color-soft-line);
+  color: var(--color-soft-ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.wd-main__clear:hover {
+  background: var(--color-soft-dusty-wash);
+  color: var(--color-soft-ink);
+  border-color: transparent;
+}
 
-/* Locked layout height: 4 category rows (220px) + 3 × 14px gap.
-   Driving every column from this single value keeps the advisor card
-   and the upload card flush with the bottom row's edge, even when a
-   tall garment-detail view is open in the left column. */
-.wd-main__grid {
+/* ── Bento grid ───────────────────────────────────────────── */
+.wd-main__bento {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 22px;
   align-items: start;
 }
 
-.wd-main__left,
-.wd-main__canvas {
-  height: 922px;
+.wd-main__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
 }
 
-.wd-main__canvas {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 18px;
-  align-items: stretch;
-}
-
-.wd-main__rows {
-  display: flex; flex-direction: column;
-  gap: 14px;
-}
-
-.wd-main__left {
+/* ── Cover tile ───────────────────────────────────────────── */
+.wd-main__cover {
+  position: relative;
+  border-radius: var(--radius-soft-lg);
+  /* `.wd-soft-paper--cream` paints the cream base + fibre noise. */
+  padding: 32px 32px 30px;
+  border: 1.5px solid var(--color-soft-line-strong);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  min-height: 380px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: 0;
 }
 
-.wd-main__rail {
-  display: flex; flex-direction: column;
-  gap: 14px;
-  min-height: 0;
+.wd-main__cover-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--color-soft-ink-soft);
+  text-transform: uppercase;
+}
+.wd-main__cover-eyebrow-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--color-soft-sage);
 }
 
+.wd-main__cover-numeral {
+  align-self: flex-start;
+  margin: -4px 0 -4px -6px;
+}
+
+.wd-main__cover-caption {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--color-soft-ink);
+  letter-spacing: -0.01em;
+  max-width: 320px;
+}
+.wd-main__cover-caption em {
+  color: var(--color-soft-sage);
+  font-style: italic;
+  font-weight: 800;
+}
+
+.wd-main__cover-meta {
+  margin-top: auto;
+}
+.wd-main__cover-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-soft-pill);
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* ── Try-On tile ──────────────────────────────────────────── */
+.wd-main__tryon {
+  border-radius: var(--radius-soft);
+  background: var(--color-soft-milk);
+  border: 1.5px solid var(--color-soft-line-strong);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+/* ── Right rail ───────────────────────────────────────────── */
+.wd-main__twins {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 22px;
+  min-width: 0;
+}
+.wd-main__twins > * { min-width: 0; }
+
+/* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 1100px) {
-  .wd-main__grid { grid-template-columns: 1fr; }
-  .wd-main__canvas { grid-template-columns: 1fr; }
-  /* Drop the locked height when columns stack — they're no longer
-     side-by-side, so there's nothing to align to. */
-  .wd-main__left,
-  .wd-main__canvas { height: auto; }
+  .wd-main__bento { grid-template-columns: 1fr; }
+  .wd-main__twins { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 700px) {
   .wd-main { padding: 20px 16px 48px; }
+  .wd-main__twins { grid-template-columns: 1fr; }
+  .wd-main__cover { padding: 24px 22px 24px; min-height: 320px; }
+  .wd-main__cover-numeral :deep(.wd-numeral) { font-size: clamp(96px, 30vw, 160px); }
 }
 </style>

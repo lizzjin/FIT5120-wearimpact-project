@@ -1,5 +1,11 @@
 <template>
-  <div class="es-map" ref="mapWrapRef">
+  <!-- data-lenis-prevent: Mapbox's built-in scroll-to-zoom handler needs the
+       raw wheel event to control map zoom. Without this, Lenis intercepts
+       every wheel tick over the map and scrolls the page instead, so zoom
+       never fires and the user feels like the map "won't let them zoom".
+       Mapbox itself preventDefaults the wheel internally, so dropping out
+       of Lenis here doesn't fall through to native page scroll either. -->
+  <div class="es-map" ref="mapWrapRef" data-lenis-prevent>
     <div ref="mapContainer" class="es-map__canvas"></div>
 
     <div v-if="errorMessage" class="es-map__error">
@@ -51,8 +57,15 @@ const TYPE_COLOURS = {
   recycling:        '#c9a458',
 }
 
+const TYPE_LABEL = {
+  second_hand_shop: 'Second-hand',
+  donation_point:   'Donation',
+  recycling:        'Recycling',
+}
+
 let mapInstance = null
 let userMarker = null
+let hoverPopup = null
 const placeMarkers = new Map()
 
 const RADIUS_SOURCE_ID = 'es-radius-circle'
@@ -231,11 +244,62 @@ function drawPlaceMarkers() {
       e.stopPropagation()
       emit('select-place', place)
     })
+    // Hover tooltip — show place name + distance + type label on pointerenter
+    // so users get the location's identity without having to click. Closes
+    // on pointerleave; we also defer to mouseleave for a touch of tolerance
+    // when the cursor exits via a sub-pixel gap.
+    el.addEventListener('mouseenter', () => showHoverPopup(place))
+    el.addEventListener('mouseleave', () => hideHoverPopup())
     const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat([place.lng, place.lat])
       .addTo(mapInstance)
     placeMarkers.set(place.place_id, { marker, element: el, type: place.type })
   })
+}
+
+// ── Hover popup ─────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]))
+}
+
+function renderPopupHtml(place) {
+  const typeKey = place.type
+  const typeLabel = TYPE_LABEL[typeKey] || 'Place'
+  const dist = place.distance_km != null ? `${place.distance_km} km away` : ''
+  const name = escapeHtml(place.name)
+  return `
+    <div class="es-pin-popup__inner">
+      <span class="es-pin-popup__type es-pin-popup__type--${typeKey}">${typeLabel}</span>
+      <span class="es-pin-popup__name">${name}</span>
+      ${dist ? `<span class="es-pin-popup__dist">${dist}</span>` : ''}
+    </div>
+  `
+}
+
+function showHoverPopup(place) {
+  if (!mapInstance) return
+  if (!hoverPopup) {
+    hoverPopup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      closeOnMove: false,
+      // Sit above the pin tip; pin element is 28px tall with anchor=bottom.
+      offset: 30,
+      className: 'es-pin-popup',
+      anchor: 'bottom',
+      maxWidth: '240px',
+    })
+  }
+  hoverPopup
+    .setLngLat([place.lng, place.lat])
+    .setHTML(renderPopupHtml(place))
+    .addTo(mapInstance)
+}
+
+function hideHoverPopup() {
+  if (hoverPopup) hoverPopup.remove()
 }
 
 function setActiveMarker(id) {
@@ -480,6 +544,7 @@ onBeforeUnmount(() => {
   for (const entry of placeMarkers.values()) entry.marker.remove()
   placeMarkers.clear()
   if (userMarker) userMarker.remove()
+  if (hoverPopup) { hoverPopup.remove(); hoverPopup = null }
   if (mapInstance) mapInstance.remove()
   mapInstance = null
 })
@@ -494,6 +559,11 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border: 1px solid var(--color-kh-glass-border);
   background: rgba(255, 255, 255, 0.5);
+  /* Belt-and-braces with data-lenis-prevent on the wrapper: if a wheel ever
+     lands on the wrapper edge instead of the Mapbox canvas, stop it from
+     chaining up to <html>. Mapbox already preventDefaults wheel on its
+     canvas, so this only matters in the few-px gutter. */
+  overscroll-behavior: contain;
 }
 
 .es-map__canvas {
@@ -542,6 +612,82 @@ onBeforeUnmount(() => {
 </style>
 
 <style>
+/* ── Hover popup ─────────────────────────────────────────────────────────
+   Mapbox injects popup DOM directly under .mapboxgl-popup at the map
+   container root, so scoped CSS can't reach it — these rules live in the
+   unscoped block. `.es-pin-popup` is the className we pass to the Popup
+   constructor; we use it to target only OUR popup and not anything
+   third-party libs might add later. */
+.es-pin-popup.mapboxgl-popup {
+  /* Pointer-events: none on the wrapper so the tooltip doesn't intercept
+     clicks aimed at the pin underneath. Mapbox's content/tip elements
+     re-enable pointer events by default, but we don't want either. */
+  pointer-events: none;
+  z-index: 5;
+}
+
+.es-pin-popup .mapboxgl-popup-content {
+  background: var(--color-soft-cream, #faf7f2);
+  color: var(--color-soft-ink, #0e0f0c);
+  border: 1px solid var(--color-soft-line-strong, rgba(14, 15, 12, 0.14));
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 24px rgba(14, 15, 12, 0.12), 0 2px 6px rgba(14, 15, 12, 0.06);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Tip — the little triangle pointing at the pin. Mapbox draws it via
+   bordered pseudo-elements; we match the popup's cream fill so the seam
+   between content and tip is invisible. */
+.es-pin-popup .mapboxgl-popup-tip {
+  border-top-color: var(--color-soft-cream, #faf7f2);
+  border-bottom-color: var(--color-soft-cream, #faf7f2);
+}
+
+.es-pin-popup__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.es-pin-popup__type {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+}
+.es-pin-popup__type--second_hand_shop {
+  background: rgba(159, 232, 112, 0.32);
+  color: #163300;
+}
+.es-pin-popup__type--donation_point {
+  background: rgba(22, 51, 0, 0.10);
+  color: #163300;
+}
+.es-pin-popup__type--recycling {
+  background: rgba(201, 164, 88, 0.22);
+  color: #6b4e10;
+}
+
+.es-pin-popup__name {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--color-soft-ink, #0e0f0c);
+}
+
+.es-pin-popup__dist {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-soft-ink-soft, #454745);
+}
+
 /* Root pin element — Mapbox writes inline transform: translate3d(...) here
    on every zoom frame to keep the pin glued to its lng/lat. NO `transform`
    or `transition: transform` rules may live on this selector or markers

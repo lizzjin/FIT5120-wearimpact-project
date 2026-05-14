@@ -236,12 +236,12 @@ onMounted(() => {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: transform 200ms var(--motion-entrance), box-shadow 200ms var(--motion-entrance), opacity 200ms var(--motion-entrance);
+  transition: transform 200ms var(--motion-entrance), background 200ms var(--motion-entrance), opacity 200ms var(--motion-entrance);
 }
 
 .search-hub__compare-cta:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(22, 51, 0, 0.22);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .search-hub__compare-cta:disabled {

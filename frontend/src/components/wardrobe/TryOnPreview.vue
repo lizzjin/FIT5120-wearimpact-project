@@ -20,7 +20,7 @@
           @click="pickerOpen = true"
         >
           {{ mannequinLabel }}
-          <ChevronDown :size="11" :stroke-width="2.4" />
+          <ChevronDown :size="11" :stroke-width="2" />
         </button>
       </div>
     </header>
@@ -43,8 +43,22 @@
           <img :src="resultImage" alt="Mannequin wearing the selected garment" />
         </div>
         <div v-else key="idle" class="wd-tryon__state wd-tryon__state--idle">
-          <Shirt :size="22" :stroke-width="1.6" />
-          <p class="wd-tryon__hint">Pick an item and tap "Try on mannequin".</p>
+          <!-- Show the full mannequin photo as the "before" reference so
+               the user can compare it against the try-on result. Tapping
+               anywhere on it opens the mannequin picker — discoverable
+               without an extra button. -->
+          <button
+            type="button"
+            class="wd-tryon__idle-photo"
+            :aria-label="`Current mannequin: ${mannequinLabel}. Click to choose another.`"
+            @click="pickerOpen = true"
+          >
+            <img :src="mannequinImageUrl" :alt="mannequinLabel" />
+          </button>
+          <div class="wd-tryon__idle-caption">
+            <p class="wd-tryon__hint">Pick a piece</p>
+            <p class="wd-tryon__hint-sub">Then tap "Try on mannequin"</p>
+          </div>
         </div>
       </Transition>
     </div>
@@ -137,34 +151,38 @@ defineExpose({ startLoading, showResult, showError, reset })
 
 <style scoped>
 .wd-tryon {
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-  padding: 14px;
-  box-shadow: var(--shadow-card);
+  background: var(--color-soft-milk);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  flex: 1;
-  min-height: 0;
+  gap: 14px;
+  /* Tall enough that a 3:4 mannequin photo reads as a hero shot. */
+  min-height: 540px;
 }
 
 .wd-tryon__head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .wd-tryon__mannequin {
   position: relative;
-  width: 44px; height: 56px;
-  border-radius: var(--radius-card-sm);
+  width: 48px; height: 60px;
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--color-surface-alt);
-  border: 1px solid var(--color-border-light);
+  background: var(--color-soft-cream);
+  border: none;
   padding: 0;
   cursor: pointer;
   flex-shrink: 0;
+  box-shadow: var(--shadow-soft-sm);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.wd-tryon__mannequin:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
 }
 .wd-tryon__mannequin img {
   width: 100%; height: 100%; object-fit: cover;
@@ -174,10 +192,10 @@ defineExpose({ startLoading, showResult, showError, reset })
   bottom: 3px; right: 3px;
   width: 16px; height: 16px;
   border-radius: 999px;
-  background: var(--color-primary);
-  color: var(--color-primary-text);
+  background: var(--color-soft-sage);
+  color: var(--color-soft-ink);
   display: grid; place-items: center;
-  border: 2px solid var(--color-surface);
+  border: 2px solid var(--color-soft-cream);
 }
 
 .wd-tryon__head-text {
@@ -187,11 +205,12 @@ defineExpose({ startLoading, showResult, showError, reset })
   min-width: 0;
 }
 .wd-tryon__eyebrow {
+  font-family: var(--font-display);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-text-subtle);
+  color: var(--color-soft-ink-soft);
 }
 .wd-tryon__change {
   display: inline-flex;
@@ -200,21 +219,25 @@ defineExpose({ startLoading, showResult, showError, reset })
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--color-primary-text);
+  color: var(--color-soft-sage-deep);
   cursor: pointer;
+  letter-spacing: -0.01em;
 }
 .wd-tryon__change:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .wd-tryon__stage {
   flex: 1;
   min-height: 0;
-  border-radius: var(--radius-card-sm);
-  background: linear-gradient(160deg, var(--color-primary-lighter), var(--color-surface-alt));
+  border-radius: 18px;
+  background: var(--color-soft-cream);
+  border: 1px solid var(--color-soft-line-strong);
   display: grid;
   place-items: center;
   overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-soft-sm);
 }
 
 .wd-tryon__state {
@@ -224,13 +247,52 @@ defineExpose({ startLoading, showResult, showError, reset })
   justify-content: center;
   gap: 6px;
   text-align: center;
-  padding: 16px;
-  color: var(--color-primary-text);
+  padding: 18px;
+  color: var(--color-soft-ink-soft);
   width: 100%; height: 100%;
+  position: relative;
 }
 
 .wd-tryon__state--idle {
-  color: var(--color-text-faint);
+  /* Mannequin photo spans the stage; caption sits as a soft cream chip
+     pinned to the bottom-left without obscuring the torso. */
+  padding: 0;
+  display: block;
+  position: relative;
+}
+
+.wd-tryon__idle-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.wd-tryon__idle-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 10px 14px;
+  box-sizing: border-box;
+}
+
+.wd-tryon__idle-caption {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 14px;
+  border-radius: 14px;
+  background: var(--color-soft-cream);
+  color: var(--color-soft-ink);
+  text-align: left;
+  box-shadow: var(--shadow-soft-sm);
+  pointer-events: none;
 }
 
 .wd-tryon__state--result {
@@ -239,53 +301,61 @@ defineExpose({ startLoading, showResult, showError, reset })
 .wd-tryon__state--result img {
   width: 100%; height: 100%;
   object-fit: contain;
-  background: var(--color-surface);
+  background: var(--color-soft-cream);
 }
 
 .wd-tryon__hint {
-  font-size: 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-soft-ink);
   margin: 0;
 }
 .wd-tryon__hint-sub {
-  font-size: 11px;
-  font-weight: 600;
-  opacity: 0.75;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-soft-ink-soft);
   margin: 0;
 }
 
 .wd-tryon__error-icon {
-  color: var(--color-danger);
+  color: var(--color-soft-dusty);
 }
 
 .wd-tryon__retry {
-  margin-top: 4px;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border-strong);
-  font-size: 11px; font-weight: 600;
+  margin-top: 6px;
+  padding: 7px 16px;
+  border-radius: var(--radius-soft-pill);
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
+  transition: background 200ms ease;
 }
+.wd-tryon__retry:hover { background: var(--color-primary-dark); }
 
 .wd-tryon__action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 12px;
-  border-radius: var(--radius-pill);
-  font-size: 12px;
-  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: var(--radius-soft-pill);
+  font-size: 12.5px;
+  font-weight: 600;
   cursor: pointer;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-soft-line);
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--color-soft-ink-soft);
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 .wd-tryon__action--ghost:hover {
-  border-color: var(--color-primary-text);
-  color: var(--color-primary-text);
+  background: var(--color-soft-sage-mist);
+  color: var(--color-soft-sage-deep);
+  border-color: transparent;
 }
 
 .wd-spin { animation: wd-spin 0.9s linear infinite; }
@@ -293,7 +363,7 @@ defineExpose({ startLoading, showResult, showError, reset })
 
 .wd-tryon-fade-enter-active,
 .wd-tryon-fade-leave-active {
-  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .wd-tryon-fade-enter-from,
 .wd-tryon-fade-leave-to { opacity: 0; }
@@ -301,19 +371,19 @@ defineExpose({ startLoading, showResult, showError, reset })
 .wd-tryon-modal {
   position: fixed;
   inset: 0;
-  background: rgba(20, 30, 18, 0.45);
+  background: rgba(58, 56, 51, 0.35);
   display: grid;
   place-items: center;
   z-index: 60;
   padding: 24px;
 }
 .wd-tryon-modal__inner {
-  width: min(420px, 100%);
+  width: min(440px, 100%);
   max-height: min(80vh, 640px);
 }
 .wd-tryon-modal-enter-active,
 .wd-tryon-modal-leave-active {
-  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .wd-tryon-modal-enter-from,
 .wd-tryon-modal-leave-to { opacity: 0; }

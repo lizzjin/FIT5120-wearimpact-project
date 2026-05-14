@@ -137,17 +137,17 @@ function readAsDataUrl(file) {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1.5px dashed var(--color-border-strong);
-  border-radius: var(--radius-card-sm);
-  background: var(--color-primary-lighter);
-  padding: 12px 14px;
+  border: 1.5px dashed rgba(58, 56, 51, 0.2);
+  border-radius: 16px;
+  background: var(--color-soft-sage-mist);
+  padding: 14px 16px;
   cursor: pointer;
-  transition: border-color var(--transition-base), background var(--transition-base);
+  transition: background 220ms ease, border-color 220ms ease;
 }
 .wd-label-up__drop:hover,
 .wd-label-up__drop.is-dragging {
-  border-color: var(--color-primary-text);
-  background: var(--color-primary-light);
+  background: var(--color-soft-sage);
+  border-color: var(--color-soft-sage-deep);
 }
 
 .wd-label-up__input {
@@ -158,11 +158,11 @@ function readAsDataUrl(file) {
 }
 
 .wd-label-up__drop-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: var(--color-primary);
-  color: var(--color-primary-text);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-soft-cream);
+  color: var(--color-soft-sage-deep);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -173,26 +173,29 @@ function readAsDataUrl(file) {
   flex-direction: column;
   gap: 2px;
   font-size: 12px;
-  color: var(--color-text);
+  color: var(--color-soft-ink);
 }
 .wd-label-up__drop-text strong {
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .wd-label-up__drop-hint {
   font-size: 11px;
-  color: var(--color-text-subtle);
+  color: var(--color-soft-ink-soft);
 }
 
 .wd-label-up__error {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: var(--color-danger);
-  background: rgba(208, 50, 56, 0.06);
-  padding: 6px 10px;
-  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-soft-ink);
+  background: var(--color-soft-dusty-wash);
+  padding: 6px 12px;
+  border-radius: var(--radius-soft-pill);
 }
 
 .wd-spin { animation: wd-spin 0.9s linear infinite; }

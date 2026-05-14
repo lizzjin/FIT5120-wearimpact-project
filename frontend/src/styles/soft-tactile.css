@@ -1,0 +1,52 @@
+/* ──────────────────────────────────────────────────────────────────────
+   Soft-tactile utility layer — wardrobe redesign
+
+   Reusable classes for a paper-like, warm-tactile aesthetic. Pairs with
+   the --color-soft-* / --shadow-soft-* / --radius-soft-* tokens declared
+   in style.css. All classes use `wd-soft-*` namespace so they cannot
+   collide with the rest of the app.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* ── Subtle paper-fibre texture ───────────────────────────────────────
+   SVG turbulence baked into a data URI. Layered at ~5–7% opacity by the
+   browser's blending against the underlying color. Use as an overlay on
+   large surfaces (cover, tiles) — never on small UI like buttons. */
+.wd-soft-paper {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.227 0 0 0 0 0.219 0 0 0 0 0.2 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-repeat: repeat;
+}
+
+/* Variants paint a base colour underneath the noise so the noise reads
+   on every tile without needing extra layers in the markup. */
+.wd-soft-paper--cream { background-color: var(--color-soft-cream); }
+.wd-soft-paper--milk  { background-color: var(--color-soft-milk); }
+.wd-soft-paper--sage  { background-color: var(--color-soft-sage-mist); }
+.wd-soft-paper--dusty { background-color: var(--color-soft-dusty-wash); }
+
+/* ── Shadow utilities ─────────────────────────────────────────────── */
+.wd-soft-shadow-sm { box-shadow: var(--shadow-soft-sm); }
+.wd-soft-shadow    { box-shadow: var(--shadow-soft); }
+.wd-soft-shadow-lg { box-shadow: var(--shadow-soft-lg); }
+
+/* ── Display typography helpers ───────────────────────────────────── */
+.wd-soft-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.wd-soft-display--italic {
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ── Card primitive ───────────────────────────────────────────────── */
+/* Reusable shell for paper-like cards. Pairs the radius, fibre overlay
+   and shadow without forcing a background colour — consumers set theirs. */
+.wd-soft-card {
+  border-radius: var(--radius-soft);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}

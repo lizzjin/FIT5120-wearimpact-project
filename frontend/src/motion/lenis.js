@@ -31,9 +31,14 @@ export function startLenis() {
 
   ensurePlugins()
 
+  // `lerp` (not `duration`) so fast wheel input feels responsive. With
+  // duration mode every wheel tick scheduled a fixed-length tween, which
+  // produced a "page is fighting me" drag when the user scrolled fast on
+  // long pages (Wardrobe, Knowledge). Lerp moves the target with the wheel
+  // and lets the actual scroll position catch up exponentially each frame —
+  // 0.1 is Lenis's documented snappy-but-still-smooth default.
   instance = new Lenis({
-    duration: 1.1,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    lerp: 0.1,
     smoothWheel: true,
   })
 

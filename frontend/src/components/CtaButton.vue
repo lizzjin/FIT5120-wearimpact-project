@@ -36,13 +36,18 @@ const props = defineProps({
   type: { type: String, default: 'button' },
   variant: { type: String, default: 'solid' },
   fill: { type: String, default: 'var(--color-primary, #9fe870)' },
-  fillHover: { type: String, default: 'var(--color-primary-text, #163300)' },
+  // Site-wide standard for hover: lime → pastel lime (--color-primary-dark
+  // #cdffad). The old default was dark green, which produced an aggressive
+  // colour-takeover that other pages (Knowledge, Brand, EcoShop, Wardrobe)
+  // explicitly avoided. Keeping text/stroke unchanged on hover keeps the
+  // pill on-brand and matches the rest of the site.
+  fillHover: { type: String, default: 'var(--color-primary-dark, #cdffad)' },
   text: { type: String, default: 'var(--color-primary-text, #163300)' },
-  textHover: { type: String, default: 'var(--color-primary, #9fe870)' },
+  textHover: { type: String, default: 'var(--color-primary-text, #163300)' },
   stroke: { type: String, default: 'transparent' },
-  strokeHover: { type: String, default: 'var(--color-primary-text, #163300)' },
+  strokeHover: { type: String, default: 'transparent' },
   bubbleCount: { type: Number, default: 20 },
-  bubbleColor: { type: String, default: '#163300' },
+  bubbleColor: { type: String, default: 'var(--color-primary, #9fe870)' },
 })
 
 const tag = computed(() => {
@@ -85,13 +90,12 @@ const cssVars = computed(() => ({
   font-family: inherit;
   font-weight: 700;
   font-size: 15px;
-  letter-spacing: 0.01em;
   cursor: pointer;
   text-decoration: none;
   border: 1px solid var(--btn-stroke);
   background: transparent;
   color: var(--btn-text);
-  transition: color 240ms ease, border-color 240ms ease, transform 240ms ease;
+  transition: transform 200ms var(--motion-entrance, cubic-bezier(0.22, 1, 0.36, 1));
   isolation: isolate;
   /* Burst dots fly past the pill edge — must let them out of the box. The
      background layer is a separate element clipped by its own border-radius,
@@ -104,31 +108,20 @@ const cssVars = computed(() => ({
   inset: 0;
   border-radius: inherit;
   background: var(--btn-fill);
-  transform: scaleX(1);
-  transform-origin: right center;
-  transition: transform 360ms cubic-bezier(0.65, 0, 0.35, 1), background 240ms ease;
+  transition: background 200ms var(--motion-entrance, cubic-bezier(0.22, 1, 0.36, 1));
   z-index: -1;
 }
 
-.cta-button.variant-outline .cta-button__background {
-  transform: scaleX(0);
-  transform-origin: left center;
-}
-
 .cta-button:hover {
-  color: var(--btn-text-hover);
-  border-color: var(--btn-stroke-hover);
-  transform: translateY(-1px);
+  transform: scale(1.03);
 }
 
 .cta-button:hover .cta-button__background {
   background: var(--btn-fill-hover);
-  transform: scaleX(1);
-  transform-origin: left center;
 }
 
 .cta-button:focus-visible {
-  outline: 2px solid var(--btn-stroke-hover);
+  outline: 2px solid var(--color-primary-text, #163300);
   outline-offset: 3px;
 }
 

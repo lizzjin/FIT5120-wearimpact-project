@@ -1,9 +1,9 @@
 <template>
   <div class="wd-mp" data-lenis-prevent>
     <header class="wd-mp__head">
-      <h4 class="wd-mp__title">Choose a mannequin</h4>
+      <h4 class="wd-mp__title">Pick a mannequin</h4>
       <button type="button" class="wd-mp__close" @click="$emit('close')" aria-label="Close picker">
-        <X :size="14" :stroke-width="2.4" />
+        <X :size="14" :stroke-width="2" />
       </button>
     </header>
 
@@ -93,15 +93,22 @@ function pick(filename) {
 
 <style scoped>
 .wd-mp {
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-  padding: 16px;
-  box-shadow: var(--shadow-card);
+  background: var(--color-soft-cream);
+  border-radius: var(--radius-soft-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-soft-lg);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   max-height: 100%;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(58, 56, 51, 0.18) transparent;
+}
+.wd-mp::-webkit-scrollbar { width: 6px; }
+.wd-mp::-webkit-scrollbar-thumb {
+  background: rgba(58, 56, 51, 0.18);
+  border-radius: 999px;
 }
 
 .wd-mp__head {
@@ -110,24 +117,26 @@ function pick(filename) {
   justify-content: space-between;
 }
 .wd-mp__title {
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-soft-ink);
   margin: 0;
 }
 .wd-mp__close {
-  width: 26px; height: 26px;
+  width: 32px; height: 32px;
   border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
+  border: none;
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink-soft);
   display: grid; place-items: center;
   cursor: pointer;
+  transition: background 200ms ease, color 200ms ease;
 }
 .wd-mp__close:hover {
-  color: var(--color-text);
-  background: var(--color-surface-alt);
+  background: var(--color-soft-dusty-wash);
+  color: var(--color-soft-ink);
 }
 
 .wd-mp__tabs {
@@ -136,21 +145,20 @@ function pick(filename) {
 }
 .wd-mp__tab {
   flex: 1;
-  padding: 6px 10px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--color-border-light);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  padding: 8px 12px;
+  border-radius: var(--radius-soft-pill);
+  border: none;
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink-soft);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: color var(--transition-base), background var(--transition-base), border-color var(--transition-base);
+  transition: background 200ms ease, color 200ms ease;
 }
+.wd-mp__tab:hover { background: var(--color-soft-sage-mist); color: var(--color-soft-sage-deep); }
 .wd-mp__tab.is-active {
-  background: var(--color-primary);
-  color: var(--color-primary-text);
-  border-color: var(--color-primary);
+  background: var(--color-soft-sage);
+  color: var(--color-soft-ink);
 }
 
 .wd-mp__grid {
@@ -159,7 +167,7 @@ function pick(filename) {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .wd-mp__cell { display: contents; }
@@ -167,20 +175,21 @@ function pick(filename) {
 .wd-mp__thumb {
   position: relative;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius-card-sm);
+  border-radius: 14px;
   overflow: hidden;
   border: 2px solid transparent;
   padding: 0;
-  background: var(--color-surface-alt);
+  background: var(--color-soft-milk);
   cursor: pointer;
-  transition: border-color var(--transition-base), transform var(--transition-base);
+  box-shadow: var(--shadow-soft-sm);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
 }
 .wd-mp__thumb:hover {
-  transform: translateY(-1px);
-  border-color: var(--color-primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
 }
 .wd-mp__thumb.is-selected {
-  border-color: var(--color-primary);
+  border-color: var(--color-soft-sage);
 }
 .wd-mp__thumb img {
   width: 100%; height: 100%; object-fit: cover;
@@ -188,12 +197,13 @@ function pick(filename) {
 }
 .wd-mp__tick {
   position: absolute;
-  top: 4px; right: 4px;
-  width: 18px; height: 18px;
+  top: 6px; right: 6px;
+  width: 22px; height: 22px;
   border-radius: 999px;
-  background: var(--color-primary);
-  color: var(--color-primary-text);
+  background: var(--color-soft-sage);
+  color: var(--color-soft-ink);
   display: grid;
   place-items: center;
+  box-shadow: var(--shadow-soft-sm);
 }
 </style>

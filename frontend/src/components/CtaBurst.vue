@@ -21,7 +21,11 @@
 //                                  opacity 0.8 → 0
 const props = defineProps({
   count: { type: Number, default: 20 },
-  color: { type: String, default: '#163300' },
+  // Bubble dots inherit the site's lime theme by default. Earlier this was
+  // dark green (#163300) which read as a contrast pop against the lime pill
+  // — but the brand language now keeps the burst on-palette so it feels
+  // like petals shedding from the button rather than ink splatter.
+  color: { type: String, default: 'var(--color-primary, #9fe870)' },
 })
 
 // Even angular distribution + randomised radius mirrors Anyflow's layout
