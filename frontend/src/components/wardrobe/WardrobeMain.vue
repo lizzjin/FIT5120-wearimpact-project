@@ -60,7 +60,7 @@
       <div class="wd-main__canvas">
         <div class="wd-main__rows">
           <CategoryRow
-            v-for="cat in MAIN_CATEGORIES"
+            v-for="cat in WARDROBE_VIEW_CATEGORIES"
             :key="cat"
             :category="cat"
             :items="grouped[cat] || []"
@@ -96,7 +96,7 @@ import { putTryOnCache, getTryOnCache } from '../../services/wardrobeDb.js'
 import { useToast } from '../../motion'
 import WardrobeNextDecision from './WardrobeNextDecision.vue'
 import AnimatedHeading from '../AnimatedHeading.vue'
-import { MAIN_CATEGORIES } from '../../services/wardrobeDb.js'
+import { WARDROBE_VIEW_CATEGORIES, wardrobeBucketFor } from '../../services/wardrobeDb.js'
 import { useReveal } from '../../motion/useReveal'
 
 const eyebrowRef = ref(null)
@@ -122,10 +122,11 @@ const toast = useToast()
 
 const grouped = computed(() => {
   const out = {}
-  for (const cat of MAIN_CATEGORIES) out[cat] = []
+  for (const cat of WARDROBE_VIEW_CATEGORIES) out[cat] = []
   for (const g of props.garments) {
-    if (out[g.main_category]) out[g.main_category].push(g)
-    else (out[g.main_category] = [g])
+    const bucket = wardrobeBucketFor(g)
+    if (out[bucket]) out[bucket].push(g)
+    else (out[bucket] = [g])
   }
   return out
 })
@@ -312,10 +313,10 @@ function onMannequinChange() {
 }
 
 
-/* Locked layout height: 3 category rows (220px) + 2 × 14px gap.
+/* Locked layout height: 4 category rows (220px) + 3 × 14px gap.
    Driving every column from this single value keeps the advisor card
-   and the upload card flush with the third row's bottom edge, even
-   when a tall garment-detail view is open in the left column. */
+   and the upload card flush with the bottom row's edge, even when a
+   tall garment-detail view is open in the left column. */
 .wd-main__grid {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -325,7 +326,7 @@ function onMannequinChange() {
 
 .wd-main__left,
 .wd-main__canvas {
-  height: 688px;
+  height: 922px;
 }
 
 .wd-main__canvas {

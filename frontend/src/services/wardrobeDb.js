@@ -25,6 +25,26 @@ db.version(2).stores({
 
 export const MAIN_CATEGORIES = ['upper_body', 'lower_body', 'footwear']
 
+// Virtual key used only for wardrobe rendering. `one_pieces` is a
+// view-layer derivation: rows whose sub_category === 'dress' are pulled
+// out of upper_body and shown in their own column so users can scan
+// dresses (and future jumpsuits) without mixing them in with t-shirts.
+// The IndexedDB record still stores main_category='upper_body'.
+export const WARDROBE_VIEW_CATEGORIES = [
+  'upper_body',
+  'one_pieces',
+  'lower_body',
+  'footwear'
+]
+
+export function wardrobeBucketFor(garment) {
+  if (!garment) return null
+  if (garment.main_category === 'upper_body' && garment.sub_category === 'dress') {
+    return 'one_pieces'
+  }
+  return garment.main_category
+}
+
 export async function addGarment(record) {
   return db.garments.add(record)
 }
@@ -61,6 +81,23 @@ export async function clearWardrobe() {
 
 export async function updateGarmentImage(id, image_base64) {
   return db.garments.update(id, { image_base64 })
+}
+
+/**
+ * Apply a user-chosen category override to one garment. Clears any cached
+ * try-on results for the same garment first — once the category changes
+ * the FASHN inputs change too and the old result no longer applies.
+ */
+export async function updateGarmentCategory(id, mainCategory, subCategory) {
+  await invalidateTryOnCacheByGarment(id)
+  return db.garments.update(id, {
+    main_category: mainCategory,
+    sub_category: subCategory
+  })
+}
+
+export async function invalidateTryOnCacheByGarment(garmentId) {
+  return db.tryon_cache.filter((entry) => entry.garment_id === garmentId).delete()
 }
 
 /**

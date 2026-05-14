@@ -35,7 +35,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Shirt, ShoppingBag, Footprints, Layers } from 'lucide-vue-next'
+import { Shirt, ShoppingBag, Footprints, Layers, Sparkles } from 'lucide-vue-next'
 
 const props = defineProps({
   category: { type: String, required: true },
@@ -45,9 +45,10 @@ const props = defineProps({
 defineEmits(['select'])
 
 const META = {
-  upper_body: { label: 'Tops',    icon: Shirt },
-  lower_body: { label: 'Bottoms', icon: ShoppingBag },
-  footwear:   { label: 'Shoes',   icon: Footprints }
+  upper_body: { label: 'Tops',       icon: Shirt },
+  one_pieces: { label: 'One-Pieces', icon: Sparkles },
+  lower_body: { label: 'Bottoms',    icon: ShoppingBag },
+  footwear:   { label: 'Shoes',      icon: Footprints }
 }
 const meta = computed(() => META[props.category] || { label: props.category, icon: Layers })
 const label = computed(() => meta.value.label)
