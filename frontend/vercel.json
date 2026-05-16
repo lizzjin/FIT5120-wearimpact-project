@@ -1,5 +1,14 @@
 {
+  "redirects": [
+    { "source": "/underdevelopment", "destination": "https://fit5120-wearimpact-dev.vercel.app/underdevelopment/", "permanent": false },
+    { "source": "/underdevelopment/", "destination": "https://fit5120-wearimpact-dev.vercel.app/underdevelopment/", "permanent": false },
+    { "source": "/underdevelopment/:path*", "destination": "https://fit5120-wearimpact-dev.vercel.app/underdevelopment/:path*", "permanent": false }
+  ],
   "rewrites": [
+    { "source": "/version1/(.*)", "destination": "/version1/index.html" },
+    { "source": "/version1", "destination": "/version1/index.html" },
+    { "source": "/version2/(.*)", "destination": "/version2/index.html" },
+    { "source": "/version2", "destination": "/version2/index.html" },
     { "source": "/underdevelopment/assets/:path*", "destination": "/assets/:path*" },
     { "source": "/underdevelopment/:path*", "destination": "/index.html" },
     { "source": "/underdevelopment", "destination": "/index.html" },
