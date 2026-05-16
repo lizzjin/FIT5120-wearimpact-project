@@ -391,8 +391,18 @@ def _select_interventions(
 # ---------------------------------------------------------------------------
 
 def _build_disclaimers(coverage: CoverageReport, totals: Totals) -> list[str]:
-    """Surface caveats the LLM must repeat to the user."""
+    """Surface caveats the LLM must repeat to the user.
+
+    The first entry is always a fully-cited data-sources line built from
+    reference_data.sources so the user knows which studies produced every CO2
+    and water figure. The system prompt requires the LLM to include this line
+    in the rendered caveats — the rest of the list is supporting context.
+    """
     notes: list[str] = []
+
+    sources_line = _format_sources_disclaimer()
+    if sources_line:
+        notes.append(sources_line)
 
     geo = reference_loader.get_reference_data().get("disclaimers", {}).get("geography")
     if geo:
@@ -411,6 +421,36 @@ def _build_disclaimers(coverage: CoverageReport, totals: Totals) -> list[str]:
         )
 
     return notes
+
+
+def _format_sources_disclaimer() -> str:
+    """Build a one-line dataset citation from reference_data.sources.
+
+    The output reads like an academic footnote so it lands as authoritative
+    rather than waffly. Format:
+        "Data sources: WRAP 2017 (UK cradle-to-grave LCA); IMPRO 2014 (EU per-
+         fibre and per-garment LCA); Quantis 2018 (global apparel + footwear)."
+    """
+    sources = reference_loader.get_sources()
+    if not sources:
+        return ""
+
+    parts: list[str] = []
+    for s in sources:
+        sid = s.get("id", "").replace("_", " ")
+        scope = (s.get("scope") or "").strip()
+        if sid and scope:
+            parts.append(f"{sid} ({scope})")
+        elif sid:
+            parts.append(sid)
+    if not parts:
+        return ""
+    return (
+        "Data sources behind every CO2 and water figure: "
+        + "; ".join(parts)
+        + ". Australia-specific datasets are not available, so these UK / "
+        "EU / global studies are used as best proxies."
+    )
 
 
 # ---------------------------------------------------------------------------
