@@ -159,7 +159,10 @@ def list_preset_questions() -> list[PresetQuestion]:
 class KeyFact(BaseModel):
     label: str = Field(max_length=60)
     value: str = Field(max_length=80)
-    context: str = Field(max_length=180)
+    # 240 chars rather than 180: Haiku tends to write a "what + why + source"
+    # sentence in this field and 180 was tight enough that the salvage layer
+    # had to truncate too often. Frontend visually clamps anyway.
+    context: str = Field(max_length=240)
 
 
 class Recommendation(BaseModel):
@@ -190,7 +193,10 @@ class Advice(BaseModel):
 
     layout: Layout
     headline: str = Field(max_length=120)
-    summary: str = Field(max_length=600)
+    # 800 chars (was 600) to fit material-breakdown and decision-layout
+    # narratives without the salvage layer truncating constantly. The bubble
+    # CSS already wraps cleanly at any length.
+    summary: str = Field(max_length=800)
     key_facts: list[KeyFact] = Field(min_length=1, max_length=3)
     recommendations: list[Recommendation] = Field(min_length=1, max_length=4)
     caveats: list[str] = Field(default_factory=list, max_length=3)
@@ -205,7 +211,9 @@ class FollowUpAdvice(BaseModel):
     """
 
     headline: str = Field(max_length=120)
-    body: str = Field(max_length=480)
+    # 700 chars (was 480) so multi-step garment-care answers ("how do I repair
+    # a hole" → patch / thread / press) fit without being rejected wholesale.
+    body: str = Field(max_length=700)
     mini_facts: list[KeyFact] = Field(default_factory=list, max_length=2)
     next_questions: list[str] = Field(default_factory=list, max_length=3)
 
@@ -234,7 +242,7 @@ ADVICE_TOOL_SCHEMA: dict = {
         },
         "summary": {
             "type": "string",
-            "maxLength": 600,
+            "maxLength": 800,
             "description": "2-3 sentence narrative paragraph.",
         },
         "key_facts": {
@@ -250,7 +258,7 @@ ADVICE_TOOL_SCHEMA: dict = {
                         "maxLength": 80,
                         "description": "Already formatted with units, e.g. '143 kg CO2'.",
                     },
-                    "context": {"type": "string", "maxLength": 180},
+                    "context": {"type": "string", "maxLength": 240},
                 },
                 "required": ["label", "value", "context"],
             },
@@ -348,7 +356,7 @@ FOLLOW_UP_TOOL_SCHEMA: dict = {
         "headline": {"type": "string", "maxLength": 120},
         "body": {
             "type": "string",
-            "maxLength": 480,
+            "maxLength": 700,
             "description": "3-4 sentence answer focused on the user's follow-up.",
         },
         "mini_facts": {
@@ -359,7 +367,7 @@ FOLLOW_UP_TOOL_SCHEMA: dict = {
                 "properties": {
                     "label": {"type": "string", "maxLength": 60},
                     "value": {"type": "string", "maxLength": 80},
-                    "context": {"type": "string", "maxLength": 180},
+                    "context": {"type": "string", "maxLength": 240},
                 },
                 "required": ["label", "value", "context"],
             },

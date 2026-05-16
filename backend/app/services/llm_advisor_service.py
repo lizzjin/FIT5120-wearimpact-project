@@ -43,8 +43,10 @@ logger = logging.getLogger(__name__)
 # per-card `follow_up_prompts` and the top level gained `next_questions` so
 # Haiku had room to fill every field without truncating the tool call.
 _MAX_OUTPUT_TOKENS = 1300
-# Follow-ups are intentionally tighter (single mini-bubble).
-_FOLLOW_UP_MAX_TOKENS = 500
+# Follow-ups are intentionally tighter (single mini-bubble) but multi-step
+# care answers ("how do I repair a hole") were exhausting 500. 700 leaves
+# room for a 4-sentence body plus mini_facts without truncation.
+_FOLLOW_UP_MAX_TOKENS = 700
 
 
 class AdvisorUpstreamError(RuntimeError):
@@ -436,14 +438,39 @@ def _parse_tool_response(response, model_cls, tool_name: str):
     try:
         return model_cls.model_validate(tool_block.input)
     except ValidationError as exc:
-        # Surface every offending field by name + the offending value so the
-        # fix is obvious from the log line alone.
         offending = [
             {"loc": list(err.get("loc", [])), "type": err.get("type"), "msg": err.get("msg")}
             for err in exc.errors()
         ]
+        # Try to salvage soft errors (too-long string, too-long list, bad slug)
+        # before failing the whole turn. Anthropic's tool-schema maxLength is
+        # advisory for Haiku; we'd rather truncate and return something usable
+        # than 503 a successful Claude call.
+        salvaged_input = _try_salvage(tool_block.input, exc, model_cls)
+        if salvaged_input is not None:
+            try:
+                model = model_cls.model_validate(salvaged_input)
+                logger.warning(
+                    "Advisor %s schema salvaged after validation errors=%s",
+                    tool_name,
+                    offending,
+                )
+                return model
+            except ValidationError as retry_exc:
+                # Salvage didn't cover every error path — log both and surface.
+                logger.error(
+                    "Advisor %s salvage failed: original=%s retry_errors=%s",
+                    tool_name,
+                    offending,
+                    [
+                        {"loc": list(e.get("loc", [])), "type": e.get("type"), "msg": e.get("msg")}
+                        for e in retry_exc.errors()
+                    ],
+                )
+                exc = retry_exc
+
         logger.error(
-            "Advisor %s schema validation failed: errors=%s",
+            "Advisor %s schema validation failed (no salvage): errors=%s",
             tool_name,
             offending,
         )
@@ -451,6 +478,141 @@ def _parse_tool_response(response, model_cls, tool_name: str):
         raise AdvisorUpstreamError(
             f"Claude tool output failed schema validation: {offending}"
         ) from exc
+
+
+# ---------------------------------------------------------------------------
+# Salvage layer — turn "Claude wrote slightly over the limit" into a 200
+# response instead of a 503. Only handles known soft errors; hard errors
+# (missing required field, wrong type, enum mismatch) still fail through.
+# ---------------------------------------------------------------------------
+
+
+# Max length declared on each Pydantic Field — kept here so the salvage layer
+# doesn't need to walk model metadata at runtime. Update when schema changes.
+_FIELD_MAX_LENGTHS: dict[tuple, int] = {
+    ("headline",): 120,
+    ("summary",): 800,
+    ("body",): 700,
+    # KeyFact nested anywhere — keyed by leaf so multiple parents share the cap.
+    ("label",): 60,
+    ("value",): 80,
+    ("context",): 240,
+    # Recommendation
+    ("action",): 140,
+    ("impact",): 140,
+}
+
+# Max array sizes by leaf field name. Used when Pydantic rejects a list as
+# too_long: trim to the first N. Same rationale — short-circuit soft failures.
+_FIELD_MAX_ITEMS: dict[str, int] = {
+    "key_facts": 3,
+    "recommendations": 4,
+    "caveats": 3,
+    "next_questions": 3,
+    "follow_up_prompts": 2,
+    "mini_facts": 2,
+}
+
+
+def _try_salvage(
+    raw_input: dict,
+    exc: ValidationError,
+    model_cls,
+) -> dict | None:
+    """Mutate a deep copy of the input to drop the soft validation errors.
+
+    Returns the patched dict on best-effort success, or None when no error in
+    the batch is salvageable (in which case the caller raises through as a
+    real upstream failure).
+    """
+    import copy
+
+    patched = copy.deepcopy(raw_input)
+    salvaged_any = False
+
+    for err in exc.errors():
+        err_type = err.get("type", "")
+        loc = list(err.get("loc", []))
+
+        if err_type == "string_too_long":
+            leaf = loc[-1] if loc else None
+            max_len = _FIELD_MAX_LENGTHS.get((leaf,))
+            if max_len and _truncate_at(patched, loc, max_len):
+                salvaged_any = True
+
+        elif err_type == "too_long":
+            leaf = loc[-1] if loc else None
+            cap = _FIELD_MAX_ITEMS.get(leaf) if isinstance(leaf, str) else None
+            if cap and _trim_list_at(patched, loc, cap):
+                salvaged_any = True
+
+        elif err_type == "string_pattern_mismatch" and loc and loc[-1] == "id":
+            # Replace forbidden characters with '-', collapse repeats, trim.
+            if _sanitise_slug_at(patched, loc):
+                salvaged_any = True
+
+    return patched if salvaged_any else None
+
+
+def _walk_to_parent(container: dict | list, loc: list):
+    """Navigate to the parent of `loc[-1]` so we can rewrite the leaf in place."""
+    node = container
+    for step in loc[:-1]:
+        try:
+            node = node[step]
+        except (KeyError, IndexError, TypeError):
+            return None, None
+    leaf = loc[-1] if loc else None
+    return node, leaf
+
+
+def _truncate_at(container, loc, max_len: int) -> bool:
+    parent, leaf = _walk_to_parent(container, loc)
+    if parent is None or leaf is None:
+        return False
+    try:
+        value = parent[leaf]
+    except (KeyError, IndexError, TypeError):
+        return False
+    if not isinstance(value, str) or len(value) <= max_len:
+        return False
+    # Trim to max_len-1 and append U+2026 so the truncation reads cleanly.
+    parent[leaf] = value[: max_len - 1].rstrip() + "…"
+    return True
+
+
+def _trim_list_at(container, loc, cap: int) -> bool:
+    parent, leaf = _walk_to_parent(container, loc)
+    if parent is None or leaf is None:
+        return False
+    try:
+        value = parent[leaf]
+    except (KeyError, IndexError, TypeError):
+        return False
+    if not isinstance(value, list) or len(value) <= cap:
+        return False
+    parent[leaf] = value[:cap]
+    return True
+
+
+def _sanitise_slug_at(container, loc) -> bool:
+    import re
+
+    parent, leaf = _walk_to_parent(container, loc)
+    if parent is None or leaf is None:
+        return False
+    try:
+        value = parent[leaf]
+    except (KeyError, IndexError, TypeError):
+        return False
+    if not isinstance(value, str):
+        return False
+    cleaned = re.sub(r"[^a-z0-9_-]+", "-", value.lower()).strip("-_")
+    cleaned = re.sub(r"-{2,}", "-", cleaned)[:40]
+    if not cleaned or cleaned == value:
+        return False
+    parent[leaf] = cleaned
+    return True
 
 
 def _empty_wardrobe_advice() -> Advice:
