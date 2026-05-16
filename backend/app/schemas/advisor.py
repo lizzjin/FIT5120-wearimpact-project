@@ -29,8 +29,11 @@ Difficulty = Literal["easy", "medium", "hard"]
 # to one layout so the answers feel visually distinct.
 Layout = Literal["report", "playbook", "decision", "care_guide", "material_map"]
 
-# Slug pattern for recommendation IDs the LLM must emit. Kebab-case, short.
-_REC_ID_PATTERN = r"^[a-z0-9][a-z0-9-]{1,39}$"
+# Slug pattern for recommendation IDs the LLM must emit. Permissive on the
+# separator (Claude flips between kebab-case and snake_case depending on the
+# preset), strict on the alphabet so the slug stays safe to surface in URLs
+# and in the follow-up endpoint's `focus` parameter.
+_REC_ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{1,39}$"
 
 
 class PresetQuestion(BaseModel):
@@ -264,10 +267,13 @@ ADVICE_TOOL_SCHEMA: dict = {
                         "pattern": _REC_ID_PATTERN,
                         "maxLength": 40,
                         "description": (
-                            "Short kebab-case slug, 2-40 chars, derived from "
-                            "the action (e.g. 'extend-lifetime-2x', "
-                            "'cold-wash', 'buy-secondhand'). Used as a stable "
-                            "anchor for drill-down questions."
+                            "Short lowercase slug, 2-40 chars, kebab-case or "
+                            "snake_case, derived from the action (e.g. "
+                            "'extend-lifetime-2x', 'cold_wash', "
+                            "'buy_secondhand', 'polyester-filter-bag'). Used "
+                            "as a stable anchor for drill-down questions. Do "
+                            "not include spaces, uppercase letters, or "
+                            "punctuation other than '-' and '_'."
                         ),
                     },
                     "action": {"type": "string", "maxLength": 140},

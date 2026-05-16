@@ -38,10 +38,13 @@ from app.schemas.wardrobe_audit import AuditFacts
 logger = logging.getLogger(__name__)
 
 
-# Output tokens are bounded by the schema (~4 facts + ~4 recs ~= 600 tokens).
-_MAX_OUTPUT_TOKENS = 800
+# Output tokens budget for a full advice payload. Earlier sized at 800 for
+# the original 5-block schema; bumped to 1300 once recommendations gained
+# per-card `follow_up_prompts` and the top level gained `next_questions` so
+# Haiku had room to fill every field without truncating the tool call.
+_MAX_OUTPUT_TOKENS = 1300
 # Follow-ups are intentionally tighter (single mini-bubble).
-_FOLLOW_UP_MAX_TOKENS = 450
+_FOLLOW_UP_MAX_TOKENS = 500
 
 
 class AdvisorUpstreamError(RuntimeError):
@@ -82,9 +85,11 @@ You operate under STRICT rules. Violating any of them is a failure.
    (e.g. "wash polyester pieces in a microfibre filter bag"). You may rephrase
    action labels for tone, but do not introduce new behavioural percentages.
    Quote the precomputed `co2_kg_saved` / `water_L_saved` values verbatim
-   where available. Each recommendation needs a kebab-case `id` slug (e.g.
-   `extend-lifetime-2x`, `cold-wash`, `polyester-filter-bag`) derived from
-   the intervention key or the action verb.
+   where available. Each recommendation needs a short lowercase slug `id`
+   (2-40 chars, kebab-case or snake_case only — no spaces, no uppercase, no
+   punctuation other than '-' and '_'). Derive the slug from the
+   intervention key or action verb (e.g. `extend-lifetime-2x`, `cold_wash`,
+   `polyester-filter-bag`).
 
 3. SCOPE
    This app fights fast-fashion overconsumption — it is NOT a styling app.
@@ -392,22 +397,54 @@ def _build_follow_up_prompt(
 
 
 def _parse_tool_response(response, model_cls, tool_name: str):
-    """Extract the tool_use block, validate it, and return the model instance."""
+    """Extract the tool_use block, validate it, and return the model instance.
+
+    Validation failures are noisy in production logs on purpose — when Haiku
+    returns a payload that doesn't fit the Pydantic schema, the only way to
+    fix the prompt is to know *exactly* which fields it broke. The raw input
+    is dumped under DEBUG to keep INFO-level logs lean.
+    """
     tool_block = next(
         (block for block in response.content if block.type == "tool_use"),
         None,
     )
     if tool_block is None:
+        # Stop reason is the most useful signal here: "max_tokens" means we
+        # were truncated mid-tool-call, "end_turn" means the model bailed.
+        stop_reason = getattr(response, "stop_reason", "unknown")
+        text_preview = ""
+        for block in getattr(response, "content", []):
+            if getattr(block, "type", None) == "text":
+                text_preview = (getattr(block, "text", "") or "")[:200]
+                break
+        logger.error(
+            "Advisor %s missing tool_use block (stop_reason=%s, text_preview=%r)",
+            tool_name,
+            stop_reason,
+            text_preview,
+        )
         raise AdvisorUpstreamError(
-            f"Claude returned no tool_use block for {tool_name}; check that "
-            "tool_choice was honoured."
+            f"Claude returned no tool_use block for {tool_name}; "
+            f"stop_reason={stop_reason}."
         )
 
     try:
         return model_cls.model_validate(tool_block.input)
     except ValidationError as exc:
+        # Surface every offending field by name + the offending value so the
+        # fix is obvious from the log line alone.
+        offending = [
+            {"loc": list(err.get("loc", [])), "type": err.get("type"), "msg": err.get("msg")}
+            for err in exc.errors()
+        ]
+        logger.error(
+            "Advisor %s schema validation failed: errors=%s",
+            tool_name,
+            offending,
+        )
+        logger.debug("Advisor %s offending tool input: %r", tool_name, tool_block.input)
         raise AdvisorUpstreamError(
-            f"Claude tool output failed schema validation: {exc}"
+            f"Claude tool output failed schema validation: {offending}"
         ) from exc
 
 
