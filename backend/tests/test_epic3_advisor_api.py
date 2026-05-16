@@ -58,7 +58,12 @@ def test_preset_questions_endpoint_returns_full_catalogue():
         "reduce_my_footprint",
         "rethink_purchases",
         "extend_garment_life",
+        "material_breakdown",
     ]
+    # Each preset advertises the layout the frontend should switch to.
+    layouts = {item["key"]: item["layout"] for item in body}
+    assert layouts["material_breakdown"] == "material_map"
+    assert layouts["impact_summary"] == "report"
 
 
 def test_audit_endpoint_returns_advice_for_valid_payload():

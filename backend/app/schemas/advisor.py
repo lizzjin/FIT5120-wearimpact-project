@@ -20,13 +20,14 @@ PresetKey = Literal[
     "reduce_my_footprint",
     "rethink_purchases",
     "extend_garment_life",
+    "material_breakdown",
 ]
 
 Difficulty = Literal["easy", "medium", "hard"]
 
 # Layout drives which Vue component renders the advice. Each preset is locked
-# to one layout so the four answers feel visually distinct.
-Layout = Literal["report", "playbook", "decision", "care_guide"]
+# to one layout so the answers feel visually distinct.
+Layout = Literal["report", "playbook", "decision", "care_guide", "material_map"]
 
 # Slug pattern for recommendation IDs the LLM must emit. Kebab-case, short.
 _REC_ID_PATTERN = r"^[a-z0-9][a-z0-9-]{1,39}$"
@@ -107,6 +108,27 @@ PRESET_QUESTIONS: dict[PresetKey, dict[str, str]] = {
             "use-phase interventions (cold wash, full load, line dry). Cite "
             "the precomputed kg/L savings verbatim, and frame longevity as the "
             "single biggest lever an individual user controls."
+        ),
+    },
+    "material_breakdown": {
+        "label": "What are my clothes made of?",
+        "description": "Fibre-by-fibre look at what your wardrobe is built from.",
+        "layout": "material_map",
+        "voice": (
+            "Speak like a textile engineer reading a swatch book: name each "
+            "fibre, state its specific trade-offs (water-thirsty cotton, "
+            "microfibre-shedding polyester, methane-heavy wool), and point "
+            "at the user's actual sub-categories that carry that fibre. Stay "
+            "neutral — no fibre is universally good or bad."
+        ),
+        "focus": (
+            "Build the answer from audit_facts.material_breakdown. Each "
+            "recommendation should target one fibre with the highest CO2 "
+            "share. If material_coverage.has_any_material_data is false, "
+            "open with a clear note that the answer is based on default "
+            "fibre assumptions and ask the user to upload wash labels for "
+            "item-specific advice. Never invent fibre numbers; quote the "
+            "co2_kg / water_L per fibre verbatim from the breakdown."
         ),
     },
 }
@@ -196,7 +218,7 @@ ADVICE_TOOL_SCHEMA: dict = {
     "properties": {
         "layout": {
             "type": "string",
-            "enum": ["report", "playbook", "decision", "care_guide"],
+            "enum": ["report", "playbook", "decision", "care_guide", "material_map"],
             "description": (
                 "Must equal the layout assigned to the user's preset in the "
                 "user message. Do not choose freely."

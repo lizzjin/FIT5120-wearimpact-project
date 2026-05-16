@@ -28,10 +28,25 @@ export async function fetchPresetQuestions() {
 
 /**
  * Reduce a Dexie garment record to the minimal payload the backend needs.
- * @param {{ main_category: string, sub_category: string }} g
+ *
+ * Strips OCR display fields (name_en, name_zh, icon, label) from each material
+ * so the LLM prompt stays small — the backend only needs the canonical fibre
+ * key + percent to recompute per-garment LCA figures.
+ *
+ * @param {{ main_category: string, sub_category: string, materials?: Array }} g
  */
 function toAuditItem(g) {
-  return { main_category: g.main_category, sub_category: g.sub_category }
+  const item = {
+    main_category: g.main_category,
+    sub_category: g.sub_category,
+  }
+  if (Array.isArray(g.materials) && g.materials.length) {
+    const cleaned = g.materials
+      .filter((m) => m && typeof m.key === 'string' && Number(m.percent) > 0)
+      .map((m) => ({ key: m.key, percent: Number(m.percent) }))
+    if (cleaned.length) item.materials = cleaned
+  }
+  return item
 }
 
 async function readErrorDetail(res) {

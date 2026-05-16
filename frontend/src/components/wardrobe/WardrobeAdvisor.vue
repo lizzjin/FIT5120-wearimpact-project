@@ -102,6 +102,11 @@
                 :advice="msg.advice"
                 @follow-up="(p) => askFollowUp(idx, p)"
               />
+              <AdviceMaterialMap
+                v-else-if="layoutFor(msg) === 'material_map'"
+                :advice="msg.advice"
+                @follow-up="(p) => askFollowUp(idx, p)"
+              />
             </div>
           </div>
 
@@ -214,6 +219,7 @@ import AdviceReport from './advice/AdviceReport.vue'
 import AdvicePlaybook from './advice/AdvicePlaybook.vue'
 import AdviceDecision from './advice/AdviceDecision.vue'
 import AdviceCareGuide from './advice/AdviceCareGuide.vue'
+import AdviceMaterialMap from './advice/AdviceMaterialMap.vue'
 
 const eyebrowRef = ref(null)
 useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
@@ -222,12 +228,13 @@ useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
 // `advice.layout` (e.g. running an older build), derive the layout from the
 // preset key so the bubble never renders empty. Keeps the UI resilient while
 // the backend is being rolled forward.
-const VALID_LAYOUTS = new Set(['report', 'playbook', 'decision', 'care_guide'])
+const VALID_LAYOUTS = new Set(['report', 'playbook', 'decision', 'care_guide', 'material_map'])
 const PRESET_TO_LAYOUT = {
   impact_summary: 'report',
   reduce_my_footprint: 'playbook',
   rethink_purchases: 'decision',
   extend_garment_life: 'care_guide',
+  material_breakdown: 'material_map',
 }
 function layoutFor(msg) {
   const declared = msg?.advice?.layout

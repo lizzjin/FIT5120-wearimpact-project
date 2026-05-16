@@ -23,12 +23,31 @@ MainCategory = Literal["upper_body", "lower_body", "footwear"]
 # names like "t_shirt", "sports_shorts", etc. — all match this pattern.
 _SUBCATEGORY_PATTERN = r"^[a-z0-9_]{1,64}$"
 
+# Same whitelist for fibre keys arriving via wash-label OCR (cotton,
+# polyester, wool, ...). The OCR pipeline already normalises to canonical
+# kebab-style keys, but we still validate before forwarding to the LLM.
+_FIBRE_KEY_PATTERN = r"^[a-z0-9_]{1,32}$"
+
+
+class MaterialComponent(BaseModel):
+    """One row of the wash-label fibre breakdown (e.g. 80% polyester).
+
+    The browser stores extra display fields (`name_en`, `name_zh`, `icon`) from
+    the OCR response; those are intentionally not forwarded to the backend
+    because the audit only needs the canonical key + percentage. Anything
+    extra would just inflate the LLM prompt.
+    """
+
+    key: str = Field(pattern=_FIBRE_KEY_PATTERN)
+    percent: float = Field(ge=0.0, le=100.0)
+
 
 class GarmentInput(BaseModel):
     """One row from the browser's IndexedDB, passed to the audit endpoint."""
 
     main_category: MainCategory
     sub_category: str = Field(pattern=_SUBCATEGORY_PATTERN)
+    materials: list[MaterialComponent] | None = Field(default=None, max_length=8)
 
 
 class AuditRequest(BaseModel):
@@ -107,6 +126,43 @@ class CoverageReport(BaseModel):
     unmatched_subcategories: list[str]
 
 
+class MaterialBreakdownEntry(BaseModel):
+    """Wardrobe-wide contribution of one fibre type.
+
+    Built only when the user has uploaded wash labels for at least one item.
+    `weight_kg` is the total mass of that fibre across the wardrobe (sum of
+    `garment_weight × percent / 100`); `co2_kg` / `water_L` follow the same
+    pattern using the per-fibre LCA factors. `subcategories` is a small
+    sorted list of sub-categories that contain this fibre, useful for the LLM
+    to write things like "polyester shows up mainly in your jackets".
+    """
+
+    fibre_key: str
+    weight_kg: float
+    co2_kg: float
+    water_L: float
+    pct_of_total_co2: float
+    pct_of_total_weight: float
+    item_count: int
+    subcategories: list[str]
+
+
+class MaterialCoverage(BaseModel):
+    """How much of the wardrobe contributed to material_breakdown.
+
+    The advisor falls back to per-garment `dominant_fibre` for items missing
+    wash-label data, but only when the dominant fibre is a single canonical
+    name (cotton, polyester, …). Blends like "cotton_or_polyester" are
+    skipped to avoid invented numbers — `items_skipped_blend_fallback` counts
+    those so the LLM can mention them transparently.
+    """
+
+    items_with_user_materials: int = 0
+    items_with_fallback_fibre: int = 0
+    items_skipped_blend_fallback: int = 0
+    has_any_material_data: bool = False
+
+
 class AuditFacts(BaseModel):
     """The deterministic payload handed to the LLM advisor.
 
@@ -121,3 +177,5 @@ class AuditFacts(BaseModel):
     interventions: list[InterventionSuggestion]
     coverage: CoverageReport
     disclaimers: list[str]
+    material_breakdown: list[MaterialBreakdownEntry] = Field(default_factory=list)
+    material_coverage: MaterialCoverage = Field(default_factory=MaterialCoverage)

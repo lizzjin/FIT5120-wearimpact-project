@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.schemas.wardrobe_audit import GarmentInput
+from app.schemas.wardrobe_audit import GarmentInput, MaterialComponent
 from app.services.wardrobe_audit_service import compute_audit
 
 
@@ -108,3 +108,96 @@ def test_geography_disclaimer_always_present():
     audit = compute_audit(_wardrobe({"t_shirt": ("upper_body", 1)}))
 
     assert any("Australia" in d for d in audit.disclaimers)
+
+
+# ---------------------------------------------------------------------------
+# Material breakdown
+# ---------------------------------------------------------------------------
+
+
+def test_user_materials_recompute_garment_co2_from_fibre_table():
+    """A 100% polyester t-shirt must come out heavier in CO2 than the default
+    cotton-assumption average (4.6 kg), proving fibre data drives the recalc."""
+    poly_t = GarmentInput(
+        main_category="upper_body",
+        sub_category="t_shirt",
+        materials=[MaterialComponent(key="polyester", percent=100)],
+    )
+    audit = compute_audit([poly_t])
+
+    # 27.2 kg CO2 / kg fabric * 0.21 kg = 5.71 kg
+    assert audit.totals.co2_kg == pytest.approx(5.71, abs=0.05)
+    assert audit.totals.item_count == 1
+    assert audit.material_coverage.items_with_user_materials == 1
+    assert audit.material_coverage.has_any_material_data is True
+
+    breakdown = {row.fibre_key: row for row in audit.material_breakdown}
+    assert "polyester" in breakdown
+    assert breakdown["polyester"].pct_of_total_co2 == pytest.approx(100, abs=0.5)
+    assert breakdown["polyester"].subcategories == ["t_shirt"]
+
+
+def test_blended_user_materials_apportion_weight_per_fibre():
+    """80% cotton / 20% polyester on one t-shirt should split mass and CO2
+    in those proportions."""
+    blended = GarmentInput(
+        main_category="upper_body",
+        sub_category="t_shirt",
+        materials=[
+            MaterialComponent(key="cotton", percent=80),
+            MaterialComponent(key="polyester", percent=20),
+        ],
+    )
+    audit = compute_audit([blended])
+
+    expected_co2 = (22.0 * 0.21 * 0.8) + (27.2 * 0.21 * 0.2)
+    assert audit.totals.co2_kg == pytest.approx(expected_co2, abs=0.05)
+
+    rows = {row.fibre_key: row for row in audit.material_breakdown}
+    assert rows["cotton"].pct_of_total_weight == pytest.approx(80, abs=1)
+    assert rows["polyester"].pct_of_total_weight == pytest.approx(20, abs=1)
+
+
+def test_missing_materials_fall_back_to_default_average():
+    """No wash-label data -> CO2 stays at the per_garment lifecycle figure and
+    the breakdown still surfaces a dominant-fibre row when possible."""
+    audit = compute_audit(_wardrobe({"t_shirt": ("upper_body", 1)}))
+
+    # Default per_garment cotton-assumption CO2.
+    assert audit.totals.co2_kg == pytest.approx(4.6, abs=0.05)
+    # Dominant fibre is "cotton" and resolves in the fibre table, so we still
+    # get one breakdown row even without user wash-labels.
+    assert audit.material_coverage.items_with_user_materials == 0
+    assert audit.material_coverage.items_with_fallback_fibre == 1
+    assert audit.material_coverage.has_any_material_data is False
+    fibres = {row.fibre_key for row in audit.material_breakdown}
+    assert "cotton" in fibres
+
+
+def test_unknown_fibre_in_user_materials_falls_back_to_default():
+    """If wash-label OCR returns a fibre that isn't in our per-kg table
+    (e.g. spandex), we fall back to the default average rather than guess."""
+    spandex_t = GarmentInput(
+        main_category="upper_body",
+        sub_category="t_shirt",
+        materials=[
+            MaterialComponent(key="cotton", percent=95),
+            MaterialComponent(key="spandex", percent=5),
+        ],
+    )
+    audit = compute_audit([spandex_t])
+
+    # Mixed-known-and-unknown -> the audit must NOT recompute (would distort
+    # the missing 5% mass attribution). Falls back to the per_garment default.
+    assert audit.totals.co2_kg == pytest.approx(4.6, abs=0.05)
+    assert audit.material_coverage.items_with_user_materials == 0
+
+
+def test_jacket_with_blend_dominant_skips_breakdown_row():
+    """jacket's dominant_fibre is 'polyester_blend' — not a single canonical
+    fibre — so without user materials it produces NO breakdown row."""
+    audit = compute_audit(_wardrobe({"jacket": ("upper_body", 1)}))
+
+    assert audit.material_breakdown == []
+    assert audit.material_coverage.items_skipped_blend_fallback == 1
+    assert audit.material_coverage.has_any_material_data is False

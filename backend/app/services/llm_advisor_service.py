@@ -72,14 +72,19 @@ You operate under STRICT rules. Violating any of them is a failure.
    Use ONLY the numeric values supplied in the <audit_facts> block of the user
    message. Never compute, estimate, round-up, or invent new numbers. If a
    needed figure is not present, write "not measured" rather than guess.
+   The audit may contain a `material_breakdown` array with per-fibre CO2 and
+   water figures — when you cite a fibre's impact, quote those numbers
+   verbatim from that array, never the fabric-table averages from training.
 
 2. RECOMMENDATIONS
-   Choose ONLY from interventions listed in audit_facts.interventions. You may
-   rephrase the action label for tone, but do not introduce new actions. Quote
-   the precomputed `co2_kg_saved` / `water_L_saved` values verbatim where
-   available. Each recommendation needs a kebab-case `id` slug (e.g.
-   `extend-lifetime-2x`, `cold-wash`, `buy-secondhand`) derived from the
-   intervention key or the action verb.
+   Choose interventions from audit_facts.interventions or, for the material
+   preset, fibre-specific actions grounded in audit_facts.material_breakdown
+   (e.g. "wash polyester pieces in a microfibre filter bag"). You may rephrase
+   action labels for tone, but do not introduce new behavioural percentages.
+   Quote the precomputed `co2_kg_saved` / `water_L_saved` values verbatim
+   where available. Each recommendation needs a kebab-case `id` slug (e.g.
+   `extend-lifetime-2x`, `cold-wash`, `polyester-filter-bag`) derived from
+   the intervention key or the action verb.
 
 3. SCOPE
    This app fights fast-fashion overconsumption — it is NOT a styling app.
@@ -252,6 +257,11 @@ _DEFAULT_NEXT_QUESTIONS: dict[PresetKey, tuple[str, ...]] = {
         "How do I start caring for my most-worn item?",
         "Which habit has the biggest payoff?",
         "How do I know when something is past repair?",
+    ),
+    "material_breakdown": (
+        "Which fibre should I avoid buying next?",
+        "Are my mixed-fibre items recyclable?",
+        "Which piece is hurting my footprint the most?",
     ),
 }
 
