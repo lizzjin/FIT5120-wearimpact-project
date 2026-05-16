@@ -37,12 +37,17 @@
         </button>
       </li>
     </ul>
+
+    <p class="wd-mp__note">
+      <Sparkles :size="11" :stroke-width="2" />
+      <span>Mannequin photos are AI-generated for preview purposes only.</span>
+    </p>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { X, Check } from 'lucide-vue-next'
+import { X, Check, Sparkles } from 'lucide-vue-next'
 import { mannequinStore, setMannequin } from '../../stores/mannequinStore.js'
 
 const emit = defineEmits(['close', 'change'])
@@ -206,4 +211,19 @@ function pick(filename) {
   place-items: center;
   box-shadow: var(--shadow-soft-sm);
 }
+
+.wd-mp__note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 2px 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-soft-md, 10px);
+  background: var(--color-soft-milk);
+  color: var(--color-soft-ink-soft);
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+.wd-mp__note svg { flex-shrink: 0; }
 </style>
