@@ -43,6 +43,7 @@ def _fake_tool_response(input_payload: dict) -> SimpleNamespace:
 
 def _valid_advice_payload() -> dict:
     return {
+        "layout": "report",
         "headline": "Your wardrobe stores ~143 kg of CO2",
         "summary": (
             "Your 17 catalogued items embody about 143 kg of CO2 and 30,640 L "
@@ -63,18 +64,26 @@ def _valid_advice_payload() -> dict:
         ],
         "recommendations": [
             {
+                "id": "extend-lifetime-2x",
                 "action": "Wear each garment twice as long before disposal",
                 "impact": "Saves about 62.9 kg CO2",
                 "difficulty": "medium",
+                "follow_up_prompts": ["Which item should I start with?"],
             },
             {
+                "id": "buy-secondhand",
                 "action": "Buy second-hand instead of new for your next purchase",
                 "impact": "Avoids around 80% of the embodied CO2 of a new item",
                 "difficulty": "easy",
+                "follow_up_prompts": [],
             },
         ],
         "caveats": [
             "Australia-specific data is not available; EU/UK datasets used as proxies.",
+        ],
+        "next_questions": [
+            "Which single item is the biggest contributor?",
+            "How much would buying one less dress per year save?",
         ],
     }
 

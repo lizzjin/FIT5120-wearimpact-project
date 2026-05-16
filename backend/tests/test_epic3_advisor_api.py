@@ -19,6 +19,7 @@ client = TestClient(app)
 
 def _stub_advice(headline: str = "stubbed") -> Advice:
     return Advice(
+        layout="report",
         headline=headline,
         summary="Stubbed advice for tests.",
         key_facts=[
@@ -26,10 +27,23 @@ def _stub_advice(headline: str = "stubbed") -> Advice:
             {"label": "B", "value": "2", "context": "ctx"},
         ],
         recommendations=[
-            {"action": "do this", "impact": "saves stuff", "difficulty": "easy"},
-            {"action": "do that", "impact": "saves more", "difficulty": "easy"},
+            {
+                "id": "do-this",
+                "action": "do this",
+                "impact": "saves stuff",
+                "difficulty": "easy",
+                "follow_up_prompts": [],
+            },
+            {
+                "id": "do-that",
+                "action": "do that",
+                "impact": "saves more",
+                "difficulty": "easy",
+                "follow_up_prompts": [],
+            },
         ],
         caveats=["aus data missing"],
+        next_questions=["What if I added one more item?", "How do I start?"],
     )
 
 

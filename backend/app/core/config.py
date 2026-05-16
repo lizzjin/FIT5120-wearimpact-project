@@ -31,8 +31,10 @@ class Settings(BaseSettings):
     # Claude model used by the advisor; Haiku 4.5 by default for cost/latency
     anthropic_model: str = "claude-haiku-4-5-20251001"
 
-    # Wardrobe audit cache TTL — identical wardrobe returns same advice within 24h
-    wardrobe_audit_cache_ttl: int = 86400
+    # Wardrobe audit cache TTL — identical wardrobe returns same advice within 1h.
+    # Keep this short so users who re-click the same preset see fresh wording
+    # instead of a frozen response, while still cushioning repeated taps.
+    wardrobe_audit_cache_ttl: int = 3600
 
     # CORS origins allowed to call the backend (comma-separated in .env)
     cors_origins: list[str] = [
