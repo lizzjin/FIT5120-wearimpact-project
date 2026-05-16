@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Rounded square in WearImpact brand green -->
-  <rect width="32" height="32" rx="7" fill="#16a34a"/>
-  <!-- Leaf: diagonal from lower-left to upper-right, both sides curve outward -->
-  <path d="M7 25 C4 18 14 4 25 7 C28 15 22 28 7 25Z" fill="white"/>
-  <!-- Midrib: subtle center vein -->
-  <path d="M7 25 Q16 16 25 7" stroke="#16a34a" stroke-width="1.2"
-        fill="none" stroke-linecap="round" opacity="0.4"/>
-</svg>
