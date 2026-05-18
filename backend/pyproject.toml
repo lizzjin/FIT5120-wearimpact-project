@@ -34,6 +34,9 @@ docstring-code-format = false
 [tool.pytest.ini_options]
 # Keep pytest behaviour identical to current — explicit testpaths and
 # asyncio mode mean future contributors don't need to guess.
+# pythonpath = ["."] adds backend/ to sys.path so `from app.main import app`
+# works whether pytest is invoked as `pytest` or `python -m pytest`.
+pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 filterwarnings = [
