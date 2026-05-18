@@ -45,7 +45,7 @@ def test_aliased_subcategory_resolves_to_canonical_record():
 
 def test_every_taxonomy_subcategory_resolves():
     """Guards against the model classifier shipping a label our reference
-    data cannot translate. Mirrors CATEGORY_TAXONOMY in image_mod/app.py."""
+    data cannot translate. Mirrors CATEGORY_TAXONOMY in FIT5120-Classification-Mod/app.py."""
     taxonomy = [
         # upper_body
         "t_shirt", "tank_top_vest", "shirt_blouse", "polo_shirt",
