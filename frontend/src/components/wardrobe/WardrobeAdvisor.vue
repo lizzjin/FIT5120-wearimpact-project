@@ -52,6 +52,9 @@
           <span class="wd-bubble__avatar"><Sparkles :size="13" :stroke-width="2" /></span>
           <div class="wd-bubble__body wd-bubble__body--typing">
             <span></span><span></span><span></span>
+            <p v-if="longWait" class="wd-bubble__wait-hint">
+              Still thinking — our free AI gets sleepy sometimes. Hang tight.
+            </p>
           </div>
         </div>
 
@@ -207,7 +210,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ArrowLeft, CircleAlert, List, RefreshCw, Sparkles } from 'lucide-vue-next'
 import {
   fetchAdviceFollowUp,
@@ -215,6 +218,7 @@ import {
   fetchWardrobeAdvice,
 } from '../../services/advisorApi.js'
 import { useReveal } from '../../motion/useReveal'
+import { humanize } from '../../utils/friendlyError.js'
 import AdviceReport from './advice/AdviceReport.vue'
 import AdvicePlaybook from './advice/AdvicePlaybook.vue'
 import AdviceDecision from './advice/AdviceDecision.vue'
@@ -260,6 +264,23 @@ const streamRef = ref(null)
 // 'preset' (fixed 4 questions) | 'context' (next_questions from latest advice).
 const chipMode = ref('preset')
 
+// "Long wait" reassurance — after ~5s of typing, the bubble appends a soft
+// note so users don't think the chat froze. Cleared once the response lands
+// or on unmount.
+const longWait = ref(false)
+let longWaitTimer = null
+function armLongWait() {
+  if (longWaitTimer) clearTimeout(longWaitTimer)
+  longWait.value = false
+  longWaitTimer = setTimeout(() => { longWait.value = true }, 5000)
+}
+function clearLongWait() {
+  if (longWaitTimer) clearTimeout(longWaitTimer)
+  longWaitTimer = null
+  longWait.value = false
+}
+onBeforeUnmount(clearLongWait)
+
 const hasAdvice = computed(() =>
   messages.value.some((m) => m.role === 'advice')
 )
@@ -281,7 +302,10 @@ onMounted(async () => {
   try {
     presets.value = await fetchPresetQuestions()
   } catch (err) {
-    presetsError.value = err?.message || 'Could not load preset questions.'
+    presetsError.value = humanize(err, {
+      context: 'advisor',
+      fallback: `Couldn't load the question list — refresh the page in a moment.`,
+    })
   }
 })
 
@@ -325,6 +349,7 @@ function normalizeAdvice(advice, presetKey) {
 async function askPreset(preset, { forceRefresh = false } = {}) {
   if (busy.value) return
   busy.value = true
+  armLongWait()
 
   messages.value.push({ role: 'user', text: preset.label })
   messages.value.push({ role: 'loading' })
@@ -342,10 +367,11 @@ async function askPreset(preset, { forceRefresh = false } = {}) {
   } catch (err) {
     messages.value.splice(messages.value.length - 1, 1, {
       role: 'error',
-      text: err?.message || 'Failed to get advice. Please try again.',
+      text: humanize(err, { context: 'advisor' }),
     })
   } finally {
     busy.value = false
+    clearLongWait()
     await scrollToBottom()
   }
 }
@@ -362,6 +388,7 @@ async function askFollowUp(parentIdx, { focusId, prompt }) {
   if (!parent || parent.role !== 'advice') return
 
   busy.value = true
+  armLongWait()
   messages.value.push({ role: 'user', text: prompt, isFollowUp: true })
   messages.value.push({ role: 'loading', isFollowUp: true })
   await scrollToBottom()
@@ -384,10 +411,11 @@ async function askFollowUp(parentIdx, { focusId, prompt }) {
     messages.value.splice(messages.value.length - 1, 1, {
       role: 'error',
       isFollowUp: true,
-      text: err?.message || 'Failed to get a follow-up. Please try again.',
+      text: humanize(err, { context: 'advisor' }),
     })
   } finally {
     busy.value = false
+    clearLongWait()
     await scrollToBottom()
   }
 }
@@ -660,14 +688,27 @@ async function scrollToBottom() {
 
 /* Typing indicator */
 .wd-bubble__body--typing {
-  display: inline-flex; gap: 4px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 4px;
+  row-gap: 8px;
   padding: 14px 16px;
+  max-width: 320px;
 }
-.wd-bubble__body--typing span {
+.wd-bubble__body--typing > span {
   width: 7px; height: 7px;
   border-radius: 999px;
   background: var(--color-soft-ink-soft);
   animation: wd-typing 1.2s infinite ease-in-out;
+}
+.wd-bubble__wait-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-soft-ink-soft);
+  font-style: italic;
 }
 .wd-bubble__body--typing span:nth-child(2) { animation-delay: 0.15s; }
 .wd-bubble__body--typing span:nth-child(3) { animation-delay: 0.3s; }

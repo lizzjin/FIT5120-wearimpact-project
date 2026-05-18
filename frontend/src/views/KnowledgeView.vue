@@ -7,6 +7,9 @@
     <Navbar />
 
     <main class="knowledge-page__main">
+      <div v-if="view !== 'intro'" class="knowledge-page__steps">
+        <StepIndicator :steps="KNOWLEDGE_STEPS" :active-key="view" aria-label="Knowledge flow" />
+      </div>
       <Transition name="kh-view" mode="out-in">
         <KnowledgeIntro
           v-if="view === 'intro'"
@@ -52,6 +55,14 @@ import KnowledgeIntro from '../components/knowledge/KnowledgeIntro.vue'
 import KnowledgeLifecycle from '../components/knowledge/KnowledgeLifecycle.vue'
 import KnowledgeMaterials from '../components/knowledge/KnowledgeMaterials.vue'
 import KnowledgeCards from '../components/knowledge/KnowledgeCards.vue'
+import StepIndicator from '../components/common/StepIndicator.vue'
+
+const KNOWLEDGE_STEPS = [
+  { key: 'intro', label: 'Welcome', title: 'Start the sustainability tour.' },
+  { key: 'lifecycle', label: 'Lifecycle', title: 'See where impact happens in a garment’s life.' },
+  { key: 'materials', label: 'Materials', title: 'Compare fabrics by footprint.' },
+  { key: 'cards', label: 'Cards', title: 'Quick facts you can act on today.' },
+]
 
 // View state machine: intro → lifecycle → materials → cards.
 // Materials and cards are placeholders for now; routing back to intro
@@ -84,6 +95,16 @@ function goCards() { view.value = 'cards'; scrollTop() }
   /* Reserve room above the fixed floor rail (130px tall) so page content
      never collides with the flowing icons. */
   padding-bottom: 160px;
+}
+
+.knowledge-page__steps {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+
+@media (max-width: 720px) {
+  .knowledge-page__steps { padding: 12px 16px 0; }
 }
 
 /* Shared transition — matches the wardrobe state-machine cadence. */

@@ -108,7 +108,7 @@ let activeRouteProfile = 'driving'
 function initMap() {
   if (!mapContainer.value) return
   if (!mapboxToken) {
-    errorMessage.value = 'Map unavailable — VITE_MAPBOX_ACCESS_TOKEN is missing.'
+    errorMessage.value = `The map can't load right now — the list on the right still works while we look into it.`
     return
   }
   if (props.userLat == null || props.userLng == null) return

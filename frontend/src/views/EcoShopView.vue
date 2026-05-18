@@ -123,6 +123,10 @@ import EcoShopMap from '../components/ecoshop/EcoShopMap.vue'
 import EcoShopList from '../components/ecoshop/EcoShopList.vue'
 import JourneyNextCard from '../components/journey/JourneyNextCard.vue'
 import { fetchNearbyPlaces, fetchPlaceDetails, getUserCoordinates } from '../services/locationService'
+import { useToast } from '../motion'
+import { humanize } from '../utils/friendlyError.js'
+
+const toast = useToast()
 
 // Journey-aware intent — driven by ?intent=donate|buy in the URL when the
 // user arrives from Wardrobe's decision card or Brand Search's next-step
@@ -196,6 +200,14 @@ async function useMyLocation() {
     userLat.value = coords.lat
     userLng.value = coords.lng
     isFallback.value = coords.isFallback
+    if (coords.isFallback) {
+      toast.push(`Using Melbourne CBD because the browser blocked location.`, {
+        type: 'warning',
+        timeout: 7000,
+      })
+    } else {
+      toast.push(`Got your spot — pulling shops nearby.`, { type: 'success' })
+    }
     await loadPlaces()
   } finally {
     isLocating.value = false
@@ -217,7 +229,12 @@ async function loadPlaces() {
     })
     allPlaces.value = data.results || []
   } catch (err) {
-    errorMessage.value = err.message || 'Failed to load eco-shops. Please try again.'
+    const friendly = humanize(err, {
+      context: 'generic',
+      fallback: `Couldn't pull nearby shops — widen the radius or try again in a moment.`,
+    })
+    errorMessage.value = friendly
+    toast.push(friendly, { type: 'error' })
     allPlaces.value = []
   } finally {
     isLoading.value = false
@@ -256,7 +273,10 @@ async function onSelectPlace(place) {
     detailCache.set(place.place_id, enriched)
     activeDetail.value = enriched
   } catch (err) {
-    detailError.value = err.message || 'Could not load details. Please try again.'
+    detailError.value = humanize(err, {
+      context: 'generic',
+      fallback: `Couldn't open the details for this shop — tap the card again.`,
+    })
   } finally {
     isDetailLoading.value = false
   }
@@ -306,7 +326,7 @@ function onRouteInfo(info) {
 }
 
 function onRouteError(msg) {
-  routeError.value = msg
+  routeError.value = humanize(msg, { context: 'route' })
   isRouteLoading.value = false
   routeInfo.value = null
 }
@@ -332,6 +352,12 @@ onMounted(async () => {
   userLat.value = coords.lat
   userLng.value = coords.lng
   isFallback.value = coords.isFallback
+  if (coords.isFallback) {
+    toast.push(`Showing Melbourne CBD — allow location for results near you.`, {
+      type: 'info',
+      timeout: 6000,
+    })
+  }
   await loadPlaces()
 })
 </script>

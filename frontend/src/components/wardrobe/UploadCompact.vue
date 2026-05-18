@@ -89,6 +89,7 @@ import {
 import { extractItems, pollPreview } from '../../services/wardrobeApi.js'
 import { addGarment, updateGarmentImage } from '../../services/wardrobeDb.js'
 import { useRipple, useToast } from '../../motion'
+import { humanize } from '../../utils/friendlyError.js'
 
 const emit = defineEmits(['saved'])
 
@@ -167,18 +168,18 @@ function ingest(fileList) {
   const next = [...files.value]
   for (const f of Array.from(fileList)) {
     if (!ACCEPTED.includes(f.type)) {
-      setError(`Unsupported file: ${f.name}`)
+      setError(humanize(`Unsupported file: ${f.name}`, { context: 'upload' }))
       continue
     }
     if (next.length >= MAX_FILES) {
-      setError(`Max ${MAX_FILES} photos at a time.`)
+      setError(humanize(`Max ${MAX_FILES} photos at a time.`, { context: 'upload' }))
       break
     }
     next.push(f)
   }
   const totalMb = next.reduce((s, f) => s + f.size, 0) / (1024 * 1024)
   if (totalMb > MAX_TOTAL_MB) {
-    setError(`Total size > ${MAX_TOTAL_MB} MB.`)
+    setError(humanize(`Total size > ${MAX_TOTAL_MB} MB.`, { context: 'upload' }))
     return
   }
   files.value = next
@@ -240,9 +241,12 @@ async function classify() {
     emit('saved')
     Promise.all(pollJobs).then(() => emit('saved'))
   } catch (err) {
-    const msg = err?.message || 'Failed. Please retry.'
+    const msg = humanize(err, { context: 'upload' })
     setError(msg)
-    toast.push(msg, { type: 'error' })
+    toast.push(msg, {
+      type: 'error',
+      timeout: 6000,
+    })
   } finally {
     isBusy.value = false
     statusMessage.value = ''
