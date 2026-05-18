@@ -1,6 +1,7 @@
 <template>
   <ul v-if="materials && materials.length" class="wd-mat-pills">
     <li v-for="m in materials" :key="m.key + '-' + m.percent" class="wd-mat-pill">
+      <!-- safe: iconSvg() returns an entry from the local ICONS map, never user input -->
       <span class="wd-mat-pill__icon" v-html="iconSvg(m.icon)" />
       <span class="wd-mat-pill__label">{{ m.name_en }} {{ Math.round(m.percent) }}%</span>
     </li>

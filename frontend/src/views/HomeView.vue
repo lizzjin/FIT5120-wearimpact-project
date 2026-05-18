@@ -64,6 +64,7 @@
             </button>
           </div>
         </div>
+        <!-- safe: trusted internal SVG string from this component, never user input -->
         <div class="story-art story-art--hero" data-art v-html="artHero" aria-hidden="true" />
       </div>
 
@@ -100,6 +101,7 @@
               <ArrowRight :size="17" :stroke-width="2.5" class="cta-arrow" />
             </CtaButton>
           </div>
+          <!-- safe: trusted internal SVG string from the solutions array, never user input -->
           <div class="story-art story-art--solution" data-art v-html="sol.art" aria-hidden="true" />
         </div>
       </section>

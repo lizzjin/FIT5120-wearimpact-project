@@ -143,6 +143,7 @@ function drawUserMarker() {
   }
   const el = document.createElement('div')
   el.className = 'es-user-pin'
+  // safe: static markup literal, no user-input interpolation
   el.innerHTML = `<span class="es-user-pin__dot"></span><span class="es-user-pin__pulse"></span>`
   userMarker = new mapboxgl.Marker({ element: el, anchor: 'center' })
     .setLngLat([props.userLng, props.userLat])
@@ -200,6 +201,7 @@ function buildPinElement(type, isActive) {
   // Inner wrapper hosts hover/active transforms — keeping the root free
   // of any `transition: transform` so Mapbox's per-frame translate3d
   // (used to reposition markers on zoom) is never animated.
+  // safe: `colour`, `cream`, `iconColour`, and `type` are constants/closed enum from this file; getIconSvg returns a fixed ICONS lookup. No user input flows here.
   el.innerHTML = `
     <div class="es-pin__inner">
       <svg viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">

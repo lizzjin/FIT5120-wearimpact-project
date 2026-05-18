@@ -15,6 +15,7 @@
         class="adv-mat__card"
         :class="`adv-mat__card--${fibreTypeFor(f.label)}`"
       >
+        <!-- safe: iconFor() resolves to a fixed internal SVG map, never user input -->
         <span class="adv-mat__icon" v-html="iconFor(f.label)" />
         <div class="adv-mat__card-text">
           <p class="adv-mat__card-label">{{ f.label }}</p>
