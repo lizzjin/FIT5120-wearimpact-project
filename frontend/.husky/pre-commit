@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+# Pre-commit hook for the WearImpact frontend.
+#
+# OPT-IN: this hook only runs after a contributor runs `npm run hooks:enable`
+# from frontend/, which points git's core.hooksPath at this directory. CI
+# environments (Vercel, GitHub Actions) never modify the git config so they
+# are unaffected by this hook.
+#
+# Bypass safely with `git commit --no-verify` ONLY for emergency hotfixes —
+# CLAUDE.md requires fixing the underlying issue rather than skipping hooks.
+
+# Move to the frontend directory so lint-staged can find package.json and
+# node_modules even when the user commits from the repo root.
+cd "$(dirname "$0")/.." || exit 0
+
+# Defensive bypass for automated environments.
+if [ "$CI" = "true" ] || [ "$HUSKY" = "0" ]; then
+  exit 0
+fi
+
+# Use the locally-installed lint-staged; do nothing if not yet installed.
+if [ -x node_modules/.bin/lint-staged ]; then
+  node_modules/.bin/lint-staged
+fi

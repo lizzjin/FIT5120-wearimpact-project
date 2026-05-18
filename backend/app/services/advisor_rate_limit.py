@@ -18,9 +18,12 @@ import time
 from collections import deque
 from collections.abc import Iterable
 
-# 10 audit calls per IP per rolling hour. Empty wardrobes still count because
-# a malicious script could otherwise burn the cache key space.
-_MAX_CALLS = 10
+# 30 audit calls per IP per rolling hour. The cap exists to keep a runaway
+# client (or accidental hot-reload loop) from draining the Claude token
+# budget. Empty wardrobes still count, otherwise a script could probe the
+# cache key space at high speed. The Re-answer button and per-recommendation
+# follow-ups each consume a call too, so 10/hr was too tight for normal use.
+_MAX_CALLS = 30
 _WINDOW_SECONDS = 3600
 
 _lock = threading.Lock()

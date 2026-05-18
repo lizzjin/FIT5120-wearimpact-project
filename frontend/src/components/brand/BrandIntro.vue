@@ -6,42 +6,33 @@
     <!-- ── Hero ─────────────────────────────────────────────────────── -->
     <div class="brand-intro__hero">
       <div class="brand-intro__hero-text">
-        <p
-          class="brand-intro__eyebrow"
-          v-motion
-          :initial="{ opacity: 0, y: 12 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
+        <p ref="eyebrowRef" class="brand-intro__eyebrow">
           BRAND TRANSPARENCY · WHY IT MATTERS
         </p>
-        <h1
+        <AnimatedHeading
+          as="h1"
           class="brand-intro__title"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 700, delay: 100 } }"
+          :stagger="0.07"
+          :delay="0.1"
         >
           Behind every label,<br />
           a supply chain.
-        </h1>
-        <p
-          class="brand-intro__subtitle"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 250 } }"
-        >
+        </AnimatedHeading>
+        <p ref="subtitleRef" class="brand-intro__subtitle">
           Greenwashing is everywhere. Independent disclosure scores cut through it.
           Here's how 247 brands stack up — and how to read the numbers without falling for the marketing.
         </p>
         <button
           type="button"
-          class="brand-intro__hero-cta"
+          class="brand-intro__hero-cta is-burst-host"
+          ref="ctaRef"
           @click="scrollTo('pillars')"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 450 } }"
         >
-          See how it works
-          <ArrowDown :size="18" :stroke-width="2" />
+          <CtaBurst />
+          <CtaFlip>
+            See how it works
+            <ArrowDown :size="18" :stroke-width="2" />
+          </CtaFlip>
         </button>
       </div>
       <div class="brand-intro__hero-art" aria-hidden="true">
@@ -86,13 +77,8 @@
         </div>
       </div>
 
-      <div class="pillar-grid">
-        <article
-          class="pillar-card pillar-card--gov"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
+      <div class="pillar-grid" ref="pillarGridRef">
+        <article class="pillar-card pillar-card--gov">
           <div class="pillar-card__icon-wrap">
             <Scale :size="28" :stroke-width="1.8" />
           </div>
@@ -105,12 +91,7 @@
           </p>
         </article>
 
-        <article
-          class="pillar-card pillar-card--trace"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 120 } }"
-        >
+        <article class="pillar-card pillar-card--trace">
           <div class="pillar-card__icon-wrap">
             <Workflow :size="28" :stroke-width="1.8" />
           </div>
@@ -123,12 +104,7 @@
           </p>
         </article>
 
-        <article
-          class="pillar-card pillar-card--env"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 500, delay: 240 } }"
-        >
+        <article class="pillar-card pillar-card--env">
           <div class="pillar-card__icon-wrap">
             <Leaf :size="28" :stroke-width="1.8" />
           </div>
@@ -154,15 +130,12 @@
         </p>
       </div>
 
-      <div class="scale-grid">
+      <div class="scale-grid" ref="scaleGridRef">
         <article
-          v-for="(t, i) in scaleTiers"
+          v-for="t in scaleTiers"
           :key="t.label"
           class="scale-card"
           :data-tone="t.tone"
-          v-motion
-          :initial="{ opacity: 0, y: 16 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 400, delay: i * 90 } }"
         >
           <span class="scale-card__chip">{{ t.label }}</span>
           <span class="scale-card__range">{{ t.range }}</span>
@@ -182,14 +155,11 @@
         </p>
       </div>
 
-      <div class="tips-grid">
+      <div class="tips-grid" ref="tipsGridRef">
         <article
-          v-for="(t, i) in tips"
+          v-for="t in tips"
           :key="t.title"
           class="tip-card"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :visible-once="{ opacity: 1, y: 0, transition: { duration: 450, delay: i * 110 } }"
         >
           <div class="tip-card__icon-wrap">
             <component :is="t.icon" :size="24" :stroke-width="1.8" />
@@ -206,20 +176,46 @@
         Data: <strong>Fashion Transparency Index 2024</strong> (Australian market) ·
         scores reflect publicly disclosed corporate policies.
       </p>
-      <button type="button" class="brand-intro__cta" @click="$emit('start')">
-        Start exploring brands
-        <ArrowRight :size="18" :stroke-width="2" />
+      <button type="button" class="brand-intro__cta is-burst-host" @click="$emit('start')">
+        <CtaBurst />
+        <CtaFlip>
+          Start exploring brands
+          <ArrowRight :size="18" :stroke-width="2" />
+        </CtaFlip>
       </button>
     </div>
   </section>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { ArrowDown, ArrowRight, Filter, HeartHandshake, Hourglass, Leaf, Scale, Workflow } from 'lucide-vue-next'
 import { Vue3Lottie } from 'vue3-lottie'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
+import { useStagger } from '../../motion/useStagger'
 import heroAnim from '../../assets/lottie/brand-hero.json'
 
 defineEmits(['start'])
+
+const eyebrowRef = ref(null)
+const subtitleRef = ref(null)
+const ctaRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subtitleRef, { mode: 'fade-blur', y: 60, delay: 0.25 })
+useReveal(ctaRef, { mode: 'fade-up', y: 18, delay: 0.5 })
+
+// Three grids — pillar (3 cards), scale (5 cards), tips (variable) — each
+// stagger-reveal when its container enters the viewport. Replaces five
+// per-element v-motion directives that previously hardcoded delays.
+const pillarGridRef = ref(null)
+const scaleGridRef = ref(null)
+const tipsGridRef = ref(null)
+useStagger(pillarGridRef, { selector: '.pillar-card', stagger: 0.12, duration: 0.5, y: 24 })
+useStagger(scaleGridRef, { selector: '.scale-card', stagger: 0.09, duration: 0.4, y: 16 })
+useStagger(tipsGridRef, { selector: '.tip-card', stagger: 0.11, duration: 0.45, y: 18 })
 
 // Tonal scale: from full lime ("top") fading to dim cream ("bottom").
 // Single colour family keeps the explainer aligned with the cream + lime
@@ -348,19 +344,19 @@ function scrollTo(id) {
   border-radius: var(--radius-pill);
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-primary-text);
   background: var(--color-primary);
+  color: var(--color-primary-text);
   border: none;
   cursor: pointer;
   transition:
     transform 200ms var(--motion-entrance),
-    box-shadow 200ms var(--motion-entrance);
+    background 200ms var(--motion-entrance);
   margin-top: 8px;
 }
 
 .brand-intro__hero-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.18);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .brand-intro__hero-art {
@@ -734,12 +730,12 @@ function scrollTo(id) {
   background: var(--color-primary);
   border: none;
   cursor: pointer;
-  transition: transform 200ms var(--motion-entrance), box-shadow 200ms var(--motion-entrance);
+  transition: transform 200ms var(--motion-entrance), background 200ms var(--motion-entrance);
 }
 
 .brand-intro__cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(22, 51, 0, 0.22);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 /* ── Responsive ────────────────────────────────────────────────── */

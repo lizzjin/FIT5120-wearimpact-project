@@ -1,5 +1,10 @@
 <template>
-  <article class="rank-card" :style="{ '--pill-color': labelColor, '--pill-bg': labelBg }">
+  <article
+    class="rank-card"
+    :style="{ '--pill-color': labelColor, '--pill-bg': labelBg }"
+    ref="cardRef"
+    tabindex="0"
+  >
     <div class="rank-card__top">
       <div
         class="rank-card__avatar"
@@ -66,6 +71,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { ArrowRight, X } from 'lucide-vue-next'
+import { useHover, useFocusRing } from '../../motion'
 
 const props = defineProps({
   brand: { type: Object, required: true },
@@ -75,6 +81,12 @@ const props = defineProps({
 defineEmits(['remove', 'view'])
 
 const logoErr = ref(false)
+const cardRef = ref(null)
+// Card hover lift + keyboard focus ring. Press feedback is the subtle
+// scale 0.99 — the card is a comparison summary, not a CTA, so the
+// press should read as "I pushed on it" rather than "I clicked it".
+useHover(cardRef, { mode: 'card' })
+useFocusRing(cardRef, { color: 'var(--color-primary)' })
 
 // Position on the bar from left (0% = #1) to right (100% = last).
 const percentFromTop = computed(() => {

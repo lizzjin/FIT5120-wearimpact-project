@@ -18,7 +18,7 @@
     </div>
 
     <!-- Cards (with inline expansion) -->
-    <div v-else class="es-list__scroll" ref="scrollEl">
+    <div v-else class="es-list__scroll" ref="scrollEl" data-stagger-host>
       <div
         v-for="place in places"
         :key="place.place_id"
@@ -53,10 +53,12 @@
 </template>
 
 <script setup>
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { MapPinOff } from 'lucide-vue-next'
 import EcoShopLocationCard from './EcoShopLocationCard.vue'
 import EcoShopLocationDetail from './EcoShopLocationDetail.vue'
+import { gsap } from 'gsap'
+import { isReduced } from '../../motion'
 
 const props = defineProps({
   places: { type: Array, default: () => [] },
@@ -93,6 +95,40 @@ watch(
     }
   },
 )
+
+// Re-stagger cards every time the list contents change (filter / radius /
+// new fetch). Avoids the "list pops in as one block" feeling.
+//
+// Owns its own gsap.context() so each re-stagger reverts the previous
+// tweens before creating new ones. Without this, watch fires repeatedly
+// and accumulates orphan tweens that animate detached / re-rendered DOM.
+let staggerCtx = null
+watch(
+  () => props.places.map((p) => p.place_id).join('|'),
+  async () => {
+    if (isReduced()) return
+    await nextTick()
+    staggerCtx?.revert()
+    const rows = scrollEl.value?.querySelectorAll('.es-list__row')
+    if (!rows || !rows.length) {
+      staggerCtx = null
+      return
+    }
+    staggerCtx = gsap.context(() => {
+      gsap.fromTo(
+        rows,
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: 'power3.out' },
+      )
+    }, scrollEl.value)
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  staggerCtx?.revert()
+  staggerCtx = null
+})
 </script>
 
 <style scoped>

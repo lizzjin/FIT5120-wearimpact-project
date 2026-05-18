@@ -4,6 +4,7 @@
       <span
         v-for="tag in tags"
         :key="tag.company_id"
+        :ref="(el) => { if (el) chipRefs[tag.company_id] = el }"
         class="tag-chip"
       >
         <img
@@ -21,7 +22,7 @@
           type="button"
           class="tag-chip__remove"
           :aria-label="`Remove ${tag.company_name}`"
-          @click.stop="removeTag(tag.company_id)"
+          @click.stop="removeTagAnimated(tag.company_id)"
         >
           <X :size="14" :stroke-width="2.5" />
         </button>
@@ -84,6 +85,7 @@
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import { searchBrands } from '../../services/brandService'
+import { useChip, useShake } from '../../motion'
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -101,8 +103,23 @@ const isLoading = ref(false)
 const cursor = ref(0)
 const showDropdown = ref(false)
 const rowLogoErr = reactive({})
+const chipRefs = reactive({})
+
+const { enterChip, exitChip } = useChip()
+const { shake: shakeInput } = useShake(inputEl)
 
 let debounceTimer = null
+let prevLen = props.modelValue.length
+
+// Spring scale-in for the newly added chip when modelValue grows.
+watch(() => tags.value.length, async (newLen) => {
+  if (newLen > prevLen) {
+    await nextTick()
+    const last = tags.value[tags.value.length - 1]
+    if (last) enterChip(chipRefs[last.company_id])
+  }
+  prevLen = newLen
+})
 
 function logoFor(name) {
   return `https://img.logo.dev/${guessDomain(name)}?token=pk_LbFI27UJRDWnSoDCC_4GYA&size=40`
@@ -179,7 +196,12 @@ function onBackspace() {
 }
 
 function addTag(item) {
-  if (isFull.value) return
+  if (isFull.value) {
+    // Visible reject so users notice the 3-tag cap instead of nothing
+    // happening when they hit Enter.
+    shakeInput()
+    return
+  }
   if (tags.value.some((t) => t.company_id === item.company_id)) return
   const enriched = {
     company_id: item.company_id,
@@ -198,6 +220,17 @@ function addTag(item) {
 
 function removeTag(id) {
   emit('update:modelValue', tags.value.filter((t) => t.company_id !== id))
+}
+
+// Animated remove: exit-tween the chip first, then update modelValue
+// once the tween completes. exitChip falls through to the callback
+// immediately under reduced-motion.
+function removeTagAnimated(id) {
+  const el = chipRefs[id]
+  exitChip(el, () => {
+    delete chipRefs[id]
+    removeTag(id)
+  })
 }
 
 function focusInput() {

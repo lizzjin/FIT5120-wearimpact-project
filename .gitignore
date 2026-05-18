@@ -21,6 +21,10 @@ __pycache__/
 *.png
 *.jpg
 *.jpeg
+# …but keep mannequin assets used by the try-on feature
+!frontend/public/person-models/**/*.png
+!frontend/public/person-models/**/*.jpg
+!frontend/public/person-models/**/*.jpeg
 
 # PDF uploads (user documents, not source)
 *.pdf

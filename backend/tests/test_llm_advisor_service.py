@@ -43,6 +43,7 @@ def _fake_tool_response(input_payload: dict) -> SimpleNamespace:
 
 def _valid_advice_payload() -> dict:
     return {
+        "layout": "report",
         "headline": "Your wardrobe stores ~143 kg of CO2",
         "summary": (
             "Your 17 catalogued items embody about 143 kg of CO2 and 30,640 L "
@@ -63,18 +64,26 @@ def _valid_advice_payload() -> dict:
         ],
         "recommendations": [
             {
+                "id": "extend-lifetime-2x",
                 "action": "Wear each garment twice as long before disposal",
                 "impact": "Saves about 62.9 kg CO2",
                 "difficulty": "medium",
+                "follow_up_prompts": ["Which item should I start with?"],
             },
             {
+                "id": "buy-secondhand",
                 "action": "Buy second-hand instead of new for your next purchase",
                 "impact": "Avoids around 80% of the embodied CO2 of a new item",
                 "difficulty": "easy",
+                "follow_up_prompts": [],
             },
         ],
         "caveats": [
             "Australia-specific data is not available; EU/UK datasets used as proxies.",
+        ],
+        "next_questions": [
+            "Which single item is the biggest contributor?",
+            "How much would buying one less dress per year save?",
         ],
     }
 
@@ -158,6 +167,83 @@ def test_invalid_tool_payload_raises_validation_error():
     with patch.object(llm_advisor_service, "_client", return_value=fake_anthropic):
         with pytest.raises(AdvisorUpstreamError, match="schema validation"):
             generate_advice(audit, "impact_summary")
+
+
+# ---------------------------------------------------------------------------
+# Salvage layer — soft schema errors must NOT 503
+# ---------------------------------------------------------------------------
+
+
+def test_overlong_summary_is_truncated_not_503():
+    """Claude wrote a 900-char summary (cap 800). Salvage should truncate it
+    to fit and return a valid Advice, not blow up the whole turn."""
+    audit = compute_audit(_wardrobe({"t_shirt": ("upper_body", 1)}))
+    payload = _valid_advice_payload()
+    payload["summary"] = "X" * 900
+
+    fake_anthropic = SimpleNamespace(
+        messages=SimpleNamespace(create=lambda **_: _fake_tool_response(payload))
+    )
+
+    with patch.object(llm_advisor_service, "_client", return_value=fake_anthropic):
+        advice = generate_advice(audit, "impact_summary")
+
+    assert len(advice.summary) <= 800
+    assert advice.summary.endswith("…")
+
+
+def test_overlong_key_fact_context_truncated_not_503():
+    """Claude writes 300-char context (cap 240). Salvage trims, no 503."""
+    audit = compute_audit(_wardrobe({"t_shirt": ("upper_body", 1)}))
+    payload = _valid_advice_payload()
+    payload["key_facts"][0]["context"] = "X" * 300
+
+    fake_anthropic = SimpleNamespace(
+        messages=SimpleNamespace(create=lambda **_: _fake_tool_response(payload))
+    )
+
+    with patch.object(llm_advisor_service, "_client", return_value=fake_anthropic):
+        advice = generate_advice(audit, "impact_summary")
+
+    ctx = advice.key_facts[0].context
+    assert len(ctx) <= 240
+    assert ctx.endswith("…")
+
+
+def test_too_many_next_questions_trimmed_to_max():
+    """Claude wrote 5 next_questions; cap is 3. Salvage trims, no 503."""
+    audit = compute_audit(_wardrobe({"t_shirt": ("upper_body", 1)}))
+    payload = _valid_advice_payload()
+    payload["next_questions"] = [f"Q{i}" for i in range(5)]
+
+    fake_anthropic = SimpleNamespace(
+        messages=SimpleNamespace(create=lambda **_: _fake_tool_response(payload))
+    )
+
+    with patch.object(llm_advisor_service, "_client", return_value=fake_anthropic):
+        advice = generate_advice(audit, "impact_summary")
+
+    assert len(advice.next_questions) == 3
+
+
+def test_bad_recommendation_id_is_sanitised_not_503():
+    """A slug with forbidden characters (spaces / colon) gets cleaned, no 503."""
+    audit = compute_audit(_wardrobe({"t_shirt": ("upper_body", 1)}))
+    payload = _valid_advice_payload()
+    payload["recommendations"][0]["id"] = "Wear Twice: As Long"
+
+    fake_anthropic = SimpleNamespace(
+        messages=SimpleNamespace(create=lambda **_: _fake_tool_response(payload))
+    )
+
+    with patch.object(llm_advisor_service, "_client", return_value=fake_anthropic):
+        advice = generate_advice(audit, "impact_summary")
+
+    sanitised = advice.recommendations[0].id
+    assert sanitised
+    # Must now satisfy the slug regex (lowercase, kebab/snake only).
+    import re
+    assert re.match(r"^[a-z0-9][a-z0-9_-]{1,39}$", sanitised), sanitised
 
 
 # ---------------------------------------------------------------------------

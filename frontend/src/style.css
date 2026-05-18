@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/soft-tactile.css";
 
 /* ── Custom theme tokens — lime + cream palette ───────────────────────── */
 @theme {
@@ -116,6 +117,49 @@
   --shadow-kh-glow: 0 0 60px rgba(159, 232, 112, 0.22), inset 0 0 0 1px rgba(226, 246, 213, 0.08);
   --shadow-kh-glow-correct: 0 0 32px rgba(205, 255, 173, 0.5);
   --shadow-kh-glow-wrong: 0 0 32px rgba(255, 192, 145, 0.5);
+
+  /* ── Soft-tactile palette — wardrobe redesign ─────────────────────────
+     Scoped to the `/wardrobe` route. All tokens are namespaced
+     --color-soft-* / --shadow-soft-* / --radius-soft-* so they never
+     leak into the rest of the app (home / discovery / evaluate / act).
+
+     Re-aligned to the site-wide lime + cream + warm-orange palette so
+     the wardrobe sits inside the same visual family as home / discovery
+     / evaluate / knowledge — only the *execution* (rounded corners,
+     diffuse shadows, paper fibre noise, DM Sans display font) stays
+     soft-tactile. The token names below are preserved (sage / dusty /
+     oat / fog) so existing component references keep working; only the
+     colour values have shifted toward the brand. */
+  --color-soft-sage:       #9fe870;      /* Brand lime — accent fills / active states / headline accents */
+  --color-soft-sage-deep:  #163300;      /* Dark green — text emphasis, CTA hover */
+  --color-soft-sage-mist:  #e2f6d5;      /* Light mint — soft surfaces */
+  --color-soft-cream:      #faf7f2;      /* Main surface — matches --color-bg */
+  --color-soft-milk:       #f6f0e6;      /* Alt surface — matches --color-warm-cream */
+  --color-soft-dusty:      #ffc091;      /* Warm orange — secondary accent */
+  --color-soft-dusty-wash: #ffe5cf;      /* Peach wash — soft warning / error surface */
+  --color-soft-oat:        #fff2c4;      /* Honey — Bottoms tile, warm highlight */
+  --color-soft-fog:        #ebe5d4;      /* Warm cream-grey — Shoes tile, neutral */
+  --color-soft-ink:        #0e0f0c;      /* Body text — matches --color-text */
+  --color-soft-ink-soft:   #454745;      /* Muted text — matches --color-text-muted */
+  --color-soft-line:       rgba(14, 15, 12, 0.08);  /* Hair-line divider */
+  --color-soft-line-strong: rgba(14, 15, 12, 0.14); /* Card outline — soft but legible */
+
+  /* Display font for wardrobe headlines — kept as a token so individual
+     components don't hard-code a family. Now points at Inter to match the
+     site-wide body font (home / discovery / evaluate / knowledge all use
+     Inter), so the wardrobe sits inside the same typographic family. */
+  --font-display: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --radius-soft:      24px;
+  --radius-soft-lg:   32px;
+  --radius-soft-pill: 9999px;
+
+  /* Soft diffuse shadows — emulate stacked paper depth. Tinted with the
+     same warm-black base as --color-border so they live in the same
+     temperature as the rest of the site. */
+  --shadow-soft-sm: 0 4px 12px rgba(14, 15, 12, 0.06), 0 1px 2px rgba(14, 15, 12, 0.04);
+  --shadow-soft:    0 12px 32px rgba(14, 15, 12, 0.08), 0 4px 8px rgba(14, 15, 12, 0.05);
+  --shadow-soft-lg: 0 24px 56px rgba(14, 15, 12, 0.10), 0 8px 16px rgba(14, 15, 12, 0.06);
 }
 
 /* ── Base resets ──────────────────────────────────────────────────────────── */
@@ -163,6 +207,29 @@ select {
   font: inherit;
 }
 
+/* GSAP SplitText output. The plugin marks up words/chars/lines as <span>s
+   plus an optional `<el>-mask` wrapper when `mask: 'words'` (etc.) is used.
+   By default SplitText only sets `overflow: clip` on the mask wrapper and
+   leaves display as inline — but CSS transforms on inline elements are
+   inconsistent (Chrome ignores them, Safari sometimes renders), so the
+   word-mask reveal needs inline-block. Setting it here once means every
+   call site (HomeView, AnimatedHeading, future useReveal('word')) gets
+   correct behaviour without scoped CSS in each component. */
+.split-word,
+.split-word-mask,
+.split-char,
+.split-line {
+  display: inline-block;
+  vertical-align: top;
+  line-height: inherit;
+}
+.split-word-mask {
+  /* Belt-and-braces: SplitText already inlines overflow:clip, but some
+     browsers fall back to overflow:hidden, which produces the same visual
+     mask. */
+  overflow: hidden;
+}
+
 /* Global focus-visible ring — keyboard nav accessibility */
 :focus-visible {
   outline: 2px solid var(--color-primary-text);
@@ -173,6 +240,15 @@ select {
 /* Suppress mouse-click outline while preserving keyboard nav */
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+/* Global tap-feedback for buttons — gentle press cue, suppressed when reduced-motion. */
+button:not(:disabled):active {
+  transform: scale(0.97);
+  transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  button:active { transform: none; }
 }
 
 /* Respect reduced-motion preference for all transitions.

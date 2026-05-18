@@ -6,13 +6,18 @@
     </button>
 
     <div class="results__head">
-      <p class="results__eyebrow">STEP 03 · YOUR RESULTS</p>
-      <h1 class="results__title">
+      <p ref="eyebrowRef" class="results__eyebrow">STEP 03 · YOUR RESULTS</p>
+      <AnimatedHeading
+        as="h1"
+        class="results__title"
+        :stagger="0.06"
+        :delay="0.1"
+      >
         Your <span class="results__title-num">{{ selected.length }}</span>
         {{ selected.length === 1 ? 'pick' : 'picks' }}
         vs. <span class="results__title-num">{{ total > 0 ? total : '…' }}</span> companies.
-      </h1>
-      <p class="results__sub">
+      </AnimatedHeading>
+      <p ref="subRef" class="results__sub">
         Each card shows where your pick lands in the full ranking. Click any row below to dig in.
       </p>
     </div>
@@ -58,14 +63,30 @@
       :is-loading="true"
       @open="() => {}"
     />
+
+    <JourneyNextCard
+      to="/eco-shop?intent=buy"
+      eyebrow="STEP 4 · ACT"
+      title="Skip the new — find better options second-hand."
+      body="The best brand is still beaten by buying second-hand. Op-shops near you."
+      cta="Find op-shops"
+    />
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ArrowLeft } from 'lucide-vue-next'
 import BrandRankCard from './BrandRankCard.vue'
 import BrandLeaderboard from './BrandLeaderboard.vue'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import JourneyNextCard from '../journey/JourneyNextCard.vue'
+import { useReveal } from '../../motion/useReveal'
+
+const eyebrowRef = ref(null)
+const subRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subRef, { mode: 'fade-blur', y: 40, delay: 0.25 })
 
 const props = defineProps({
   selected: { type: Array, default: () => [] },     // user picks

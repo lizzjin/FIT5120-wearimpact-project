@@ -79,6 +79,37 @@ export async function pollPreview(token, { onUpdate } = {}) {
   return null
 }
 
+/**
+ * Epic 3.6 — POST /api/recognize-label on the classifier Space.
+ *
+ * Sends a single image of a washing label, returns parsed material composition
+ * plus the raw OCR text so the UI can offer fallbacks when OCR misfires.
+ */
+export async function recognizeLabel(file) {
+  if (!BASE_URL) {
+    throw new Error('VITE_MODEL_SERVICE_URL is not configured')
+  }
+  if (!file) {
+    throw new Error('No file selected')
+  }
+
+  const compressed = await compress(file)
+  const form = new FormData()
+  form.append('file', compressed, file.name || 'label.jpg')
+
+  const res = await fetch(`${BASE_URL}/api/recognize-label`, {
+    method: 'POST',
+    body: form
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Label OCR failed (${res.status}): ${text || res.statusText}`)
+  }
+
+  return res.json()
+}
+
 export async function checkHealth() {
   if (!BASE_URL) return { status: 'offline' }
   try {

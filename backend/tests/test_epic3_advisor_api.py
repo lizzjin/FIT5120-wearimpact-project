@@ -19,6 +19,7 @@ client = TestClient(app)
 
 def _stub_advice(headline: str = "stubbed") -> Advice:
     return Advice(
+        layout="report",
         headline=headline,
         summary="Stubbed advice for tests.",
         key_facts=[
@@ -26,10 +27,23 @@ def _stub_advice(headline: str = "stubbed") -> Advice:
             {"label": "B", "value": "2", "context": "ctx"},
         ],
         recommendations=[
-            {"action": "do this", "impact": "saves stuff", "difficulty": "easy"},
-            {"action": "do that", "impact": "saves more", "difficulty": "easy"},
+            {
+                "id": "do-this",
+                "action": "do this",
+                "impact": "saves stuff",
+                "difficulty": "easy",
+                "follow_up_prompts": [],
+            },
+            {
+                "id": "do-that",
+                "action": "do that",
+                "impact": "saves more",
+                "difficulty": "easy",
+                "follow_up_prompts": [],
+            },
         ],
         caveats=["aus data missing"],
+        next_questions=["What if I added one more item?", "How do I start?"],
     )
 
 
@@ -44,7 +58,12 @@ def test_preset_questions_endpoint_returns_full_catalogue():
         "reduce_my_footprint",
         "rethink_purchases",
         "extend_garment_life",
+        "material_breakdown",
     ]
+    # Each preset advertises the layout the frontend should switch to.
+    layouts = {item["key"]: item["layout"] for item in body}
+    assert layouts["material_breakdown"] == "material_map"
+    assert layouts["impact_summary"] == "report"
 
 
 def test_audit_endpoint_returns_advice_for_valid_payload():

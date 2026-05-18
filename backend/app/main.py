@@ -5,6 +5,7 @@ and registers Epic 1 routers.
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 import redis.asyncio as aioredis
@@ -60,9 +61,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# CORS policy is gated by the CORS_STRICT env var so production behaviour
+# remains identical to the open-CORS default until the operator opts in.
+# Set CORS_STRICT=1 in Railway env after populating CORS_ORIGINS with the
+# real Vercel preview + prod URLs; unset it to roll back instantly.
+_cors_strict = os.getenv("CORS_STRICT") == "1"
+_cors_allow_origins = settings.cors_origins if _cors_strict else ["*"]
+
+if _cors_strict:
+    logger.info("CORS strict mode ON — allow_origins=%s", _cors_allow_origins)
+else:
+    logger.info("CORS strict mode OFF — allow_origins=['*'] (legacy default)")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_allow_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

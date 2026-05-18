@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer">
+  <footer class="footer" ref="footerRef">
     <div class="footer-grid">
       <div class="footer-brand">
         <h2>
@@ -13,9 +13,10 @@
       <div>
         <h4>Tools</h4>
         <ul>
-          <li><router-link to="/eco-shop">Eco-Shop Navigator</router-link></li>
-          <li><router-link to="/brand-search">Brand Search</router-link></li>
+          <li><router-link to="/wardrobe">My Wardrobe</router-link></li>
           <li><router-link to="/knowledge">Knowledge Hub</router-link></li>
+          <li><router-link to="/brand-search">Brand Search</router-link></li>
+          <li><router-link to="/eco-shop">Eco-Shop Navigator</router-link></li>
         </ul>
       </div>
 
@@ -26,6 +27,15 @@
     </div>
   </footer>
 </template>
+
+<script setup>
+import { ref } from 'vue'
+import { useStagger } from '../motion/useStagger'
+
+const footerRef = ref(null)
+// Stagger the brand block + each tools column when the footer enters view.
+useStagger(footerRef, { selector: '.footer-grid > *', stagger: 0.12, y: 28, delay: 0.05 })
+</script>
 
 <style scoped>
 .footer {

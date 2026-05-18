@@ -1,0 +1,44 @@
+# Backend project configuration.
+# Dependencies remain in requirements.txt (used by Railway / pip install -r).
+# This file only hosts dev-tooling config so production install is unaffected.
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    "tests/fixtures",
+]
+
+[tool.ruff.lint]
+# Conservative baseline: pyflakes (F), pycodestyle errors (E), import order (I),
+# pyupgrade hints (UP). No formatter-flavoured rules so we don't fight with
+# the existing style.
+select = ["E", "F", "I", "UP"]
+ignore = [
+    "E501",  # line-length is handled by ruff format / Black-style wrapping
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can import * from app factories, etc.
+"tests/**" = ["F401", "F811"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = false
+
+[tool.pytest.ini_options]
+# Keep pytest behaviour identical to current — explicit testpaths and
+# asyncio mode mean future contributors don't need to guess.
+# pythonpath = ["."] adds backend/ to sys.path so `from app.main import app`
+# works whether pytest is invoked as `pytest` or `python -m pytest`.
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]

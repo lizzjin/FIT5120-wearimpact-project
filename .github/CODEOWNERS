@@ -1,0 +1,12 @@
+# CODEOWNERS for WearImpact
+# Every PR auto-requests review from the owners listed here.
+# Format: <path pattern>  <@username> [<@username2>...]
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/customizing-your-repository/about-code-owners
+
+# Catch-all — owner of the project
+*                                @lizzjin
+
+# Conventions docs require extra care when touched
+/CLAUDE.md                       @lizzjin
+/CONTRIBUTING.md                 @lizzjin
+/.github/                        @lizzjin

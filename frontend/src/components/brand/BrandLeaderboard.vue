@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <ul v-else class="leaderboard__list">
+    <ul v-else class="leaderboard__list" ref="listRef">
       <li
         v-for="row in pagedRows"
         :key="row.company_id"
@@ -83,8 +83,9 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { useFlipReorder } from '../../motion'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },        // already sorted with rank field
@@ -115,6 +116,19 @@ const pagedRows = computed(() => {
 
 watch(filter, () => { page.value = 1 })
 watch(() => props.rows, () => { page.value = 1 })
+
+// Flip-reorder rows on filter / page change so users see them slide to
+// their new positions instead of popping in. capture() must run before
+// the DOM updates (sync), animate() runs after nextTick().
+const listRef = ref(null)
+const { capture, animate } = useFlipReorder(listRef, {
+  itemSelector: '.leaderboard__row',
+  duration: 0.5,
+})
+watch([filter, page], () => {
+  capture()
+  nextTick(() => animate())
+})
 
 function goPage(p) {
   if (p < 1 || p > totalPages.value) return

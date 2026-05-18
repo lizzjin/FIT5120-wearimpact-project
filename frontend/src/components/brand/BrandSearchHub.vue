@@ -3,58 +3,41 @@
     <span class="search-hub__index" aria-hidden="true">02</span>
 
     <div class="search-hub__head">
-      <p
-        class="search-hub__eyebrow"
-        v-motion
-        :initial="{ opacity: 0, y: 10 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-      >
+      <p ref="eyebrowRef" class="search-hub__eyebrow">
         STEP 02 · PICK YOUR BRANDS
       </p>
-      <h1
+      <AnimatedHeading
+        as="h1"
         class="search-hub__title"
-        v-motion
-        :initial="{ opacity: 0, y: 20 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 100 } }"
+        :stagger="0.07"
+        :delay="0.1"
       >
         Pick up to 3 brands<br />to compare.
-      </h1>
-      <p
-        class="search-hub__sub"
-        v-motion
-        :initial="{ opacity: 0, y: 14 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 250 } }"
-      >
+      </AnimatedHeading>
+      <p ref="subRef" class="search-hub__sub">
         Type any clothing brand or click a suggestion below. Use the X on a chip to remove.
       </p>
     </div>
 
     <!-- ── Tag input row ─────────────────────────────────────────── -->
-    <div
-      class="search-hub__input-row"
-      v-motion
-      :initial="{ opacity: 0, y: 20 }"
-      :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 350 } }"
-    >
+    <div ref="inputRowRef" class="search-hub__input-row">
       <BrandTagInput v-model="selected" :max="3" />
       <button
         type="button"
-        class="search-hub__compare-cta"
+        class="search-hub__compare-cta is-burst-host"
         :disabled="selected.length === 0"
         @click="$emit('compare', selected)"
       >
-        {{ selected.length === 0 ? 'Add a brand' : `Compare ${selected.length}` }}
-        <ArrowRight :size="18" :stroke-width="2.5" />
+        <CtaBurst />
+        <CtaFlip>
+          {{ selected.length === 0 ? 'Add a brand' : `Compare ${selected.length}` }}
+          <ArrowRight :size="18" :stroke-width="2.5" />
+        </CtaFlip>
       </button>
     </div>
 
     <!-- ── Carousel ──────────────────────────────────────────────── -->
-    <div
-      class="search-hub__carousel-wrap"
-      v-motion
-      :initial="{ opacity: 0, y: 20 }"
-      :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 500 } }"
-    >
+    <div ref="carouselWrapRef" class="search-hub__carousel-wrap">
       <BrandCarousel
         :items="suggestions"
         :selected-ids="selectedIds"
@@ -78,6 +61,19 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, ArrowRight } from 'lucide-vue-next'
 import BrandTagInput from './BrandTagInput.vue'
 import BrandCarousel from './BrandCarousel.vue'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
+
+const eyebrowRef = ref(null)
+const subRef = ref(null)
+const inputRowRef = ref(null)
+const carouselWrapRef = ref(null)
+useReveal(eyebrowRef, { mode: 'char', stagger: 0.022, duration: 0.5 })
+useReveal(subRef, { mode: 'fade-blur', y: 40, delay: 0.25 })
+useReveal(inputRowRef, { mode: 'fade-up', y: 24, delay: 0.4 })
+useReveal(carouselWrapRef, { mode: 'fade-up', y: 28, delay: 0.55 })
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -240,12 +236,12 @@ onMounted(() => {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: transform 200ms var(--motion-entrance), box-shadow 200ms var(--motion-entrance), opacity 200ms var(--motion-entrance);
+  transition: transform 200ms var(--motion-entrance), background 200ms var(--motion-entrance), opacity 200ms var(--motion-entrance);
 }
 
 .search-hub__compare-cta:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(22, 51, 0, 0.22);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .search-hub__compare-cta:disabled {

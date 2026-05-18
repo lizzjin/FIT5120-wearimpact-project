@@ -20,6 +20,7 @@ client = TestClient(app)
 
 def _stub_advice() -> Advice:
     return Advice(
+        layout="report",
         headline="ok",
         summary="stub",
         key_facts=[
@@ -27,10 +28,23 @@ def _stub_advice() -> Advice:
             {"label": "B", "value": "2", "context": "ctx"},
         ],
         recommendations=[
-            {"action": "a", "impact": "b", "difficulty": "easy"},
-            {"action": "c", "impact": "d", "difficulty": "easy"},
+            {
+                "id": "rec-a",
+                "action": "a",
+                "impact": "b",
+                "difficulty": "easy",
+                "follow_up_prompts": [],
+            },
+            {
+                "id": "rec-c",
+                "action": "c",
+                "impact": "d",
+                "difficulty": "easy",
+                "follow_up_prompts": [],
+            },
         ],
         caveats=[],
+        next_questions=["what next?", "how to start?"],
     )
 
 
@@ -88,18 +102,20 @@ def test_subcategory_regex_accepts_known_taxonomy_labels():
 # ---------------------------------------------------------------------------
 
 
-def test_rate_limit_blocks_after_10_calls_in_one_hour():
+def test_rate_limit_blocks_after_max_calls_in_one_hour():
+    """30/hr is the configured ceiling — verify it blocks immediately after."""
+    from app.services.advisor_rate_limit import _MAX_CALLS
+
     payload = {
         "preset": "impact_summary",
         "garments": [{"main_category": "upper_body", "sub_category": "t_shirt"}],
     }
     with patch.object(llm_advisor_service, "generate_advice", return_value=_stub_advice()):
-        # First 10 calls should all succeed.
-        for i in range(10):
+        for i in range(_MAX_CALLS):
             r = client.post("/api/wardrobe/audit", json=payload)
             assert r.status_code == 200, f"call {i + 1} rejected unexpectedly"
 
-        # 11th call hits the limit.
+        # Next call hits the limit.
         r = client.post("/api/wardrobe/audit", json=payload)
 
     assert r.status_code == 429

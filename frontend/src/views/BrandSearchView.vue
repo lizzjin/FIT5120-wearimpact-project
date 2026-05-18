@@ -7,6 +7,9 @@
     <Navbar />
 
     <main class="brand-page__main">
+      <div v-if="view !== 'intro'" class="brand-page__steps">
+        <StepIndicator :steps="BRAND_STEPS" :active-key="view" aria-label="Brand search flow" />
+      </div>
       <Transition name="brand-view" mode="out-in">
         <BrandIntro
           v-if="view === 'intro'"
@@ -52,7 +55,14 @@ import BrandIntro from '../components/brand/BrandIntro.vue'
 import BrandSearchHub from '../components/brand/BrandSearchHub.vue'
 import BrandResults from '../components/brand/BrandResults.vue'
 import BrandDetailModal from '../components/brand/BrandDetailModal.vue'
+import StepIndicator from '../components/common/StepIndicator.vue'
 import { fetchAllCompaniesAll, fetchCompanyDetail } from '../services/brandService'
+
+const BRAND_STEPS = [
+  { key: 'intro', label: 'How it works', title: 'Learn how brand scores are built.' },
+  { key: 'search', label: 'Pick brands', title: 'Choose two or more to compare.' },
+  { key: 'results', label: 'See ranking', title: 'Compare them side by side.' },
+]
 
 // View state machine: intro → search → results.
 // Page entry defaults to 'intro' so users meet the explainer first.
@@ -172,6 +182,16 @@ function closeDetail() {
 .brand-page__main {
   position: relative;
   z-index: 1;
+}
+
+.brand-page__steps {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+
+@media (max-width: 720px) {
+  .brand-page__steps { padding: 12px 16px 0; }
 }
 
 .brand-view-enter-active,

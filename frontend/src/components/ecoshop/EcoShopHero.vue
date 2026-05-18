@@ -6,47 +6,36 @@
     <div class="es-hero__inner">
       <!-- Left column: text + CTA -->
       <div class="es-hero__text">
-        <p
-          class="es-hero__eyebrow"
-          v-motion
-          :initial="{ opacity: 0, y: 12 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
-          STEP 01 · FIND ECO-SHOPS NEAR YOU
+        <p class="es-hero__eyebrow" ref="eyebrowRef">
+          {{ heroCopy.eyebrow }}
         </p>
-        <h1
+        <AnimatedHeading
+          as="h1"
           class="es-hero__title"
-          v-motion
-          :initial="{ opacity: 0, y: 24 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 700, delay: 100 } }"
-        >
-          Donate, swap, recycle —<br />
-          right around the corner.
-        </h1>
-        <p
-          class="es-hero__subtitle"
-          v-motion
-          :initial="{ opacity: 0, y: 18 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 250 } }"
-        >
-          We pull every nearby second-hand shop, donation point and textile recycler within
-          your radius — so the kindest move for that old jacket is also the closest one.
+          :lines="['Donate, swap, recycle —', 'right around the corner.']"
+          :stagger="0.08"
+          :delay="0.1"
+          paint-from="#9fe870"
+          paint-to="#0e0f0c"
+          :paint-stagger="0.07"
+          :paint-duration="0.5"
+        />
+        <p class="es-hero__subtitle" ref="subtitleRef">
+          {{ heroCopy.subtitle }}
         </p>
 
-        <div
-          class="es-hero__actions"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 600, delay: 450 } }"
-        >
+        <div class="es-hero__actions" ref="actionsRef">
           <button
             type="button"
-            class="es-hero__cta"
+            class="es-hero__cta is-burst-host"
             :disabled="isLocating"
             @click="$emit('use-location')"
           >
-            <Navigation2 :size="18" :stroke-width="2.2" />
-            {{ isLocating ? 'Locating…' : 'Use my location' }}
+            <CtaBurst />
+            <CtaFlip>
+              <Navigation2 :size="18" :stroke-width="2.2" />
+              {{ isLocating ? 'Locating…' : 'Use my location' }}
+            </CtaFlip>
           </button>
 
           <span v-if="isFallback" class="es-hero__fallback">
@@ -56,13 +45,7 @@
       </div>
 
       <!-- Right column: Lottie focal art -->
-      <div
-        class="es-hero__art"
-        aria-hidden="true"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.96 }"
-        :enter="{ opacity: 1, scale: 1, transition: { duration: 700, delay: 200 } }"
-      >
+      <div class="es-hero__art" aria-hidden="true" ref="artRef">
         <Vue3Lottie
           :animation-data="heroAnim"
           :loop="true"
@@ -77,15 +60,57 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
 import { Vue3Lottie } from 'vue3-lottie'
 import { Navigation2 } from 'lucide-vue-next'
+import AnimatedHeading from '../AnimatedHeading.vue'
+import CtaBurst from '../CtaBurst.vue'
+import CtaFlip from '../CtaFlip.vue'
+import { useReveal } from '../../motion/useReveal'
 import heroAnim from '../../assets/lottie/eco-shop-hero.json'
 
-defineProps({
+const props = defineProps({
   isLocating: { type: Boolean, default: false },
   isFallback: { type: Boolean, default: false },
+  // null | 'donate' | 'buy' — drives journey-aware hero copy when the user
+  // arrives from Wardrobe's decision card or Brand Search's next-step card.
+  intent: { type: String, default: null },
 })
 defineEmits(['use-location'])
+
+const heroCopy = computed(() => {
+  if (props.intent === 'donate') {
+    return {
+      eyebrow: 'STEP 4 · LET GO — FIND DONATION POINTS',
+      subtitle:
+        'Showing donation centres and textile recyclers near you. Widen the type filter if you also want to see op-shops or general second-hand stores.',
+    }
+  }
+  if (props.intent === 'buy') {
+    return {
+      eyebrow: 'STEP 4 · ACT — SHOP SECOND-HAND',
+      subtitle:
+        'Showing op-shops by default. The kindest piece you can buy is one that already exists — and a great brand bought new still loses to a fine one bought used.',
+    }
+  }
+  return {
+    eyebrow: 'STEP 01 · FIND ECO-SHOPS NEAR YOU',
+    subtitle:
+      'We pull every nearby second-hand shop, donation point and textile recycler within your radius — so the kindest move for that old jacket is also the closest one.',
+  }
+})
+
+const eyebrowRef = ref(null)
+const subtitleRef = ref(null)
+const actionsRef = ref(null)
+const artRef = ref(null)
+// Eyebrow / subtitle / actions cascade in over ~0.5s, matching the previous
+// v-motion delays (0, 250, 450 ms). Art block uses scale-fade per the
+// motion plan's "illustration entrance" recipe.
+useReveal(eyebrowRef, { mode: 'fade-up', y: 12, duration: 0.5 })
+useReveal(subtitleRef, { mode: 'fade-up', y: 18, duration: 0.6, delay: 0.25 })
+useReveal(actionsRef, { mode: 'fade-up', y: 20, duration: 0.6, delay: 0.45 })
+useReveal(artRef, { mode: 'scale-fade', duration: 0.7, delay: 0.2 })
 </script>
 
 <style scoped>
@@ -197,12 +222,12 @@ defineEmits(['use-location'])
   cursor: pointer;
   transition:
     transform 200ms var(--motion-entrance),
-    box-shadow 200ms var(--motion-entrance);
+    background 200ms var(--motion-entrance);
 }
 
 .es-hero__cta:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(22, 51, 0, 0.22);
+  transform: scale(1.03);
+  background: var(--color-primary-dark);
 }
 
 .es-hero__cta:disabled {

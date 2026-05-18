@@ -42,9 +42,31 @@ def make_cache_key(garments: Iterable[GarmentInput], preset: PresetKey) -> str:
     Item order in the request must not affect the key, so we count occurrences
     and sort. The preset is part of the key because the same wardrobe yields
     different advice for different preset questions.
+
+    Materials matter too: the same t-shirt with no wash-label info should
+    produce different advice once the user uploads a label. We fold a sorted
+    summary of (sub_category, fibre_key, percent) tuples into the key so that
+    uploading a label invalidates only the affected cache entries.
     """
-    counts = sorted(Counter(g.sub_category for g in garments).items())
-    payload = json.dumps({"counts": counts, "preset": preset}, sort_keys=True)
+    garments_list = list(garments)
+    counts = sorted(Counter(g.sub_category for g in garments_list).items())
+
+    materials_signature: list[tuple] = []
+    for g in garments_list:
+        if not g.materials:
+            continue
+        rolled = sorted(
+            (m.key, round(float(m.percent), 1)) for m in g.materials if m.percent
+        )
+        if rolled:
+            materials_signature.append((g.sub_category, tuple(rolled)))
+    materials_signature.sort()
+
+    payload = json.dumps(
+        {"counts": counts, "preset": preset, "materials": materials_signature},
+        sort_keys=True,
+        default=list,
+    )
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
     return f"{_CACHE_KEY_PREFIX}:{digest}"
 

@@ -1,0 +1,33 @@
+# pre-commit hooks for the WearImpact backend.
+#
+# This file is OPT-IN: contributors must run `pre-commit install` once in
+# their local clone to activate. CI does not enforce these hooks; the
+# canonical lint gate lives in .github/workflows/ci.yml.
+#
+# Scope deliberately narrow — only the backend Python tree. Frontend hooks
+# are configured separately via husky + lint-staged in frontend/package.json.
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        name: ruff (backend)
+        files: ^backend/
+        args: [--fix]
+      - id: ruff-format
+        name: ruff format (backend)
+        files: ^backend/
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^frontend/public/version[0-9]+/
+      - id: end-of-file-fixer
+        exclude: ^frontend/public/version[0-9]+/
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: detect-private-key
+      # Guard against accidental .env / secret commits going forward.
+      # Already-tracked .env files are left untouched (see CLAUDE.md decision).

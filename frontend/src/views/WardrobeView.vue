@@ -7,6 +7,9 @@
     <Navbar />
 
     <main class="wardrobe-page__main">
+      <div v-if="view !== 'intro'" class="wardrobe-page__steps">
+        <StepIndicator :steps="WARDROBE_STEPS" :active-key="view" aria-label="Wardrobe flow" />
+      </div>
       <Transition name="wd-view" mode="out-in">
         <WardrobeIntro
           v-if="view === 'intro'"
@@ -27,7 +30,6 @@
           :garments="garments"
           :total="total"
           :recent="recent"
-          @back="goIntro"
           @saved="refresh"
           @delete="onDelete"
           @clear="onClearAll"
@@ -52,6 +54,7 @@ import WardrobeIntro from '../components/wardrobe/WardrobeIntro.vue'
 import WardrobeOnboarding from '../components/wardrobe/WardrobeOnboarding.vue'
 import WardrobeMain from '../components/wardrobe/WardrobeMain.vue'
 import WardrobeAdvisor from '../components/wardrobe/WardrobeAdvisor.vue'
+import StepIndicator from '../components/common/StepIndicator.vue'
 
 import {
   getAllGarments,
@@ -60,9 +63,19 @@ import {
   deleteGarment,
   clearWardrobe
 } from '../services/wardrobeDb.js'
+import { useConfirm } from '../motion'
+
+const confirm = useConfirm()
 
 // View state machine: intro → onboarding → wardrobe.
 const view = ref('intro')
+
+const WARDROBE_STEPS = [
+  { key: 'intro', label: 'Welcome', title: 'Get a quick tour of your wardrobe.' },
+  { key: 'onboarding', label: 'Set up', title: 'Tell us how you usually shop.' },
+  { key: 'wardrobe', label: 'Wardrobe', title: 'Upload pieces — we sort them for you.' },
+  { key: 'advisor', label: 'Advisor', title: 'Ask the AI for outfit ideas.' },
+]
 
 const garments = ref([])
 const total = ref(0)
@@ -89,7 +102,14 @@ async function onDelete(id) {
 }
 
 async function onClearAll() {
-  if (!confirm('Delete every item from your wardrobe? This cannot be undone.')) return
+  const ok = await confirm({
+    title: 'Clear your wardrobe?',
+    message: 'This removes every item from your closet. It cannot be undone.',
+    confirmText: 'Delete all',
+    cancelText: 'Keep my closet',
+    danger: true,
+  })
+  if (!ok) return
   await clearWardrobe()
   await refresh()
 }
@@ -120,6 +140,16 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   padding-bottom: 64px;
+}
+
+.wardrobe-page__steps {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+
+@media (max-width: 720px) {
+  .wardrobe-page__steps { padding: 12px 16px 0; }
 }
 
 .wd-view-enter-active,

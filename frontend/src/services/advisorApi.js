@@ -4,6 +4,7 @@
  * Talks to the FastAPI backend at:
  *   - GET  /api/wardrobe/preset-questions
  *   - POST /api/wardrobe/audit
+ *   - POST /api/wardrobe/advice/follow-up
  *
  * Garments are sent stripped of any personal metadata (filename, image_base64,
  * timestamps). The backend only needs the classified labels to compute facts;
@@ -15,7 +16,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 /**
  * Fetch the catalogue of preset questions the user can pick.
- * @returns {Promise<Array<{key:string,label:string,description:string}>>}
+ * @returns {Promise<Array<{key:string,label:string,description:string,layout:string}>>}
  */
 export async function fetchPresetQuestions() {
   const res = await fetch(`${API_BASE}/api/wardrobe/preset-questions`)
@@ -27,10 +28,46 @@ export async function fetchPresetQuestions() {
 
 /**
  * Reduce a Dexie garment record to the minimal payload the backend needs.
- * @param {{ main_category: string, sub_category: string }} g
+ *
+ * Strips OCR display fields (name_en, name_zh, icon, label) from each material
+ * so the LLM prompt stays small — the backend only needs the canonical fibre
+ * key + percent to recompute per-garment LCA figures.
+ *
+ * @param {{ main_category: string, sub_category: string, materials?: Array }} g
  */
 function toAuditItem(g) {
-  return { main_category: g.main_category, sub_category: g.sub_category }
+  const item = {
+    main_category: g.main_category,
+    sub_category: g.sub_category,
+  }
+  if (Array.isArray(g.materials) && g.materials.length) {
+    const cleaned = g.materials
+      .filter((m) => m && typeof m.key === 'string' && Number(m.percent) > 0)
+      .map((m) => ({ key: m.key, percent: Number(m.percent) }))
+    if (cleaned.length) item.materials = cleaned
+  }
+  return item
+}
+
+async function readErrorDetail(res) {
+  try {
+    return (await res.json())?.detail || ''
+  } catch {
+    return ''
+  }
+}
+
+function mapAdvisorError(res, detail) {
+  if (res.status === 503) {
+    return new Error(detail || 'The AI advisor is temporarily unavailable. Please try again shortly.')
+  }
+  if (res.status === 429) {
+    return new Error(detail || 'You\'ve asked a lot just now — please wait a moment before trying again.')
+  }
+  if (res.status === 422) {
+    return new Error(detail || 'Your wardrobe payload was rejected. Try refreshing and retrying.')
+  }
+  return new Error(detail || `Advisor request failed (HTTP ${res.status}).`)
 }
 
 /**
@@ -38,35 +75,61 @@ function toAuditItem(g) {
  *
  * @param {Array} garments  Items from IndexedDB (full Dexie records).
  * @param {string} preset   One of the keys returned by fetchPresetQuestions().
+ * @param {object} [opts]
+ * @param {boolean} [opts.forceRefresh=false]  Bypass server cache so Claude
+ *   generates a fresh answer. Used by the "Re-answer this" button on each
+ *   advice bubble to break the cached-feels-canned perception.
  * @returns {Promise<Advice>}
  */
-export async function fetchWardrobeAdvice(garments, preset) {
+export async function fetchWardrobeAdvice(garments, preset, { forceRefresh = false } = {}) {
   const payload = {
     preset,
     garments: garments.map(toAuditItem),
   }
 
-  const res = await fetch(`${API_BASE}/api/wardrobe/audit`, {
+  const url = forceRefresh
+    ? `${API_BASE}/api/wardrobe/audit?refresh=1`
+    : `${API_BASE}/api/wardrobe/audit`
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
 
   if (!res.ok) {
-    let detail = ''
-    try {
-      detail = (await res.json())?.detail || ''
-    } catch {
-      /* response body wasn't JSON; fall through to status-only message */
-    }
+    throw mapAdvisorError(res, await readErrorDetail(res))
+  }
 
-    if (res.status === 503) {
-      throw new Error(detail || 'The AI advisor is temporarily unavailable. Please try again shortly.')
-    }
-    if (res.status === 422) {
-      throw new Error(detail || 'Your wardrobe payload was rejected. Try refreshing and retrying.')
-    }
-    throw new Error(detail || `Advisor request failed (HTTP ${res.status}).`)
+  return res.json()
+}
+
+/**
+ * Ask Claude a follow-up question grounded in the user's wardrobe + a parent
+ * preset answer. Returns a compact FollowUpAdvice rendered as a mini-bubble.
+ *
+ * @param {Array} garments         Same shape as fetchWardrobeAdvice.
+ * @param {string} parentPreset    The preset key the user originally asked.
+ * @param {string} focus           Slug of the recommendation tapped, or ''.
+ * @param {string} subPrompt       The human-readable follow-up question text.
+ * @returns {Promise<FollowUpAdvice>}
+ */
+export async function fetchAdviceFollowUp(garments, parentPreset, focus, subPrompt) {
+  const payload = {
+    garments: garments.map(toAuditItem),
+    parent_preset: parentPreset,
+    focus: focus || '',
+    sub_prompt: subPrompt,
+  }
+
+  const res = await fetch(`${API_BASE}/api/wardrobe/advice/follow-up`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    throw mapAdvisorError(res, await readErrorDetail(res))
   }
 
   return res.json()

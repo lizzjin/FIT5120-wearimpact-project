@@ -4,6 +4,7 @@
     class="es-card"
     :class="{ 'es-card--active': isActive }"
     :style="{ '--type-color': typeMeta.color }"
+    ref="cardRef"
     @click="$emit('select', place)"
     @mouseenter="$emit('hover', place.place_id)"
     @mouseleave="$emit('hover', null)"
@@ -34,14 +35,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ShoppingBag, HandHeart, Recycle, MapPin, Navigation2, ChevronRight } from 'lucide-vue-next'
+import { useHover, useFocusRing } from '../../motion'
 
 const props = defineProps({
   place: { type: Object, required: true },
   isActive: { type: Boolean, default: false },
 })
 defineEmits(['select', 'hover'])
+
+const cardRef = ref(null)
+useHover(cardRef, { mode: 'card' })
+useFocusRing(cardRef, { color: 'var(--color-primary)' })
 
 const TYPE_META = {
   second_hand_shop: { label: 'Second-hand', icon: ShoppingBag, color: '#9fe870' },
