@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import Vue3Lottie from 'vue3-lottie'
 import './style.css'
+import './styles/tour.css'
 import App from './App.vue'
 import router from './router'
 import { ensurePlugins } from './motion'

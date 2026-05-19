@@ -26,7 +26,12 @@
         </ul>
 
         <div ref="actionsRef" class="wd-intro__actions">
-          <button type="button" class="wd-cta wd-cta--ghost" @click="$emit('first-time')">
+          <button
+            type="button"
+            class="wd-cta wd-cta--ghost"
+            :class="{ 'wd-cta--shake': firstTimeShake }"
+            @click="onFirstTime"
+          >
             <BookOpen :size="16" :stroke-width="2" />
             First time using this
           </button>
@@ -53,6 +58,16 @@
               First time using this
             </button>
             to see how it works.
+          </p>
+        </Transition>
+
+        <Transition name="wd-empty-fade">
+          <p v-if="alreadyHasHint" class="wd-intro__empty-hint">
+            <CircleAlert :size="14" :stroke-width="2" />
+            You already have {{ total }} item{{ total === 1 ? '' : 's' }} in your closet — head straight to
+            <button type="button" class="wd-link" @click="$emit('enter')">
+              Enter my wardrobe
+            </button>.
           </p>
         </Transition>
       </div>
@@ -105,16 +120,32 @@ useReveal(actionsRef, { mode: 'fade-up', y: 18, delay: 0.7 })
 useReveal(artRef, { mode: 'scale-fade', duration: 0.8, delay: 0.25 })
 
 const emptyHint = ref(false)
+const alreadyHasHint = ref(false)
 const shake = ref(false)
+const firstTimeShake = ref(false)
 
 function onEnter() {
   if (props.total === 0) {
     emptyHint.value = true
+    alreadyHasHint.value = false
     shake.value = true
     setTimeout(() => (shake.value = false), 600)
     return
   }
   emit('enter')
+}
+
+function onFirstTime() {
+  // Users with an existing wardrobe shouldn't re-run the onboarding —
+  // it's designed for empty-closet first runs and would feel redundant.
+  if (props.total > 0) {
+    alreadyHasHint.value = true
+    emptyHint.value = false
+    firstTimeShake.value = true
+    setTimeout(() => (firstTimeShake.value = false), 600)
+    return
+  }
+  emit('first-time')
 }
 
 // Use Shirt as a hanger-stand-in; Lucide doesn't ship a hanger glyph.

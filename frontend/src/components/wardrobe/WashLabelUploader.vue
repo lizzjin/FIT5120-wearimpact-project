@@ -15,7 +15,7 @@
         @change="onPick"
       />
       <span class="wd-label-up__drop-icon">
-        <Camera v-if="!isBusy" :size="18" :stroke-width="1.8" />
+        <Tag v-if="!isBusy" :size="18" :stroke-width="1.8" />
         <Loader2 v-else :size="18" :stroke-width="2" class="wd-spin" />
       </span>
       <span class="wd-label-up__drop-text">
@@ -39,7 +39,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Camera, Loader2, CircleAlert } from 'lucide-vue-next'
+import { Tag, Loader2, CircleAlert } from 'lucide-vue-next'
 import { recognizeLabel } from '../../services/wardrobeApi.js'
 
 const props = defineProps({
