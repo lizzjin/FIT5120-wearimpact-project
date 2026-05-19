@@ -33,7 +33,7 @@
     <div ref="bentoRef" class="wd-main__bento">
       <!-- ── Left rail ─────────────────────────────────────────── -->
       <div class="wd-main__rail wd-main__rail--left">
-        <article class="wd-main__cover wd-soft-paper wd-soft-paper--cream">
+        <article class="wd-main__cover wd-soft-paper wd-soft-paper--cream" data-tour="live-count">
           <p class="wd-main__cover-eyebrow">
             <span class="wd-main__cover-eyebrow-dot" />
             LIVE COUNT
@@ -53,18 +53,27 @@
         <TryOnPreview
           ref="tryOnRef"
           class="wd-main__tryon"
+          data-tour="tryon"
+          :outfit="activeOutfit"
           @mannequin-change="onMannequinChange"
+          @remove-piece="removePiece"
+          @reset="clearOutfit"
         />
       </div>
 
       <!-- ── Right rail ────────────────────────────────────────── -->
       <div class="wd-main__rail wd-main__rail--right">
+        <!-- Upload sits at the top of the right rail so first-time visitors
+             on small screens see it without scrolling. -->
+        <UploadCompact class="wd-main__upload" data-tour="upload" @saved="emit('saved')" />
+
         <CategoryTile
           category="upper_body"
           theme="sage"
           :items="grouped.upper_body || []"
           :active-id="selectedId"
           class="wd-main__tile wd-main__tile--hero"
+          data-tour="categories"
           @select="onSelect"
         />
 
@@ -95,8 +104,6 @@
           class="wd-main__tile"
           @select="onSelect"
         />
-
-        <UploadCompact class="wd-main__upload" @saved="emit('saved')" />
       </div>
     </div>
 
@@ -116,7 +123,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { Sparkles, Trash2 } from 'lucide-vue-next'
 import GarmentDetailModal from './GarmentDetailModal.vue'
 import CategoryTile from './CategoryTile.vue'
@@ -125,12 +132,18 @@ import UploadCompact from './UploadCompact.vue'
 import WardrobeAiIntro from './WardrobeAiIntro.vue'
 import WardrobeNextDecision from './WardrobeNextDecision.vue'
 import SoftNumeral from './SoftNumeral.vue'
-import { tryOnSingle, tryOnCacheKey } from '../../services/tryOnApi.js'
+import {
+  tryOnSingle,
+  tryOnOutfit,
+  tryOnCacheKey,
+  tryOnOutfitCacheKey
+} from '../../services/tryOnApi.js'
 import { mannequinStore } from '../../stores/mannequinStore.js'
 import { putTryOnCache, getTryOnCache } from '../../services/wardrobeDb.js'
 import { useToast } from '../../motion'
 import { useReveal } from '../../motion/useReveal'
 import { wardrobeBucketFor } from '../../services/wardrobeDb.js'
+import { startWardrobeTour } from '../../utils/wardrobeTour.js'
 
 const props = defineProps({
   garments: { type: Array, default: () => [] },
@@ -144,6 +157,10 @@ const bentoRef = ref(null)
 const selectedId = ref(null)
 const tryOnRef = ref(null)
 const toast = useToast()
+
+// Active try-on outfit. Three slots: dress is mutually exclusive with
+// upper+lower so the mannequin never wears a dress over pants.
+const activeOutfit = reactive({ upper: null, lower: null, dress: null })
 
 const grouped = computed(() => {
   const out = { upper_body: [], one_pieces: [], lower_body: [], footwear: [] }
@@ -172,6 +189,14 @@ watch(
 // is interrupted.
 useReveal(bentoRef, { mode: 'fade-up', y: 24, duration: 0.7, delay: 0.15 })
 
+// First-visit tour. localStorage flag inside startWardrobeTour skips
+// it on subsequent visits. The delay lets the bento reveal animation
+// settle so the spotlight lands on the final element positions.
+onMounted(async () => {
+  await nextTick()
+  setTimeout(() => startWardrobeTour(), 900)
+})
+
 function onSelect(id) {
   selectedId.value = id
 }
@@ -181,11 +206,24 @@ function onDelete(id) {
   emit('delete', id)
 }
 
+function slotOfGarment(garment) {
+  if (!garment) return null
+  if (garment.main_category === 'footwear') return 'footwear'
+  if (wardrobeBucketFor(garment) === 'one_pieces') return 'dress'
+  if (garment.main_category === 'upper_body') return 'upper'
+  if (garment.main_category === 'lower_body') return 'lower'
+  return null
+}
+
+function clearOutfit() {
+  activeOutfit.upper = null
+  activeOutfit.lower = null
+  activeOutfit.dress = null
+}
+
 async function onTryOn(garment) {
   // Close the detail modal immediately so the user sees the TryOnPreview
-  // loading state in the left rail. The async try-on flow below continues
-  // in the background; the `garment` reference is already captured here so
-  // resetting selectedId doesn't lose the target.
+  // loading state in the left rail.
   selectedId.value = null
   if (!garment || !tryOnRef.value) return
   if (garment.main_category === 'footwear') {
@@ -193,29 +231,101 @@ async function onTryOn(garment) {
     return
   }
 
-  const cacheKey = tryOnCacheKey(garment.id, mannequinStore.selected)
-  if (cacheKey) {
-    const cached = await getTryOnCache(cacheKey).catch(() => null)
+  const slot = slotOfGarment(garment)
+  if (!slot || slot === 'footwear') return
+
+  // Update slots. Dress is mutually exclusive with upper+lower; upper and
+  // lower can coexist but both clear any active dress.
+  if (slot === 'dress') {
+    activeOutfit.dress = garment
+    activeOutfit.upper = null
+    activeOutfit.lower = null
+  } else if (slot === 'upper') {
+    activeOutfit.upper = garment
+    activeOutfit.dress = null
+  } else if (slot === 'lower') {
+    activeOutfit.lower = garment
+    activeOutfit.dress = null
+  }
+
+  emit('try-on', garment)
+  await renderActiveOutfit()
+}
+
+async function renderActiveOutfit() {
+  if (!tryOnRef.value) return
+  const { upper, lower, dress } = activeOutfit
+
+  // Nothing selected -> back to idle.
+  if (!upper && !lower && !dress) {
+    tryOnRef.value.reset()
+    return
+  }
+
+  const mannequin = mannequinStore.selected
+
+  // Single-item paths: dress alone, or exactly one of upper/lower.
+  let singleGarment = null
+  if (dress) singleGarment = dress
+  else if (upper && !lower) singleGarment = upper
+  else if (lower && !upper) singleGarment = lower
+
+  if (singleGarment) {
+    const cacheKey = tryOnCacheKey(singleGarment.id, mannequin)
+    if (cacheKey) {
+      const cached = await getTryOnCache(cacheKey).catch(() => null)
+      if (cached?.result_image) {
+        tryOnRef.value.showResult(cached.result_image)
+        return
+      }
+    }
+    tryOnRef.value.startLoading()
+    try {
+      const payload = await tryOnSingle({ mannequin, garment: singleGarment })
+      tryOnRef.value.showResult(payload.result_image)
+      if (cacheKey) {
+        await putTryOnCache({
+          garment_key: cacheKey,
+          garment_id: singleGarment.id,
+          mannequin: { ...mannequin },
+          result_image: payload.result_image,
+          generated_at: Date.now()
+        }).catch(() => {})
+      }
+    } catch (err) {
+      const msg = err?.message || 'Try-on failed. Please retry.'
+      tryOnRef.value.showError(msg)
+      toast.push(msg, { type: 'error' })
+    }
+    return
+  }
+
+  // Outfit path: upper + lower together. Backend layers them in one call.
+  const outfitKey = tryOnOutfitCacheKey({
+    upperId: upper?.id ?? null,
+    lowerId: lower?.id ?? null,
+    mannequin
+  })
+  if (outfitKey) {
+    const cached = await getTryOnCache(outfitKey).catch(() => null)
     if (cached?.result_image) {
       tryOnRef.value.showResult(cached.result_image)
-      emit('try-on', garment)
       return
     }
   }
-
   tryOnRef.value.startLoading()
-  emit('try-on', garment)
   try {
-    const payload = await tryOnSingle({
-      mannequin: mannequinStore.selected,
-      garment
+    const payload = await tryOnOutfit({
+      mannequin,
+      upperGarment: upper,
+      lowerGarment: lower
     })
     tryOnRef.value.showResult(payload.result_image)
-    if (cacheKey) {
+    if (outfitKey) {
       await putTryOnCache({
-        garment_key: cacheKey,
-        garment_id: garment.id,
-        mannequin: { ...mannequinStore.selected },
+        garment_key: outfitKey,
+        garment_id: null,
+        mannequin: { ...mannequin },
         result_image: payload.result_image,
         generated_at: Date.now()
       }).catch(() => {})
@@ -227,7 +337,14 @@ async function onTryOn(garment) {
   }
 }
 
+async function removePiece(slot) {
+  if (!(slot in activeOutfit)) return
+  activeOutfit[slot] = null
+  await renderActiveOutfit()
+}
+
 function onMannequinChange() {
+  clearOutfit()
   tryOnRef.value?.reset?.()
 }
 </script>

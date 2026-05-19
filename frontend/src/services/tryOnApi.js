@@ -102,3 +102,11 @@ export function tryOnCacheKey(garmentId, mannequin) {
   if (!garmentId || !mannequin?.category || !mannequin?.filename) return ''
   return `${garmentId}::${mannequin.category}/${mannequin.filename}`
 }
+
+export function tryOnOutfitCacheKey({ upperId, lowerId, mannequin }) {
+  if (!mannequin?.category || !mannequin?.filename) return ''
+  if (upperId == null && lowerId == null) return ''
+  const u = upperId ?? 'none'
+  const l = lowerId ?? 'none'
+  return `outfit::${u}+${l}::${mannequin.category}/${mannequin.filename}`
+}

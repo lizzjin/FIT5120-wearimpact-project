@@ -25,6 +25,21 @@
       </div>
     </header>
 
+    <div v-if="chips.length" class="wd-tryon__chips" aria-label="Currently worn pieces">
+      <button
+        v-for="chip in chips"
+        :key="chip.slot"
+        type="button"
+        class="wd-tryon__chip"
+        :aria-label="`Remove ${chip.label}`"
+        @click="emit('remove-piece', chip.slot)"
+      >
+        <img v-if="chip.thumb" :src="chip.thumb" :alt="chip.label" />
+        <span class="wd-tryon__chip-label">{{ chip.label }}</span>
+        <X :size="11" :stroke-width="2.4" />
+      </button>
+    </div>
+
     <div class="wd-tryon__stage">
       <Transition name="wd-tryon-fade" mode="out-in">
         <div v-if="state === 'loading'" key="loading" class="wd-tryon__state">
@@ -67,7 +82,7 @@
       v-if="state === 'result'"
       type="button"
       class="wd-tryon__action wd-tryon__action--ghost"
-      @click="reset"
+      @click="onResetClick"
     >
       Try another piece
     </button>
@@ -95,12 +110,44 @@
 <script setup>
 import { computed, ref } from 'vue'
 import {
-  Shirt, Loader2, CircleAlert, ChevronDown, UserRound
+  Shirt, Loader2, CircleAlert, ChevronDown, UserRound, X
 } from 'lucide-vue-next'
 import MannequinPicker from './MannequinPicker.vue'
 import { mannequinStore, getMannequinImageUrl } from '../../stores/mannequinStore.js'
 
-const emit = defineEmits(['mannequin-change'])
+const props = defineProps({
+  outfit: {
+    type: Object,
+    default: () => ({ upper: null, lower: null, dress: null })
+  }
+})
+
+const emit = defineEmits(['mannequin-change', 'remove-piece', 'reset'])
+
+const SLOT_FALLBACK_LABEL = {
+  upper: 'Upper',
+  lower: 'Lower',
+  dress: 'Dress'
+}
+
+function prettifySub(sub) {
+  if (!sub) return ''
+  return String(sub).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+const chips = computed(() => {
+  const out = []
+  for (const slot of ['upper', 'lower', 'dress']) {
+    const g = props.outfit?.[slot]
+    if (!g) continue
+    out.push({
+      slot,
+      thumb: g.image_base64 || '',
+      label: prettifySub(g.sub_category) || SLOT_FALLBACK_LABEL[slot]
+    })
+  }
+  return out
+})
 
 const state = ref('idle')  // idle | loading | result | error
 const resultImage = ref('')
@@ -144,6 +191,11 @@ function reset() {
   state.value = 'idle'
   resultImage.value = ''
   errorMessage.value = ''
+}
+
+function onResetClick() {
+  reset()
+  emit('reset')
 }
 
 defineExpose({ startLoading, showResult, showError, reset })
@@ -226,6 +278,47 @@ defineExpose({ startLoading, showResult, showError, reset })
   letter-spacing: -0.01em;
 }
 .wd-tryon__change:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.wd-tryon__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.wd-tryon__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 5px;
+  border-radius: var(--radius-soft-pill);
+  background: var(--color-soft-milk);
+  border: 1px solid var(--color-soft-line);
+  color: var(--color-soft-ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+.wd-tryon__chip:hover {
+  background: var(--color-soft-dusty-wash);
+  border-color: transparent;
+  color: var(--color-soft-ink);
+}
+.wd-tryon__chip img {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--color-soft-cream);
+  flex-shrink: 0;
+}
+.wd-tryon__chip-label {
+  white-space: nowrap;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .wd-tryon__stage {
   flex: 1;
