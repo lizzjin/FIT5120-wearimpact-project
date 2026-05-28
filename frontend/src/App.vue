@@ -1,7 +1,6 @@
 <template>
   <div class="app-container">
-    <PasswordGate v-if="!unlocked" @unlocked="onUnlocked" />
-    <router-view v-else v-slot="{ Component }">
+    <router-view v-slot="{ Component }">
       <Transition
         name="page"
         mode="out-in"
@@ -17,7 +16,7 @@
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount, nextTick } from 'vue'
+import { onBeforeUnmount, nextTick } from 'vue'
 import {
   armScrollTriggers,
   onRouteSettled,
@@ -25,35 +24,21 @@ import {
   stopLenis,
   scrollToTopImmediate,
 } from './motion'
-import PasswordGate from './components/PasswordGate.vue'
 import ToastHost from './components/ToastHost.vue'
 import ConfirmHost from './components/ConfirmHost.vue'
-import { isUnlocked } from './services/siteGate'
-
-const unlocked = ref(isUnlocked())
 
 // Start Lenis after the first route mounts. Phase 3 of the motion refactor
 // kept Lenis (instead of the planned ScrollSmoother) because ScrollSmoother
 // transforms its #smooth-content wrapper, which would break the four
 // `position: sticky` elements in the codebase — most visibly the navbar.
-if (unlocked.value) {
-  nextTick(() => {
-    startLenis()
-    armScrollTriggers()
-  })
-}
+nextTick(() => {
+  startLenis()
+  armScrollTriggers()
+})
 
 onBeforeUnmount(() => {
   stopLenis()
 })
-
-function onUnlocked() {
-  unlocked.value = true
-  nextTick(() => {
-    startLenis()
-    armScrollTriggers()
-  })
-}
 
 // Snap scroll to top the instant the new route's DOM is inserted but before
 // it fades in. Doing this in @after-enter (post fade-in) is too late — the
